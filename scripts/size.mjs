@@ -16,8 +16,8 @@ const groups = {
   'JS': (f) => extname(f.path) === '.js',
   'CSS': (f) => extname(f.path) === '.css',
   'HTML': (f) => extname(f.path) === '.html',
-  'Assets 3D (datos, modelos, texturas)': (f) => /^assets\/(data|modelos|texturas)\//.test(f.path),
-  'Imágenes / video / logo': (f) => /^assets\/(logo|fotos|productos|video|carteles|recortes|fallback)\//.test(f.path) && !/\.md$/.test(f.path),
+  'Datos del globo': (f) => /^assets\/data\//.test(f.path),
+  'Imágenes / video / logo': (f) => /^assets\/(logo|fotos|og|productos|video)\//.test(f.path) && !/\.md$/.test(f.path),
 };
 for (const [name, test] of Object.entries(groups)) {
   const list = files.filter(test);

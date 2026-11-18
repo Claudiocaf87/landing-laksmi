@@ -12,7 +12,9 @@
     "menuPrincipal": "Menú principal",
     "redes": "Redes sociales",
     "scroll": "Desliza para seguir tu envío",
-    "etapa": "Etapa"
+    "etapa": "Etapa",
+    "seguimiento": "Ver todos los estados",
+    "cerrarSeguimiento": "Cerrar estados"
   },
   "marca": {
     "nombre": "Laksmi Latam Group",
@@ -25,99 +27,16 @@
     "logoBlanco": "/assets/logo/logo-blanco.webp"
   },
   "imagenes": {
-    "nota": "Imágenes de muestra: stock o generadas con IA. No muestran al equipo ni a clientes de Laksmi y van sin leyendas que afirmen nada. Reemplazar por fotos propias antes de publicar.",
+    "nota": "Todas las fotos son generadas con IA: no muestran al equipo, a clientes ni a lugares reales de Laksmi, y van sin leyendas que lo afirmen.",
+    "base": "/assets/fotos/",
     "og": {
       "archivo": "/assets/og/og-laksmi.jpg",
-      "alt": "Buque portacontenedores cargado navegando en mar abierto al atardecer"
+      "alt": "Buque portacontenedores cargado navegando en mar abierto"
     },
-    "carteles": [
-      {
-        "id": "cartel-01",
-        "base": "/assets/carteles/cartel-01",
-        "origen": "stock",
-        "alt": "Hombre de traje azul sonríe mientras estrecha la mano de otra persona"
-      },
-      {
-        "id": "cartel-02",
-        "base": "/assets/carteles/cartel-02",
-        "origen": "stock",
-        "alt": "Grupo de profesionales en una oficina luminosa: dos se dan la mano y el resto aplaude"
-      },
-      {
-        "id": "feria-01",
-        "base": "/assets/carteles/feria-01",
-        "origen": "ia",
-        "alt": "Dos compradores con credencial recorren el pasillo de una feria comercial; él señala un exhibidor de productos"
-      },
-      {
-        "id": "feria-02",
-        "base": "/assets/carteles/feria-02",
-        "origen": "ia",
-        "alt": "Un comprador examina un teléfono de muestra en un stand mientras el expositor le explica"
-      },
-      {
-        "id": "negociacion-01",
-        "base": "/assets/carteles/negociacion-01",
-        "origen": "ia",
-        "alt": "Tres personas conversan en una mesa de reunión con muestras de producto, planos y una tablet"
-      },
-      {
-        "id": "calidad-01",
-        "base": "/assets/carteles/calidad-01",
-        "origen": "ia",
-        "alt": "En un depósito, un inspector revisa una caja abierta y completa una lista de control"
-      }
-    ],
-    "asignacion": {
-      "stands": [
-        "negociacion-01",
-        "cartel-01",
-        "feria-02",
-        "cartel-02",
-        "feria-01"
-      ],
-      "banderolas": [
-        "feria-01",
-        "feria-02"
-      ],
-      "pantalla": "calidad-01"
-    },
-    "recorte": {
-      "base": "/assets/recortes/persona-caja",
-      "origen": "ia",
-      "alt": "Hombre de saco azul sonríe mientras abre una caja de cartón sobre una mesa blanca"
-    },
-    "fallback": {
-      "proveedor": {
-        "base": "/assets/fallback/ferias",
-        "ancho": 1200,
-        "alto": 675,
-        "alt": "Dos compradores con credencial recorren el pasillo de una feria comercial; él señala un exhibidor de productos"
-      },
-      "negociacion": {
-        "base": "/assets/fallback/negociacion",
-        "ancho": 1200,
-        "alto": 675,
-        "alt": "Tres personas conversan en una mesa de reunión con muestras de producto, planos y una tablet"
-      },
-      "calidad": {
-        "base": "/assets/fallback/calidad",
-        "ancho": 1200,
-        "alto": 675,
-        "alt": "En un depósito, un inspector revisa una caja abierta y completa una lista de control"
-      },
-      "despacho": {
-        "base": "/assets/fallback/despacho",
-        "ancho": 512,
-        "alto": 288,
-        "alt": "Dos operarios con casco y chaleco reflectivo observan contenedores apilados junto a un montacargas en un patio portuario"
-      },
-      "transito": {
-        "base": "/assets/fallback/transito",
-        "ancho": 1200,
-        "alto": 675,
-        "alt": "Buque portacontenedores cargado navegando en mar abierto al atardecer"
-      }
+    "globo": {
+      "hero": "/assets/fotos/globo-hero",
+      "cierre": "/assets/fotos/globo-cierre",
+      "alt": "Globo terráqueo claro con puntos dorados y la ruta estilizada desde China hacia Latinoamérica"
     },
     "fotosReales": {
       "nota": "Fotos reales del equipo en la Feria de Cantón: pendientes. Leyenda: [FERIA, AÑO, QUIÉN ES]",
@@ -167,6 +86,10 @@
       "href": "#plan"
     },
     {
+      "texto": "Rubros",
+      "href": "#rubros"
+    },
+    {
       "texto": "Testimonios",
       "href": "#testimonios"
     },
@@ -177,7 +100,6 @@
   ],
   "hud": {
     "titulo": "Seguimiento del envío",
-    "codigo": "LK · CN → LATAM",
     "estados": [
       {
         "texto": "Pedido creado",
@@ -192,49 +114,48 @@
       {
         "texto": "Productos seleccionados",
         "desde": 2,
-        "ir": "proveedor"
+        "ir": "ferias"
       },
       {
         "texto": "Condiciones negociadas",
-        "desde": 2.42,
-        "ir": "proveedor",
-        "u": 2.45
+        "desde": 3,
+        "ir": "negociacion"
       },
       {
         "texto": "Proveedor verificado",
-        "desde": 2.62,
-        "ir": "proveedor",
-        "u": 2.7
+        "desde": 3.5,
+        "ir": "negociacion",
+        "u": 3.72
       },
       {
         "texto": "Calidad verificada",
-        "desde": 3,
+        "desde": 4,
         "ir": "calidad"
       },
       {
         "texto": "Cargado y precintado",
-        "desde": 4,
+        "desde": 5,
         "ir": "despacho"
       },
       {
         "texto": "Embarcado",
-        "desde": 4.62,
+        "desde": 5.66,
         "ir": "despacho",
-        "u": 4.8
+        "u": 5.82
       },
       {
         "texto": "En tránsito",
-        "desde": 5,
+        "desde": 6,
         "ir": "transito"
       },
       {
         "texto": "Liberado en aduana",
-        "desde": 6,
+        "desde": 7,
         "ir": "aduana"
       },
       {
         "texto": "Entregado",
-        "desde": 7,
+        "desde": 8,
         "ir": "entrega"
       }
     ]
@@ -264,7 +185,8 @@
       "chipsAlt": [
         "México · Rusia · USA [A CONFIRMAR]"
       ],
-      "leyenda": true
+      "leyenda": true,
+      "fotos": []
     },
     {
       "id": "plan",
@@ -280,10 +202,18 @@
         "Diagnóstico gratuito en 48 horas",
         "Acuerdo de confidencialidad antes de operar",
         "Comisión fija del 5 %, sin costos ocultos"
-      ]
+      ],
+      "fotos": [
+        {
+          "id": "plan",
+          "focal": "40% 35%",
+          "alt": "Hombre de saco azul en un escritorio luminoso conversa por videollamada mientras señala unos planos"
+        }
+      ],
+      "transicion": "circulo"
     },
     {
-      "id": "proveedor",
+      "id": "ferias",
       "menu": "Ferias",
       "numero": "02",
       "etiqueta": "Ferias y selección de productos",
@@ -294,80 +224,180 @@
       "subtitulo": "Feria de Cantón y Mercado de Yiwu: vemos los productos en persona, comparamos muestras y preseleccionamos proveedores según tu plan.",
       "puntos": [
         "Muestras vistas y comparadas en el stand",
-        "Negociación en mandarín, directo con la fábrica",
-        "Verificamos la capacidad real de producción antes del pago"
+        "Preselección según tu plan y tus volúmenes"
+      ],
+      "transicion": "diagonal",
+      "fotos": [
+        {
+          "id": "feria-01",
+          "focal": "40% 40%",
+          "alt": "Dos compradores con credencial recorren el pasillo de una feria comercial; él señala un exhibidor de productos"
+        },
+        {
+          "id": "feria-02",
+          "focal": "60% 40%",
+          "alt": "Un comprador examina un teléfono de muestra en un stand mientras el expositor le explica"
+        },
+        {
+          "id": "feria-detalle",
+          "focal": "62% 50%",
+          "alt": "Primer plano de una mano que anota en una libreta junto a un disco de freno de muestra",
+          "frase": "Anotamos cada muestra."
+        }
+      ]
+    },
+    {
+      "id": "negociacion",
+      "menu": "Negociación",
+      "numero": "03",
+      "etiqueta": "Negociación y verificación",
+      "titulo": [
+        "Negociamos en mandarín,",
+        "verificamos antes de pagar."
+      ],
+      "pasos": [
+        {
+          "estado": "Condiciones negociadas",
+          "texto": "Precio, plazos, especificaciones y forma de pago, acordados directo con la fábrica y documentados."
+        },
+        {
+          "estado": "Proveedor verificado",
+          "texto": "Antes de cualquier pago visitamos la fábrica y verificamos su capacidad real de producción y su calidad."
+        }
+      ],
+      "transicion": "lateral",
+      "fotos": [
+        {
+          "id": "negociacion",
+          "focal": "52% 40%",
+          "alt": "Tres personas conversan en una mesa de reunión con muestras de producto, planos y una tablet"
+        }
       ]
     },
     {
       "id": "calidad",
       "menu": "Calidad",
-      "numero": "03",
+      "numero": "04",
       "etiqueta": "Inspección previa al embarque",
       "titulo": [
         "Revisamos el 100 %",
         "antes de que salga."
       ],
-      "subtitulo": "Inspeccionamos todas las unidades antes del despacho. Si algo no cumple las especificaciones acordadas, el envío se detiene."
+      "subtitulo": "Inspeccionamos todas las unidades antes del despacho. Si algo no cumple las especificaciones acordadas, el envío se detiene.",
+      "transicion": "circulo",
+      "fotos": [
+        {
+          "id": "calidad",
+          "focal": "55% 42%",
+          "alt": "En un depósito, un inspector revisa una caja abierta y completa una lista de control"
+        }
+      ]
     },
     {
       "id": "despacho",
       "menu": "Despacho",
-      "numero": "04",
+      "numero": "05",
       "etiqueta": "Despacho en origen",
       "titulo": [
         "Cargado, precintado",
         "y a bordo."
       ],
-      "subtitulo": "Coordinamos la carga, la documentación de exportación y el embarque desde los puertos de China.",
       "chips": [
         "Flete marítimo",
         "Flete aéreo",
         "Transporte terrestre"
+      ],
+      "pasos": [
+        {
+          "estado": "Cargado y precintado",
+          "texto": "Supervisamos la carga y el cierre del contenedor en origen."
+        },
+        {
+          "estado": "Embarcado",
+          "texto": "Documentación de exportación y embarque desde los puertos de China."
+        }
+      ],
+      "transicion": "diagonal",
+      "fotos": [
+        {
+          "id": "carga",
+          "focal": "70% 50%",
+          "alt": "Operarios cargan cajas en un contenedor dentro de un depósito, junto a un montacargas"
+        },
+        {
+          "id": "precinto",
+          "focal": "58% 55%",
+          "alt": "Mano con guante cierra con candado las puertas de un contenedor"
+        },
+        {
+          "id": "puerto",
+          "focal": "55% 45%",
+          "alt": "Grúas portuarias cargan contenedores en un buque atracado en el muelle"
+        }
       ]
     },
     {
       "id": "transito",
       "menu": "Tránsito",
-      "numero": "05",
+      "numero": "06",
       "etiqueta": "Transporte internacional",
       "titulo": [
         "Tu carga en camino,",
         "y tú al tanto."
       ],
       "subtitulo": "Del proveedor a tu almacén: entre 60 y 90 días en promedio, según el producto y la fábrica.",
-      "mapa": {
-        "origen": "Puertos de China",
-        "destino": "[PUERTO DE DESTINO]",
-        "dias": "[DÍAS DE TRÁNSITO]",
-        "etiquetaDias": "días de navegación"
-      }
+      "mapaGrande": true,
+      "transicion": "fundido",
+      "fotos": [
+        {
+          "id": "transito",
+          "focal": "48% 55%",
+          "alt": "Buque portacontenedores cargado navegando en mar abierto"
+        }
+      ]
     },
     {
       "id": "aduana",
       "menu": "Aduana",
-      "numero": "06",
+      "numero": "07",
       "etiqueta": "Llegada y aduana",
       "titulo": [
         "Lo que se declara",
         "es lo que llega."
       ],
-      "subtitulo": "Coordinamos la documentación y el proceso aduanero en destino. [ALCANCE DEL SERVICIO ADUANERO: A CONFIRMAR]"
+      "subtitulo": "Coordinamos la documentación y el proceso aduanero en destino. [ALCANCE DEL SERVICIO ADUANERO: A CONFIRMAR]",
+      "transicion": "lateral",
+      "fotos": [
+        {
+          "id": "aduana",
+          "focal": "39% 45%",
+          "alt": "Dos hombres revisan documentos frente a un contenedor abierto lleno de cajas en un puerto"
+        }
+      ]
     },
     {
       "id": "entrega",
       "menu": "Entrega",
-      "numero": "07",
+      "numero": "08",
       "etiqueta": "Entrega",
       "titulo": [
         "Hasta la puerta",
         "de tu almacén."
       ],
-      "subtitulo": "Despacho en origen, transporte internacional, coordinación aduanera y entrega. Un solo equipo responsable de punta a punta."
+      "subtitulo": "Despacho en origen, transporte internacional, coordinación aduanera y entrega. Un solo equipo responsable de punta a punta.",
+      "transicion": "circulo",
+      "fotos": [
+        {
+          "id": "entrega",
+          "focal": "62% 55%",
+          "alt": "Dos personas pasan una caja de una camioneta de reparto a la puerta de un depósito"
+        }
+      ]
     },
     {
       "id": "resultados",
       "menu": "Resultados",
-      "numero": "08",
+      "numero": "09",
       "etiqueta": "Resultados",
       "titulo": [
         "Así llegamos a",
@@ -401,7 +431,11 @@
         "texto": "Cotiza tu importación",
         "href": "#cotizar"
       },
-      "leyenda": true
+      "leyenda": true,
+      "recorte": {
+        "id": "persona-caja",
+        "alt": "Hombre de saco azul sonríe mientras abre una caja de cartón sobre una mesa blanca"
+      }
     }
   ],
   "testimonios": {
@@ -742,6 +776,53 @@
         "nombre": "México",
         "lat": 19.43,
         "lon": -99.13
+      }
+    ]
+  },
+  "mapa": {
+    "titulo": "Ruta del envío",
+    "tramos": [
+      "China",
+      "Puertos de China",
+      "Océano",
+      "[PUERTO DE DESTINO]",
+      "Almacén"
+    ],
+    "dias": "[DÍAS DE TRÁNSITO]",
+    "etiquetaDias": "días de navegación",
+    "nota": "Ruta estilizada"
+  },
+  "rubros": {
+    "id": "rubros",
+    "etiqueta": "Rubros",
+    "titulo": "Importamos para estos rubros",
+    "subtitulo": "Si el tuyo es otro, cuéntanos en el diagnóstico.",
+    "items": [
+      {
+        "nombre": "Automotriz",
+        "foto": "rubro-automotriz",
+        "focal": "47% 50%",
+        "alt": "Disco de freno con pinza azul sobre un pedestal blanco"
+      },
+      {
+        "nombre": "Ferretería e insumos industriales",
+        "foto": null,
+        "placeholder": "[FOTO FERRETERÍA]"
+      },
+      {
+        "nombre": "Equipos médicos",
+        "foto": null,
+        "placeholder": "[FOTO EQUIPOS MÉDICOS]"
+      },
+      {
+        "nombre": "Bisutería y accesorios",
+        "foto": null,
+        "placeholder": "[FOTO BISUTERÍA]"
+      },
+      {
+        "nombre": "Tecnología",
+        "foto": null,
+        "placeholder": "[FOTO TECNOLOGÍA]"
       }
     ]
   }

@@ -49,7 +49,7 @@ function menu(c) {
   const stages = c.etapas
     .map((e) => `<li><a href="#${esc(e.id)}"><span class="mono">${esc(e.numero)}</span>${esc(e.menu)}</a></li>`)
     .join('');
-  const extra = [c.testimonios, c.faq, c.perfiles]
+  const extra = [c.rubros, c.testimonios, c.faq, c.perfiles]
     .map((s) => `<li><a href="#${esc(s.id)}"><span class="mono">—</span>${esc(s.etiqueta)}</a></li>`)
     .join('');
   const social = c.redes
@@ -72,51 +72,90 @@ function menu(c) {
 </div>`;
 }
 
-function hud(c) {
+// Mapita fijo (hilo conductor) + HUD compacto en una sola pieza. La ruta es estilizada.
+// Los puntos de etapa se ubican sobre el trazo con JS (data-f = fracción del recorrido).
+const ROUTE_D = 'M18 44 L64 48 C 118 16, 196 26, 236 76 L284 62';
+const STOP_F = [0, 0.05, 0.1, 0.15, 0.2, 0.55, 0.84, 1]; // etapas 01 … 08
+function tracker(c) {
   const h = c.hud;
+  const m = c.mapa;
   const items = h.estados
-    .map(
-      (s, i) =>
-        `<li data-step="${i}"><a href="#${esc(s.ir)}"${s.u != null ? ` data-u="${s.u}"` : ''}><span class="hud__dot" aria-hidden="true"></span><span class="hud__txt">${esc(s.texto)}</span></a></li>`,
-    )
+    .map((s, i) => `<li data-step="${i}"><a href="#${esc(s.ir)}"${s.u != null ? ` data-u="${s.u}"` : ''}><span class="hud__dot" aria-hidden="true"></span>${esc(s.texto)}</a></li>`)
+    .join('');
+  const labels = [
+    [18, 30, 'start'],
+    [64, 66, 'middle'],
+    [150, 22, 'middle'],
+    [232, 96, 'middle'],
+    [286, 48, 'end'],
+  ]
+    .map(([x, y, an], i) => `<text x="${x}" y="${y}" text-anchor="${an}">${esc(m.tramos[i])}</text>`)
     .join('');
   return `
-<nav class="hud" aria-label="${esc(h.titulo)}">
-  <div class="hud__head">
-    <p class="hud__title">${esc(h.titulo)}</p>
-    <p class="hud__code mono">${esc(h.codigo)}</p>
-  </div>
-  <ol class="hud__list">${items}</ol>
-  <div class="hud__mobile" aria-hidden="true">
-    <span class="hud__dot"></span>
-    <span class="hud__now">${esc(h.estados[0].texto)}</span>
-    <span class="hud__count mono">1/${h.estados.length}</span>
-    <span class="hud__bar"><span></span></span>
-  </div>
-</nav>`;
+<aside class="tracker" aria-label="${esc(h.titulo)}">
+  <figure class="tracker__map">
+    <svg viewBox="0 0 300 110" role="img" aria-label="${esc(m.titulo)}: ${esc(m.tramos.join(' → '))}">
+      <path class="tracker__route" d="${ROUTE_D}" />
+      <path class="tracker__done" d="${ROUTE_D}" pathLength="1" />
+      ${STOP_F.map((f, i) => `<circle class="tracker__stop" data-f="${f}" data-etapa="${i + 1}" r="3.4" cx="0" cy="0" />`).join('')}
+      <circle class="tracker__ship" r="4.6" cx="18" cy="44" />
+      <g class="tracker__labels">${labels}</g>
+    </svg>
+    <figcaption class="tracker__days"><strong class="mono">${esc(m.dias)}</strong> ${esc(m.etiquetaDias)} · <span>${esc(m.nota)}</span></figcaption>
+  </figure>
+  <button class="tracker__toggle" type="button" aria-expanded="false" aria-controls="tracker-list" aria-label="${esc(c.ui.seguimiento)}">
+    <span class="tracker__line"><span class="tracker__count mono">1/${h.estados.length}</span><span aria-hidden="true">·</span><span class="tracker__now">${esc(h.estados[0].texto)}</span></span>
+    <span class="tracker__bar" aria-hidden="true"><span></span></span>
+  </button>
+  <nav class="tracker__panel" id="tracker-list" aria-label="${esc(h.titulo)}" hidden>
+    <ol class="hud__list">${items}</ol>
+  </nav>
+</aside>`;
 }
 
-function minimap(m) {
-  // ruta estilizada: puertos de China → Pacífico → Panamá → destino (no es un trazado real)
-  return `
-<figure class="minimap">
-  <svg viewBox="0 0 320 130" role="img" aria-label="${esc(m.origen)} → ${esc(m.destino)}">
-    <path class="minimap__route" d="M36 46 C 100 22, 170 30, 226 80 S 268 96, 288 82" />
-    <path class="minimap__done" d="M36 46 C 100 22, 170 30, 226 80 S 268 96, 288 82" pathLength="1" />
-    <circle class="minimap__ship" r="5" cx="36" cy="46" />
-    <circle class="minimap__pin" r="3.5" cx="36" cy="46" />
-    <circle class="minimap__pin" r="3.5" cx="288" cy="82" />
-  </svg>
-  <figcaption>
-    <span>${esc(m.origen)}</span>
-    <span class="minimap__days"><strong class="mono">${esc(m.dias)}</strong> ${esc(m.etiquetaDias)}</span>
-    <span>${esc(m.destino)}</span>
-  </figcaption>
-</figure>`;
+// <picture> con AVIF/WebP y versión vertical para mobile. Las fuentes van en data-*: journey.js
+// carga solo la foto actual y la siguiente. <noscript> deja la imagen para quien no tiene JS.
+function picture(base, { alt = '', w = 1920, h = 1071, focal = '50% 50%', cls = '' } = {}) {
+  const portrait = '(orientation: portrait)';
+  return `<picture class="${cls}">
+      <source type="image/avif" media="${portrait}" data-srcset="${base}-mobile.avif">
+      <source type="image/avif" data-srcset="${base}-desktop.avif">
+      <source type="image/webp" media="${portrait}" data-srcset="${base}-mobile.webp">
+      <img data-src="${base}-desktop.webp" alt="${esc(alt)}" width="${w}" height="${h}" decoding="async" style="--focal:${esc(focal)}">
+      <noscript><img src="${base}-desktop.webp" alt="${esc(alt)}" width="${w}" height="${h}" loading="lazy"></noscript>
+    </picture>`;
+}
+
+function fotos(e, i, c) {
+  const base = c.imagenes.base;
+  let out = (e.fotos || [])
+    .map(
+      (f, k) => `
+  <figure class="foto" data-etapa="${i}" data-k="${k}" data-transicion="${esc(k === 0 ? e.transicion || 'fundido' : 'fundido')}">
+    ${picture(base + f.id, { alt: f.alt, focal: f.focal })}
+    ${f.frase ? `<figcaption class="foto__frase">${esc(f.frase)}</figcaption>` : ''}
+  </figure>`,
+    )
+    .join('');
+  if (e.recorte) {
+    out += `
+  <figure class="foto foto--recorte" data-etapa="${i}" data-k="0">
+    <div class="recorte">${picture(base + e.recorte.id, { alt: e.recorte.alt, w: 707, h: 1024 })}</div>
+  </figure>`;
+  }
+  const g = c.imagenes.globo;
+  if (i === 0 || e.recorte) {
+    const cual = i === 0 ? 'hero' : 'cierre';
+    out += `
+  <figure class="globo-img" data-cual="${cual}">${picture(g[cual], { alt: g.alt, w: 900, h: 900, cls: 'globo-img__pic' })}</figure>`;
+  }
+  return out;
 }
 
 function extras(e, c) {
   let out = '';
+  if (e.pasos?.length)
+    out += `<ol class="pasos">${e.pasos.map((p, k) => `<li data-paso="${k}"><strong>${esc(p.estado)}</strong><span>${esc(p.texto)}</span></li>`).join('')}</ol>`;
   if (e.puntos?.length) out += `<ul class="points">${e.puntos.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`;
   if (e.chips?.length || e.chipsAlt?.length)
     out += `<ul class="chips">${(e.chips || []).map((t) => `<li>${esc(t)}</li>`).join('')}${(e.chipsAlt || [])
@@ -126,7 +165,6 @@ function extras(e, c) {
     const l = c.globo.leyenda;
     out += `<ul class="legend"><li><i class="is-office" aria-hidden="true"></i>${esc(l.oficina)}</li><li><i class="is-origin" aria-hidden="true"></i>${esc(l.origen)}</li><li><i class="is-dest" aria-hidden="true"></i>${esc(l.destino)}</li></ul>`;
   }
-  if (e.mapa) out += minimap(e.mapa);
   if (e.stats?.length) {
     out += `<dl class="stats">${e.stats
       .map(
@@ -142,15 +180,38 @@ function extras(e, c) {
 
 function etapa(e, i, c) {
   const h = i === 0 ? 'h1' : 'h2';
+  const panel = i === 0 || e.recorte ? '' : ' etapa__inner--panel';
   return `
-<section class="etapa" id="${esc(e.id)}" data-etapa="${i}" aria-labelledby="${esc(e.id)}-t">
+<section class="etapa" id="${esc(e.id)}" data-etapa="${i}" aria-labelledby="${esc(e.id)}-t"${e.mapaGrande ? ' data-mapa="grande"' : ''}>
+  ${fotos(e, i, c)}
   <div class="etapa__content">
-    <div class="etapa__inner">
+    <div class="etapa__inner${panel}">
       <p class="kicker"><span class="mono">${esc(e.numero)}</span>${esc(e.etiqueta)}</p>
       <${h} class="etapa__title" id="${esc(e.id)}-t">${lines(e.titulo)}</${h}>
-      <p class="etapa__sub">${esc(e.subtitulo)}</p>
+      ${e.subtitulo ? `<p class="etapa__sub">${esc(e.subtitulo)}</p>` : ''}
       ${extras(e, c)}
     </div>
+  </div>
+</section>`;
+}
+
+function rubros(r, c) {
+  const base = c.imagenes.base;
+  return `
+<section class="block block--white" id="${esc(r.id)}" aria-labelledby="${esc(r.id)}-t">
+  <div class="block__wrap">
+    <p class="kicker kicker--dark">${esc(r.etiqueta)}</p>
+    <h2 class="block__title" id="${esc(r.id)}-t">${esc(r.titulo)}</h2>
+    <p class="block__sub">${esc(r.subtitulo)}</p>
+    <ul class="rubros">${r.items
+      .map(
+        (x) => `<li class="rubro">${
+          x.foto
+            ? `<picture><source type="image/avif" media="(max-width: 599px)" srcset="${base}${x.foto}-mobile.avif"><source type="image/avif" srcset="${base}${x.foto}-desktop.avif"><img src="${base}${x.foto}-desktop.webp" alt="${esc(x.alt)}" width="800" height="800" loading="lazy" decoding="async"></picture>`
+            : `<div class="rubro__ph"><span class="mono">${esc(x.placeholder)}</span></div>`
+        }<p>${esc(x.nombre)}</p></li>`,
+      )
+      .join('')}</ul>
   </div>
 </section>`;
 }
@@ -303,8 +364,8 @@ export function renderPage(html, c, lang) {
     .replace('%LOGO%', esc(c.marca.logo))
     .replace('%BRAND%', esc(c.marca.nombre))
     .replace('<!--HEADER-->', header(c) + menu(c))
-    .replace('<!--HUD-->', hud(c))
+    .replace('<!--HUD-->', tracker(c))
     .replace('<!--ETAPAS-->', c.etapas.map((e, i) => etapa(e, i, c)).join(''))
-    .replace('<!--BLOQUES-->', testimonios(c.testimonios) + faq(c.faq) + perfiles(c.perfiles) + cotizacion(c))
+    .replace('<!--BLOQUES-->', rubros(c.rubros, c) + testimonios(c.testimonios) + faq(c.faq) + perfiles(c.perfiles) + cotizacion(c))
     .replace('<!--FOOTER-->', footer(c));
 }

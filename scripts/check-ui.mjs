@@ -1,6 +1,5 @@
-// Prueba rápida de la interfaz sobre el build (npm run build && node scripts/check-ui.mjs):
-// menú (abre, Escape cierra, ancla lleva a la etapa), HUD clicable, validación del formulario,
-// selector de perfil, modo estático y modo "cortes" (reduced motion). Guarda capturas en docs/capturas/ui-*.
+// Prueba de la interfaz sobre el build (npm run build && npm run probar).
+// Guarda capturas en docs/capturas/ui-*.
 import { existsSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
@@ -12,8 +11,14 @@ mkdirSync(new URL('../docs/capturas/', import.meta.url), { recursive: true });
 const server = await preview({ preview: { port: 4180, strictPort: true }, logLevel: 'warn' });
 const base = 'http://localhost:4180/';
 const browser = await chromium.launch({ executablePath: CHROME, headless: false, args: ['--ignore-gpu-blocklist'] });
-const ok = (cond, msg) => console.log(`${cond ? '✔' : '✘'} ${msg}`);
+let fails = 0;
+const ok = (cond, msg) => {
+  if (!cond) fails++;
+  console.log(`${cond ? '✔' : '✘'} ${msg}`);
+};
 const errors = [];
+const DESKTOP = { viewport: { width: 1440, height: 900 } };
+const MOBILE = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 };
 
 async function page(opts, q = '?medir=1') {
   const ctx = await browser.newContext(opts);
@@ -25,11 +30,16 @@ async function page(opts, q = '?medir=1') {
   await p.waitForTimeout(500);
   return { ctx, p };
 }
+const uNow = (p) => p.evaluate(() => window.__journey.proxy.u);
+const loadedStages = (p) =>
+  p.evaluate(() => [...document.querySelectorAll('.etapa')].map((s) => [...s.querySelectorAll('.foto img')].some((i) => i.getAttribute('src'))).flatMap((v, i) => (v ? [i] : [])));
 
-// ---------- mobile: menú ----------
+// ---------- mobile: menú, anclas, carga de fotos ----------
 {
-  const { ctx, p } = await page({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+  const { ctx, p } = await page(MOBILE);
   ok(!(await p.isVisible('.header__cta')), 'mobile: el CTA del header se oculta (queda el del contenido)');
+  const first = await loadedStages(p);
+  ok(first.length === 1 && first[0] === 1, `fotos: al entrar solo se pidió la siguiente etapa (etapas con foto: ${first.join(', ') || 'ninguna'})`);
   await p.click('.menu-btn');
   await p.waitForTimeout(400);
   ok(await p.isVisible('#menu'), 'mobile: el menú abre');
@@ -41,37 +51,50 @@ async function page(opts, q = '?medir=1') {
   await p.waitForTimeout(300);
   await p.click('#menu a[href="#aduana"]');
   await p.waitForTimeout(3800);
-  const u = await p.evaluate(() => window.__stage.u);
-  ok(Math.abs(u - 6.5) < 0.08, `mobile: el ancla "Aduana" lleva la cámara a su estación (u=${u.toFixed(2)})`);
+  const u = await uNow(p);
+  ok(Math.abs(u - 7.4) < 0.06, `mobile: el ancla "Aduana" lleva a su etapa (u=${u.toFixed(2)})`);
+  const after = await loadedStages(p);
+  ok(after.includes(7) && after.includes(8) && !after.includes(4), `fotos: cargadas la actual y la siguiente, no las intermedias (${after.join(', ')})`);
   await p.screenshot({ path: shot('ancla-aduana-mobile'), type: 'jpeg', quality: 75 });
   await ctx.close();
 }
 
-// ---------- desktop: HUD, formulario, perfiles ----------
+// ---------- desktop: HUD compacto, mapita, formulario, perfiles ----------
 {
-  const { ctx, p } = await page({ viewport: { width: 1440, height: 900 } });
-  await p.click('.hud a[href="#calidad"]');
+  const { ctx, p } = await page(DESKTOP);
+  ok(await p.evaluate(() => document.documentElement.classList.contains('is-map-off')), 'mapita: oculto mientras se ve el globo del hero');
+  await p.click('.tracker__toggle');
+  ok((await p.getAttribute('.tracker__toggle', 'aria-expanded')) === 'true' && (await p.isVisible('#tracker-list')), 'HUD: el botón despliega los 11 estados (aria-expanded=true)');
+  ok((await p.$$eval('#tracker-list li', (l) => l.length)) === 11, 'HUD: la lista tiene 11 estados');
+  await p.keyboard.press('Escape');
+  ok((await p.isHidden('#tracker-list')) && (await p.evaluate(() => document.activeElement?.classList.contains('tracker__toggle'))), 'HUD: Escape cierra y devuelve el foco al botón');
+  await p.click('.tracker__toggle');
+  await p.click('#tracker-list a[href="#calidad"]');
   await p.waitForTimeout(3500);
-  const u = await p.evaluate(() => window.__stage.u);
-  ok(Math.abs(u - 3.5) < 0.08, `desktop: el HUD "Calidad verificada" lleva a la estación 03 (u=${u.toFixed(2)})`);
-  await p.click('.hud a[data-u="4.8"]');
+  let u = await uNow(p);
+  ok(Math.abs(u - 4.4) < 0.06, `HUD: "Calidad verificada" lleva a la etapa 04 (u=${u.toFixed(2)})`);
+  ok(await p.isHidden('#tracker-list'), 'HUD: la lista se cierra al elegir un estado');
+  await p.click('.tracker__toggle');
+  await p.click('#tracker-list a[data-u="5.82"]');
   await p.waitForTimeout(2500);
-  const u2 = await p.evaluate(() => window.__stage.u);
-  ok(Math.abs(u2 - 4.8) < 0.08, `desktop: el HUD "Embarcado" lleva al sub-estado (u=${u2.toFixed(2)})`);
-  const now = await p.textContent('.hud__list .is-now');
-  ok(now.trim() === 'Embarcado', `desktop: el HUD marca el estado actual ("${now.trim()}")`);
+  u = await uNow(p);
+  ok(Math.abs(u - 5.82) < 0.06, `HUD: "Embarcado" lleva al sub-estado (u=${u.toFixed(2)})`);
+  const now = (await p.textContent('.tracker__now')).trim();
+  ok(now === 'Embarcado', `HUD: la línea compacta muestra el estado actual ("${(await p.textContent('.tracker__count')).trim()} · ${now}")`);
+  const lit = await p.$$eval('.tracker__stop.is-on', (l) => l.length);
+  ok(lit === 5, `mapita: puntos encendidos hasta la etapa actual (${lit} de 8)`);
+  await p.evaluate(() => window.__journey.seek(6.45));
+  await p.waitForTimeout(700);
+  ok(await p.evaluate(() => document.documentElement.classList.contains('is-map-big')), 'mapita: en tránsito se agranda y muestra [DÍAS DE TRÁNSITO]');
+  await p.screenshot({ path: shot('mapa-transito'), type: 'jpeg', quality: 75 });
 
   await p.click('.nav a[href="#preguntas"]');
   await p.waitForTimeout(3500);
-  ok(await p.evaluate(() => document.documentElement.classList.contains('is-past')), 'desktop: al pasar el 3D se ocultan HUD y textos fijos');
-  await p.click('#preguntas summary');
-  await p.screenshot({ path: shot('faq'), type: 'jpeg', quality: 75 });
-
+  ok(await p.evaluate(() => document.documentElement.classList.contains('is-past')), 'desktop: al pasar el recorrido se ocultan tracker y textos fijos');
   await p.click('.profile[data-perfil="emprendedor-quemado"]');
   await p.waitForTimeout(2500);
   const [problema, perfil] = await p.evaluate(() => [document.getElementById('f-problema').value, document.getElementById('f-perfil').value]);
   ok(problema === 'Calidad' && perfil === 'emprendedor-quemado', `perfil: completa "Mayor problema" = ${problema} · perfil = ${perfil}`);
-
   await p.click('#form-cotizar button[type="submit"]');
   await p.waitForTimeout(300);
   const errs = await p.$$eval('.field__error', (els) => els.filter((e) => e.textContent).length);
@@ -84,15 +107,13 @@ async function page(opts, q = '?medir=1') {
   await p.fill('#f-producto', 'Herramientas eléctricas, 2 contenedores');
   await p.click('#form-cotizar button[type="submit"]');
   await p.waitForTimeout(400);
-  const status = await p.textContent('.form__status');
-  ok(/endpoint/i.test(status), 'formulario: sin endpoint configurado avisa y ofrece WhatsApp');
+  ok(/endpoint/i.test(await p.textContent('.form__status')), 'formulario: sin endpoint configurado avisa y ofrece WhatsApp');
   const wa = await p.getAttribute('.form__status a', 'href');
   ok(wa?.startsWith('https://wa.me/584228368275?text='), 'formulario: el enlace de WhatsApp lleva el mensaje prearmado con los datos');
-  await p.screenshot({ path: shot('formulario'), type: 'jpeg', quality: 75 });
   await ctx.close();
 }
 
-// ---------- globo: no se superpone al texto ni al HUD ----------
+// ---------- globo: no se superpone al texto ----------
 for (const [w, h] of [
   [1920, 1080],
   [1440, 900],
@@ -100,50 +121,60 @@ for (const [w, h] of [
   [1024, 768],
 ]) {
   const { ctx, p } = await page({ viewport: { width: w, height: h } });
-  for (const u of [0.5, 8.5]) {
+  for (const u of [0.3, 9.7]) {
     await p.evaluate((u) => window.__journey.seek(u), u);
     await p.waitForTimeout(300);
     const r = await p.evaluate((u) => {
       const s = window.__stage;
-      const g = s.world.sets.globe.group;
+      const g = s.scene.children[0];
       const spin = g.children[0];
       const c = g.getWorldPosition(new s.camera.position.constructor());
       const d = c.distanceTo(s.camera.position);
       const R = 10 * spin.scale.x;
       const v = c.clone().project(s.camera);
       const cx = ((v.x + 1) / 2) * innerWidth;
-      const cy = ((1 - v.y) / 2) * innerHeight;
       const rpx = (Math.tan(Math.asin(R / d)) / Math.tan((s.camera.fov * Math.PI) / 360)) * (innerHeight / 2);
       const inner = document.querySelectorAll('.etapa__inner')[Math.floor(u)].getBoundingClientRect();
-      const hud = document.querySelector('.hud');
-      const hudOn = getComputedStyle(hud).opacity !== '0';
-      const hr = hud.getBoundingClientRect();
-      return { left: cx - rpx, right: cx + rpx, textRight: inner.right, hudLeft: hudOn ? hr.left : null };
+      return { left: cx - rpx, right: cx + rpx, textRight: inner.right };
     }, u);
-    const clearText = r.left >= r.textRight - 1;
-    const clearHud = r.hudLeft == null || r.right <= r.hudLeft + 1;
-    ok(clearText && clearHud, `globo ${w}×${h} u=${u}: ${Math.round(r.left)}–${Math.round(r.right)} px · texto hasta ${Math.round(r.textRight)} · HUD desde ${r.hudLeft == null ? 'oculto' : Math.round(r.hudLeft)}`);
-    if (u === 0.5 && w === 1440) await p.screenshot({ path: shot('hero-1440'), type: 'jpeg', quality: 75 });
+    ok(r.left >= r.textRight - 1 && r.right <= w, `globo ${w}×${h} u=${u}: ${Math.round(r.left)}–${Math.round(r.right)} px · texto hasta ${Math.round(r.textRight)}`);
   }
   await ctx.close();
 }
 
 // ---------- modos alternativos ----------
 {
-  const { ctx, p } = await page({ viewport: { width: 1440, height: 900 } }, '?modo=estatico');
-  ok(await p.evaluate(() => document.documentElement.classList.contains('is-static')), 'estático: ?modo=estatico usa la versión sin 3D');
-  await p.screenshot({ path: shot('estatico'), type: 'jpeg', quality: 75 });
+  const { ctx, p } = await page(DESKTOP, '?modo=estatico');
+  const st = await p.evaluate(() => ({
+    static: document.documentElement.classList.contains('is-static'),
+    pos: getComputedStyle(document.querySelector('.foto')).position,
+    imgs: [...document.querySelectorAll('.foto img')].filter((i) => i.getAttribute('src')).length,
+    globe: getComputedStyle(document.querySelector('.globo-img')).display,
+  }));
+  ok(st.static && st.pos === 'static' && st.imgs >= 13 && st.globe === 'block', `estático: fotos y textos apilados, sin pin (${st.imgs} fotos, globo como imagen)`);
+  await p.screenshot({ path: shot('estatico'), type: 'jpeg', quality: 75, fullPage: false });
   await ctx.close();
 }
 {
-  const { ctx, p } = await page({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
-  await p.evaluate(() => window.scrollTo(0, window.__journey.scrollForU(2.2)));
-  await p.waitForTimeout(800);
-  const u = await p.evaluate(() => window.__stage.u);
-  ok(Math.abs(u - 2.5) < 1e-3, `reduced motion: la cámara salta a la estación sin volar (u=${u})`);
+  const { ctx, p } = await page(DESKTOP, '?medir=1&modo=liviano');
+  const r = await p.evaluate(() => ({ noGlobe: document.documentElement.classList.contains('no-globe'), stage: Boolean(window.__stage), vis: getComputedStyle(document.querySelector('.globo-img[data-cual="hero"]')).visibility }));
+  ok(r.noGlobe && !r.stage && r.vis === 'visible', 'gama baja: no carga Three.js y muestra el globo como imagen fija');
+  await p.screenshot({ path: shot('globo-imagen'), type: 'jpeg', quality: 75 });
+  await ctx.close();
+}
+{
+  const { ctx, p } = await page({ ...DESKTOP, reducedMotion: 'reduce' });
+  await p.evaluate(() => window.__journey.seek(2.4));
+  await p.waitForTimeout(400);
+  const r = await p.evaluate(() => {
+    const fig = document.querySelector('.foto[data-etapa="2"]');
+    return { t: getComputedStyle(fig.querySelector('img')).transform, clip: getComputedStyle(fig).clipPath, op: getComputedStyle(fig).opacity };
+  });
+  ok(r.t === 'none' && r.clip === 'none' && r.op === '1', `reduced motion: solo fundidos, sin zoom ni recortes (transform=${r.t}, clip=${r.clip})`);
   await ctx.close();
 }
 
 ok(errors.length === 0, `sin errores de consola${errors.length ? ': ' + errors.join(' | ') : ''}`);
+console.log(fails ? `\n${fails} pruebas fallidas` : '\nTodas las pruebas pasan');
 await browser.close();
 await server.close();

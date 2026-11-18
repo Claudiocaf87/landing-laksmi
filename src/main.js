@@ -24,17 +24,17 @@ function hasWebGL2() {
 }
 
 // --- capacidades del dispositivo ---
+// El recorrido fotográfico funciona en todos lados; el 3D es solo el globo.
+// Sin WebGL, con ahorro de datos o en gama baja, el globo se reemplaza por su imagen fija.
 const conn = navigator.connection || {};
 const saveData = conn.saveData === true || /(^|-)2g$/.test(conn.effectiveType || '');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches || modo === 'cortes';
-const coarse = window.matchMedia('(pointer: coarse)').matches;
-const lowEnd = (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4;
-const lite = modo === 'liviano' || coarse || lowEnd;
-const want3D = modo !== 'estatico' && !saveData && hasWebGL2();
-root.classList.toggle('is-lite', lite);
+const lowEnd = modo === 'liviano' || (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4;
+const isStatic = modo === 'estatico';
+const want3D = !isStatic && !saveData && !lowEnd && hasWebGL2();
+root.classList.toggle('no-globe', !want3D);
 
 initForm(content);
-
 const goTo = (id) => {
   if (journey) journey.goTo(id);
   else document.getElementById(id)?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' });
@@ -46,33 +46,51 @@ initMenu({
 });
 initProfiles(goTo);
 
+// versión estática: fotos y textos apilados (carga diferida nativa)
+function loadStatic() {
+  document.querySelectorAll('.etapa picture').forEach((pic) => {
+    pic.querySelectorAll('source[data-srcset]').forEach((s) => (s.srcset = s.dataset.srcset));
+    const img = pic.querySelector('img[data-src]');
+    if (img) {
+      img.loading = 'lazy';
+      img.src = img.dataset.src;
+    }
+  });
+}
+
 async function boot() {
   const loader = createLoader();
-  if (!want3D) {
+  if (isStatic) {
     root.classList.add('is-static');
+    loadStatic();
     await loader.done();
     return;
   }
   try {
-    loader.set(0.04);
-    await document.fonts.ready;
     loader.set(0.1);
-    const [{ Stage }, { createJourney }] = await Promise.all([import('./scene/Stage.js'), import('./journey.js')]);
-    loader.set(0.25);
-    stage = new Stage(document.querySelector('.stage'), {
-      lite,
-      snap: reducedMotion,
-      veil: document.querySelector('.veil'),
-      onProgress: (p) => loader.set(0.25 + p * 0.75),
-    });
-    await stage.build();
-    journey = createJourney(stage, content);
+    const jsP = import('./journey.js');
+    if (want3D) {
+      try {
+        const { Stage } = await import('./scene/Stage.js');
+        loader.set(0.35);
+        stage = new Stage(document.querySelector('.stage'), { snap: reducedMotion, onProgress: (p) => loader.set(0.35 + p * 0.6) });
+        await stage.build();
+      } catch (err) {
+        console.error('[globo] no se pudo iniciar; se usa la imagen fija', err);
+        stage = null;
+        root.classList.add('no-globe');
+      }
+    }
+    await document.fonts.ready;
+    const { createJourney } = await jsP;
+    journey = createJourney({ stage, content, reduced: reducedMotion });
     if (import.meta.env.DEV || measure) Object.assign(window, { __stage: stage, __journey: journey });
     await loader.done();
   } catch (err) {
-    console.error('[3d] no se pudo iniciar; se usa la versión estática', err);
+    console.error('[recorrido] no se pudo iniciar; se usa la versión estática', err);
     root.classList.remove('is-journey');
     root.classList.add('is-static');
+    loadStatic();
     await loader.done();
   }
 }

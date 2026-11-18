@@ -5,22 +5,27 @@ import Lenis from 'lenis';
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.config({ ignoreMobileResize: true });
 
+// Recorte de entrada de la primera foto de cada etapa (todas atadas al scroll).
+const REVEAL = {
+  circulo: ['circle(0% at 50% 50%)', 'circle(75% at 50% 50%)'],
+  diagonal: ['polygon(0% 0%, 0% 0%, -40% 100%, -40% 100%)', 'polygon(0% 0%, 140% 0%, 100% 100%, -40% 100%)'],
+};
+const STOP_F = [0, 0.05, 0.1, 0.15, 0.2, 0.55, 0.84, 1]; // fracción del mapita en la que cae cada etapa 01 … 08
+
 // Timeline maestra: el scroll de .journey avanza "u" de 0 a N (una unidad por etapa).
-// En la misma timeline entran y salen los textos, corren los contadores y avanza el minimapa.
-// Un solo loop (ticker de GSAP) mueve Lenis, la escena 3D y el HUD.
-export function createJourney(stage, content) {
+// En la misma timeline entran las fotos (pin = capas fijas), los textos, los pasos y los contadores.
+// Un solo loop (ticker de GSAP) mueve Lenis, el globo, el mapita y el HUD.
+export function createJourney({ stage = null, content, reduced = false }) {
   const root = document.documentElement;
   const journey = document.querySelector('.journey');
   const sections = [...journey.querySelectorAll('.etapa')];
   const N = sections.length;
   const estados = content.hud.estados;
-  root.classList.add('is-journey'); // activa el layout del recorrido antes de medir
+  root.classList.add('is-journey');
 
-  // --- scroll suave ---
   const lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 0.9, touchMultiplier: 1.3 });
   lenis.on('scroll', ScrollTrigger.update);
 
-  // --- timeline maestra ---
   const proxy = { u: 0 };
   const tl = gsap.timeline({
     defaults: { ease: 'none' },
@@ -28,54 +33,108 @@ export function createJourney(stage, content) {
   });
   tl.to(proxy, { u: N, duration: N }, 0);
 
+  const desdeDe = (texto) => estados.find((s) => s.texto === texto)?.desde;
+
   sections.forEach((sec, i) => {
+    // ---------- fotos ----------
+    const figs = [...sec.querySelectorAll('.foto:not(.foto--recorte)')];
+    const n = figs.length;
+    figs.forEach((fig, k) => {
+      const img = fig.querySelector('img');
+      const start = i + k / n; // momento en que esta foto ocupa la pantalla
+      const tin = k === 0 ? i - 0.14 : start - 0.08; // entra un poco antes: nunca hay pantalla vacía
+      const end = i + 1.14; // la tapa la etapa siguiente
+      const type = fig.dataset.transicion;
+      tl.set(fig, { visibility: 'visible' }, tin);
+      if (reduced) {
+        tl.fromTo(fig, { opacity: 0 }, { opacity: 1, duration: 0.12 }, tin);
+      } else {
+        if (REVEAL[type]) tl.fromTo(fig, { clipPath: REVEAL[type][0] }, { clipPath: REVEAL[type][1], duration: 0.2, ease: 'power2.inOut' }, tin);
+        else if (type === 'lateral') tl.fromTo(fig, { opacity: 0, xPercent: 7 }, { opacity: 1, xPercent: 0, duration: 0.2, ease: 'power2.out' }, tin);
+        else tl.fromTo(fig, { opacity: 0 }, { opacity: 1, duration: 0.16 }, tin);
+        // zoom lento tipo Ken Burns (con un leve desplazamiento lateral alternado)
+        tl.fromTo(img, { scale: 1.12, xPercent: k % 2 ? -1.5 : 1.5 }, { scale: 1, xPercent: 0, duration: end - tin }, tin);
+      }
+      tl.set(fig, { visibility: 'hidden' }, end + 0.02);
+    });
+
+    // persona con la caja → la cámara se aleja al globo del cierre
+    const rec = sec.querySelector('.foto--recorte');
+    if (rec) {
+      const person = rec.querySelector('.recorte');
+      tl.set(rec, { visibility: 'visible' }, i - 0.14);
+      tl.fromTo(rec, { opacity: 0 }, { opacity: 1, duration: 0.16 }, i - 0.14);
+      if (!reduced) {
+        tl.fromTo(person, { yPercent: 12, scale: 0.96 }, { yPercent: -3, scale: 1.04, duration: 0.42 }, i - 0.1);
+        tl.to(person, { scale: 0.62, yPercent: -10, opacity: 0, duration: 0.12, ease: 'power2.in' }, i + 0.3);
+      } else tl.to(person, { opacity: 0, duration: 0.1 }, i + 0.3);
+      tl.to(rec, { opacity: 0, duration: 0.12 }, i + 0.32);
+      tl.set(rec, { visibility: 'hidden' }, i + 0.45);
+    }
+
+    // ---------- textos ----------
     const inner = sec.querySelector('.etapa__inner');
     const last = i === N - 1;
-    if (i > 0) tl.fromTo(inner, { autoAlpha: 0, y: 60 }, { autoAlpha: 1, y: 0, duration: 0.14, ease: 'power2.out' }, i + 0.04);
-    if (!last) tl.to(inner, { autoAlpha: 0, y: -70, duration: 0.14, ease: 'power2.in' }, i + 0.78);
+    // en el cierre, la persona con la caja tiene su momento sola: el texto entra con el globo
+    const textIn = rec ? i + 0.3 : i + 0.05;
+    if (i > 0) tl.fromTo(inner, { autoAlpha: 0, y: reduced ? 0 : 50 }, { autoAlpha: 1, y: 0, duration: 0.12, ease: 'power2.out' }, textIn);
+    if (!last) tl.to(inner, { autoAlpha: 0, y: reduced ? 0 : -50, duration: 0.12, ease: 'power2.in' }, i + 0.84);
+
+    // pasos: el texto cambia junto con el estado del HUD
+    const pasos = [...sec.querySelectorAll('.pasos li')];
+    pasos.forEach((li, k) => {
+      if (k === 0) return;
+      const at = desdeDe(li.querySelector('strong').textContent) ?? i + k / pasos.length;
+      tl.to(pasos[k - 1], { autoAlpha: 0, duration: 0.06 }, at - 0.04);
+      tl.fromTo(li, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.06 }, at);
+    });
 
     // contadores: solo animan si el valor es un número (los placeholders quedan como texto)
     sec.querySelectorAll('[data-count]').forEach((el, k) => {
       const target = Number(el.dataset.count);
       if (!Number.isFinite(target)) return;
       const o = { v: 0 };
-      tl.fromTo(o, { v: 0 }, { v: target, duration: 0.3, onUpdate: () => (el.textContent = Math.round(o.v).toLocaleString('es-VE')) }, i + 0.08 + k * 0.03);
+      const at = last ? i + 0.34 : i + 0.1;
+      tl.fromTo(o, { v: 0 }, { v: target, duration: 0.25, onUpdate: () => (el.textContent = Math.round(o.v).toLocaleString('es-VE')) }, at + k * 0.03);
     });
   });
 
-  // minimapa de la etapa 05: el barco recorre la ruta
-  const route = document.querySelector('.minimap__done');
-  const shipDot = document.querySelector('.minimap__ship');
-  const path = document.querySelector('.minimap__route');
-  const mapIdx = sections.findIndex((s) => s.querySelector('.minimap'));
-  if (route && path && mapIdx >= 0) {
-    const len = path.getTotalLength();
-    const m = { p: 0 };
-    const draw = () => {
-      route.style.strokeDashoffset = String(1 - m.p);
-      const pt = path.getPointAtLength(m.p * len);
-      shipDot.setAttribute('cx', pt.x.toFixed(1));
-      shipDot.setAttribute('cy', pt.y.toFixed(1));
-    };
-    tl.fromTo(m, { p: 0 }, { p: 1, duration: 0.9, onUpdate: draw }, mapIdx + 0.05);
-    draw();
+  // globo como imagen fija (sin WebGL, saveData o gama baja)
+  if (!stage) {
+    const hero = document.querySelector('.globo-img[data-cual="hero"]');
+    const cierre = document.querySelector('.globo-img[data-cual="cierre"]');
+    if (hero) tl.fromTo(hero, { autoAlpha: 1 }, { autoAlpha: 0, duration: 0.1, immediateRender: true }, 1.0);
+    if (cierre) tl.fromTo(cierre, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.12 }, N - 1 + 0.3);
   }
 
-  // --- navegación: cada ancla lleva la cámara a la estación de su etapa ---
+  // ---------- navegación: cada ancla lleva a la estación de su etapa ----------
   const scrollable = () => journey.offsetHeight - window.innerHeight;
   const scrollForU = (u) => journey.offsetTop + (u / N) * scrollable();
+  let navigating = false;
+  let active = -1;
+  const station = (i) => (i === 0 ? 0 : i === N - 1 ? i + 0.7 : i + 0.4);
   const goTo = (target, { immediate = false, u = null } = {}) => {
     const i = sections.findIndex((s) => s.id === target);
     let to;
     if (u != null) to = scrollForU(u);
-    else if (i >= 0) to = scrollForU(i === 0 ? 0 : i + 0.5);
+    else if (i >= 0) to = scrollForU(station(i));
     else {
       const el = document.getElementById(target);
       if (!el) return;
       to = el.getBoundingClientRect().top + window.scrollY;
     }
     const dist = Math.abs(to - window.scrollY) / window.innerHeight;
-    lenis.scrollTo(to, { duration: Math.min(3.2, Math.max(1, dist / 3)), immediate: immediate || stage.snap, force: true });
+    // durante el salto no se piden las fotos de las etapas que pasan de largo
+    navigating = !(immediate || reduced);
+    lenis.scrollTo(to, {
+      duration: Math.min(3.2, Math.max(1, dist / 3)),
+      immediate: immediate || reduced,
+      force: true,
+      onComplete: () => {
+        navigating = false;
+        active = -1; // fuerza la carga de la etapa de destino y la siguiente
+      },
+    });
   };
 
   document.addEventListener('click', (e) => {
@@ -88,71 +147,140 @@ export function createJourney(stage, content) {
     goTo(id, { u: a.dataset.u ? Number(a.dataset.u) : null });
     history.replaceState(null, '', `#${id}`);
   });
-
-  // con teclado: si el foco entra en una etapa, la cámara va hasta ahí
   journey.addEventListener('focusin', (e) => {
     const sec = e.target.closest('.etapa');
     if (sec && Math.floor(proxy.u) !== Number(sec.dataset.etapa)) goTo(sec.id, { immediate: true });
   });
 
-  // --- HUD ---
-  const hud = document.querySelector('.hud');
-  const hudItems = [...hud.querySelectorAll('.hud__list li')];
-  const hudNow = hud.querySelector('.hud__now');
-  const hudCount = hud.querySelector('.hud__count');
-  const hudBar = hud.querySelector('.hud__bar span');
-  const hint = document.querySelector('.scroll-hint');
+  // ---------- carga de fotos: solo la etapa actual y la siguiente ----------
+  const loaded = new Set();
+  const loadStage = (i) => {
+    if (i < 0 || i >= N || loaded.has(i)) return;
+    loaded.add(i);
+    sections[i].querySelectorAll('picture').forEach((pic) => {
+      if (pic.closest('.globo-img') && stage) return; // con globo 3D no hace falta la imagen
+      pic.querySelectorAll('source[data-srcset]').forEach((s) => (s.srcset = s.dataset.srcset));
+      const img = pic.querySelector('img[data-src]');
+      if (img) img.src = img.dataset.src;
+    });
+  };
+
+  // ---------- mapita + HUD compacto ----------
+  const tracker = document.querySelector('.tracker');
+  const route = tracker.querySelector('.tracker__route');
+  const done = tracker.querySelector('.tracker__done');
+  const ship = tracker.querySelector('.tracker__ship');
+  const stops = [...tracker.querySelectorAll('.tracker__stop')];
+  const len = route.getTotalLength();
+  const pointAt = (f) => route.getPointAtLength(Math.min(1, Math.max(0, f)) * len);
+  stops.forEach((c) => {
+    const p = pointAt(Number(c.dataset.f));
+    c.setAttribute('cx', p.x.toFixed(1));
+    c.setAttribute('cy', p.y.toFixed(1));
+  });
+  const routeFraction = (u) => {
+    if (u <= 1) return 0;
+    if (u >= 8.5) return 1;
+    const j = Math.floor(u); // etapa 1 … 8
+    const a = STOP_F[j - 1];
+    const b = j < 8 ? STOP_F[j] : 1;
+    return a + (b - a) * Math.min(1, (u - j) / (j < 8 ? 1 : 0.5));
+  };
+  const toggle = tracker.querySelector('.tracker__toggle');
+  const panel = tracker.querySelector('.tracker__panel');
+  const hudItems = [...panel.querySelectorAll('li')];
+  const hudNow = tracker.querySelector('.tracker__now');
+  const hudCount = tracker.querySelector('.tracker__count');
+  const hudBar = tracker.querySelector('.tracker__bar span');
+  const setOpen = (open) => {
+    panel.hidden = !open;
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? content.ui.cerrarSeguimiento : content.ui.seguimiento);
+    if (open) (panel.querySelector('[aria-current]') || panel.querySelector('a'))?.focus();
+  };
+  toggle.addEventListener('click', () => setOpen(panel.hidden));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !panel.hidden) {
+      setOpen(false);
+      toggle.focus();
+    }
+  });
+  document.addEventListener('click', (e) => {
+    if (!panel.hidden && !tracker.contains(e.target)) setOpen(false);
+  });
+  document.addEventListener('nav:go', () => !panel.hidden && setOpen(false));
+
   const navLinks = [...document.querySelectorAll('.menu__list a')];
+  const hint = document.querySelector('.scroll-hint');
   let step = -1;
-  let active = -1;
-  let past = null;
+  let flags = '';
 
   const tick = (time, deltaMs) => {
     lenis.raf(time * 1000);
-    stage.setTarget(proxy.u);
-    stage.tick(Math.min(deltaMs, 100) / 1000, N);
-    const u = stage.u;
+    const u = proxy.u;
+    if (stage) {
+      stage.setTarget(u);
+      stage.tick(Math.min(deltaMs, 100) / 1000);
+    }
 
     // estado de seguimiento
     let s = 0;
-    for (let i = 0; i < estados.length; i++) if (u >= estados[i].desde) s = i;
+    for (let k = 0; k < estados.length; k++) if (u >= estados[k].desde) s = k;
     if (s !== step) {
       step = s;
-      hudItems.forEach((li, i) => {
-        li.classList.toggle('is-done', i < s);
-        li.classList.toggle('is-now', i === s);
+      hudItems.forEach((li, k) => {
+        li.classList.toggle('is-done', k < s);
+        li.classList.toggle('is-now', k === s);
         const a = li.querySelector('a');
-        if (i === s) a.setAttribute('aria-current', 'step');
+        if (k === s) a.setAttribute('aria-current', 'step');
         else a.removeAttribute('aria-current');
       });
       hudNow.textContent = estados[s].texto;
       hudCount.textContent = `${s + 1}/${estados.length}`;
     }
-    hudBar.style.transform = `scaleX(${Math.min(1, u / N).toFixed(4)})`;
+    hudBar.style.transform = `scaleX(${Math.min(1, u / (N - 1)).toFixed(4)})`;
 
-    // etapa activa (para pointer-events y el menú)
-    const idx = Math.min(N - 1, Math.floor(proxy.u));
+    // mapita: el trazo dorado avanza y se encienden los puntos de etapa
+    const f = routeFraction(u);
+    done.style.strokeDashoffset = String(1 - f);
+    const p = pointAt(f);
+    ship.setAttribute('cx', p.x.toFixed(1));
+    ship.setAttribute('cy', p.y.toFixed(1));
+
+    const idx = Math.min(N - 1, Math.floor(u));
     if (idx !== active) {
       active = idx;
-      sections.forEach((sec, i) => sec.classList.toggle('is-active', i === idx));
+      sections.forEach((sec, k) => sec.classList.toggle('is-active', k === idx));
       navLinks.forEach((l) => (l.getAttribute('href') === `#${sections[idx].id}` ? l.setAttribute('aria-current', 'true') : l.removeAttribute('aria-current')));
+      stops.forEach((c) => c.classList.toggle('is-on', Number(c.dataset.etapa) <= idx));
     }
-    const isPast = proxy.u >= N - 0.001 && window.scrollY > journey.offsetTop + journey.offsetHeight - window.innerHeight * 0.98;
-    if (isPast !== past) {
-      past = isPast;
-      root.classList.toggle('is-past', isPast);
+    if (!navigating) {
+      loadStage(idx);
+      loadStage(idx + 1);
     }
-    hint.style.opacity = proxy.u < 0.02 ? '' : '0';
+    const past = u >= N - 0.001 && window.scrollY > journey.offsetTop + journey.offsetHeight - window.innerHeight * 0.98;
+    const mapOff = u < 0.92 || u >= N - 1 - 0.02;
+    const big = sections[idx]?.dataset.mapa === 'grande' && u - idx > 0.06 && u - idx < 0.86;
+    const next = `${past}|${mapOff}|${big}`;
+    if (next !== flags) {
+      flags = next;
+      root.classList.toggle('is-past', past);
+      root.classList.toggle('is-map-off', mapOff);
+      root.classList.toggle('is-map-big', big);
+    }
+    hint.style.opacity = u < 0.02 ? '' : '0';
   };
   gsap.ticker.add(tick);
   gsap.ticker.lagSmoothing(0);
+  loadStage(0);
+  loadStage(1);
 
   ScrollTrigger.refresh();
   const startId = location.hash.slice(1);
   if (startId && document.getElementById(startId)) {
     goTo(startId, { immediate: true });
     ScrollTrigger.update();
-    stage.jump(proxy.u);
+    stage?.jump(proxy.u);
   }
 
   // para medir/probar: lleva el recorrido a un u exacto y dibuja ese fotograma
@@ -161,9 +289,10 @@ export function createJourney(stage, content) {
     ScrollTrigger.update();
     tl.scrollTrigger.scroll(scrollForU(u));
     tl.progress(u / N);
-    stage.jump(u);
+    stage?.jump(u);
     gsap.ticker.tick();
   };
+  const loadAll = () => sections.forEach((_, k) => loadStage(k));
 
-  return { lenis, tl, proxy, goTo, N, scrollForU, seek };
+  return { lenis, tl, proxy, goTo, N, scrollForU, seek, loadAll, station };
 }

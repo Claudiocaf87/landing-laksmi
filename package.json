@@ -1,7 +1,7 @@
 {
   "name": "landing-laksmi",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,8 @@
     "peso": "node scripts/size.mjs",
     "probar": "node scripts/check-ui.mjs",
     "contraste": "node scripts/contrast.mjs",
-    "imagenes": "python scripts/optimizar-imagenes.py"
+    "imagenes": "python scripts/optimizar-imagenes.py",
+    "globo-imagen": "node scripts/capturar-globo.mjs"
   },
   "dependencies": {
     "gsap": "^3.15.1",

@@ -33,6 +33,8 @@ for (const vp of viewports) {
   const page = await ctx.newPage();
   await page.goto('http://localhost:4181/?medir=1');
   await page.waitForFunction(() => window.__journey && !document.querySelector('.loader'), null, { timeout: 60000 });
+  await page.evaluate(() => window.__journey.loadAll()); // todas las fotos, para medir sobre la imagen real
+  await page.waitForTimeout(2500);
   const N = await page.evaluate(() => window.__journey.N);
   console.log(`\n== ${vp.name} ==`);
   for (let j = 0; j < N * OFFSETS.length; j++) {
@@ -42,9 +44,11 @@ for (const vp of viewports) {
     await page.evaluate((u) => window.__journey.seek(u), u);
     await page.waitForTimeout(250);
     const items = await page.evaluate((i) => {
-      const inner = document.querySelectorAll('.etapa__inner')[i];
-      const sel = '.kicker, .etapa__title span, .etapa__sub, .points li, .chips li, .stat dt, .stat dd, .note, .minimap figcaption span, .btn';
-      return [...inner.querySelectorAll(sel)].map((el) => {
+      const inner = document.querySelectorAll('.etapa')[i];
+      const sel = '.kicker, .etapa__title span, .etapa__sub, .pasos strong, .pasos span, .points li, .chips li, .legend li, .stat dt, .stat dd, .note, .btn, .foto__frase';
+      // solo lo que está a la vista en ese momento (los pasos se reemplazan entre sí)
+      const shown = (el) => { for (let n = el; n && n !== inner; n = n.parentElement) { const c = getComputedStyle(n); if (c.visibility === 'hidden' || c.opacity === '0') return false; } return true; };
+      return [...inner.querySelectorAll(sel)].filter(shown).map((el) => {
         const r = el.getBoundingClientRect();
         const cs = getComputedStyle(el);
         const [cr, cg, cb] = cs.color.match(/\d+(\.\d+)?/g).map(Number);
@@ -55,7 +59,7 @@ for (const vp of viewports) {
       });
     }, i);
     // texto transparente → queda solo el fondo
-    await page.addStyleTag({ content: '.etapa__inner, .etapa__inner * { color: transparent !important; } .etapa__inner svg { visibility: hidden; }' }).then((h) => h.evaluate((n) => n.setAttribute('data-tmp', '')));
+    await page.addStyleTag({ content: '.etapa__inner, .etapa__inner *, .foto__frase { color: transparent !important; -webkit-text-fill-color: transparent !important; } .etapa__inner svg { visibility: hidden; }' }).then((h) => h.evaluate((n) => n.setAttribute('data-tmp', '')));
     const png = PNG.sync.read(await page.screenshot({ type: 'png' }));
     await page.evaluate(() => document.querySelectorAll('style[data-tmp]').forEach((s) => s.remove()));
     const dpr = png.width / vp.viewport.width;

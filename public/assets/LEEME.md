@@ -1,57 +1,53 @@
 # Assets reemplazables
 
-Mantené los nombres de archivo para no tocar código. Los textos alternativos están en
-`src/content/es.json → imagenes`. Para regenerar las versiones optimizadas a partir de los
-originales (`assets-fuente/`, fuera de git): `python scripts/optimizar-imagenes.py`.
+La landing es una historia fotográfica guiada por scroll; lo único en 3D es el globo.
+Los textos alternativos, el orden de las fotos y el **punto focal** de cada una están en
+`src/content/es.json` (`etapas[].fotos[]`, `etapas[].recorte`, `rubros.items[]`).
 
-**Reglas generales**
-- Cada imagen va en dos tamaños: `-desktop` y `-mobile`. Las de HTML, en `.avif` + `.webp`.
-  Las texturas del 3D, solo en `.webp`.
-- Nada de esto se carga en el hero. Las texturas 3D se piden después del primer fotograma y las de
-  HTML con `loading="lazy"`. Así la carga inicial no cambia (hoy, ~230 KB gzip de código + 21 KB de datos 3D).
-- Sin metadatos: el script los borra (los exports de Canva traen nombre del autor e IDs de documento).
-- Nunca agrandar: si el original es chico, se publica a su tamaño.
+**Para reemplazar una foto:** poné el original en `assets-fuente/<id>.jpg` (mismo nombre, mínimo
+2000×1116, 16:9) y corré `npm run imagenes`. El script genera las versiones desktop y mobile, en AVIF y
+WebP, sin metadatos y dentro del peso máximo. El recorte vertical para mobile se centra en el punto
+focal de `es.json` (por ejemplo `"60% 40%"` = 60 % desde la izquierda, 40 % desde arriba).
+Si cambia el globo: `npm run build && npm run globo-imagen && npm run imagenes`.
 
-## Estado actual
+**Reglas**
+- Desktop: 1920 px de ancho, ≤ 250 KB. Mobile: 900×1600 (vertical 9:16), ≤ 120 KB. Formato AVIF + WebP.
+- Se carga solo la foto de la etapa actual y la siguiente (nada en el hero salvo el globo).
+- Todas las fotos de esta muestra son **generadas con IA**: no muestran al equipo, a clientes ni a
+  lugares reales de Laksmi, y no llevan leyendas que lo afirmen.
+- Los originales miden 1116 px de alto, así que el recorte vertical de mobile (628 px de ancho)
+  se agranda 1,43× hasta 900 px. Con originales de ≥ 1600 px de alto no haría falta.
 
-Origen: **stock** = banco de imágenes; **IA** = generada. Ninguna muestra al equipo ni a clientes de Laksmi:
-van sin leyendas que afirmen nada (ver `es.json → imagenes.nota`).
+## Fotos (en `fotos/`)
 
-| Archivo | Uso | Medida | Peso máx. | Origen |
+| Archivo (`<id>-desktop|mobile.avif|webp`) | Etapa | Punto focal | Desktop | Mobile |
 |---|---|---|---|---|
-| `logo/logo-color.webp/png` | Header, loader (fondos claros) | 410×234 | 60 KB | marca |
-| `logo/logo-blanco.webp/png` | Footer azul | 410×234 | 40 KB | marca |
-| `logo/favicon.png` | Pestaña | 64×64 | 10 KB | marca |
-| `og/og-laksmi.jpg` | Vista previa al compartir | 1200×630 | 200 KB | IA probable |
-| `data/globo-puntos.bin` | Tierra del globo (Natural Earth) | — | 40 KB | dominio público |
-| `carteles/feria-01-*.webp` | Banderola y stands de la feria | 1024×576 / 512×288 | 120 KB | IA |
-| `carteles/feria-02-*.webp` | Banderola y stands de la feria | 1024×576 / 512×288 | 120 KB | IA |
-| `carteles/negociacion-01-*.webp` | Stands / etapa de negociación | 1024×576 / 512×288 | 120 KB | IA |
-| `carteles/calidad-01-*.webp` | Pantalla de la planta (hasta que llegue el video) | 1024×576 / 512×288 | 120 KB | IA |
-| `carteles/cartel-01-*.webp` | Stand de la feria | 512×288 | 60 KB | stock |
-| `carteles/cartel-02-*.webp` | Stand de la feria | 512×288 | 60 KB | stock |
-| `recortes/persona-caja-*.webp` | Foto recortada en la entrega (trae mesa y caja) | 707×1024 / 354×512 | 250 KB | IA |
-| `fallback/ferias-*.{avif,webp}` | Versión sin 3D | 1200×675 / 640×360 | 120 KB | IA |
-| `fallback/negociacion-*` · `calidad-*` | Versión sin 3D | 1200×675 / 640×360 | 120 KB | IA |
-| `fallback/despacho-*` | Versión sin 3D | 512×288 | 120 KB | stock |
-| `fallback/transito-*` | Versión sin 3D | 1200×675 / 640×360 | 120 KB | IA probable |
+| `plan` | 01 Plan | 40% 35% | 1920×1071 | 900×1600 |
+| `feria-01` | 02 Ferias (1/3) | 40% 40% | 1920×1071 | 900×1600 |
+| `feria-02` | 02 Ferias (2/3) | 60% 40% | 1920×1071 | 900×1600 |
+| `feria-detalle` | 02 Ferias (3/3), frase "Anotamos cada muestra." | 62% 50% | 1920×1071 | 900×1600 |
+| `negociacion` | 03 Negociación (los dos estados) | 52% 40% | 1920×1071 | 900×1600 |
+| `calidad` | 04 Calidad | 55% 42% | 1920×1071 | 900×1600 |
+| `carga` | 05 Despacho (1/3) | 70% 50% | 1920×1071 | 900×1600 |
+| `precinto` | 05 Despacho (2/3) · **provisional**: muestra un candado; reemplazar con el mismo nombre | 58% 55% | 1920×1071 | 900×1600 |
+| `puerto` | 05 Despacho (3/3) | 55% 45% | 1920×1071 | 900×1600 |
+| `transito` | 06 Tránsito (+ mapa grande) | 48% 55% | 1920×1071 | 900×1600 |
+| `aduana` | 07 Aduana | 39% 45% | 1920×1071 | 900×1600 |
+| `entrega` | 08 Entrega | 62% 55% | 1920×1071 | 900×1600 |
+| `persona-caja` | 09 Resultados (PNG recortado, con transparencia) | — | 707×1024 | 497×720 |
+| `globo-hero` · `globo-cierre` | 00 y 09, solo sin WebGL / ahorro de datos / gama baja (capturas del globo 3D) | — | 900×900 | 600×600 |
+| `rubro-automotriz` | Bloque Rubros (cuadrada) | 47% 50% | 800×800 | 480×480 |
 
-**No se publican:** mercado mayorista (artefacto de IA: una manija pegada al portapapeles),
-auto de lujo (muestra el logo de una marca registrada), mapamundi, hombre con tablet y reunión con banderas
-(IA con texto y banderas erróneas), buque cenital (baja resolución).
+`og/og-laksmi.jpg` (1200×630): vista previa al compartir, recortada de `transito`.
+`data/globo-puntos.bin`: tierra del globo (Natural Earth, dominio público; `npm run globo`).
+`logo/`: `logo-color` (fondos claros), `logo-blanco` (footer azul), `favicon.png`.
 
-## Lo que falta (con medidas)
+## Lo que falta
 
-| Archivo | Qué tiene que mostrar | Medida y formato | Peso máx. |
-|---|---|---|---|
-| `recortes/persona-caja.png` | Una persona real (cliente o equipo, con permiso de imagen) abriendo una caja de cartón, de cuerpo entero o de rodillas, vista 3/4, **fondo eliminado**, luz lateral suave. | 1000×2000 px (1:2 vertical), PNG con transparencia; se publica como `.webp` con alfa | 250 KB (webp) |
-| `video/planta.mp4` + `video/planta.webm` | Toma real del equipo en una fábrica o inspeccionando mercancía en China. Loop sin corte visible, **sin audio**, sin texto sobreimpreso. | 1280×720 (16:9), 8–15 s, 24/30 fps; MP4 H.264 ~1,5 Mbps + WebM VP9 | 2,5 MB (mp4) / 2 MB (webm) |
-| `video/planta-poster.webp` | Primer fotograma del video (se muestra mientras carga) | 1280×720 | 80 KB |
-| `carteles/cartel-03` … `cartel-10` | Stands en Feria de Cantón o Mercado de Yiwu, productos por rubro, oficinas en China | 1024×576 (16:9) desktop · 512×288 mobile, WebP | 120 KB |
-| `productos/<rubro>-{desktop,mobile}.webp` | Un producto por rubro: ferretería, médico, automotriz, bisutería, tecnología. Fondo neutro. | 800×800 / 480×480 | 90 KB |
-| `fotos/equipo-*.webp`, `fotos/oficina-*.webp` | Equipo y oficinas reales (Caracas, Margarita, Yiwu, Guangzhou, Ningbo, Shantou) | 1600×1067 (3:2) / 800×533 | 220 KB |
-| `fotos/testimonio-<nombre>.webp` | Retrato de cada testimonio (solo con permiso) | 400×400 | 40 KB |
-| `fotos/feria-canton-*.webp` | **Fotos reales del equipo en la Feria de Cantón** (etapas de ferias y negociación), con leyenda [FERIA, AÑO, QUIÉN ES] | 1600×1067 / 800×533 | 220 KB |
-| `productos/automotriz-*.webp` | Producto del rubro automotriz sin marcas visibles (repuesto, herramienta) | 800×800 / 480×480 | 90 KB |
-| `fallback/<id>-*` restantes | Imagen fija por etapa para la versión sin 3D: se generan como capturas de la escena en la fase 4 | 1200×675 / 640×360 | 120 KB |
-| `logo/logo.svg` | Logo vectorial (versión color y blanca) | SVG | 30 KB |
+| Archivo | Qué tiene que mostrar | Medida y formato |
+|---|---|---|
+| `assets-fuente/precinto.jpg` | Precinto de seguridad real (no un candado) en las puertas de un contenedor | ≥ 2000×1116 |
+| `assets-fuente/rubro-ferreteria.jpg` · `-medico` · `-bisuteria` · `-tecnologia` | Un producto por rubro, fondo claro, sin marcas | ≥ 1200×1200 |
+| Fotos reales del equipo en la Feria de Cantón | Para las etapas de ferias y negociación, con leyenda [FERIA, AÑO, QUIÉN ES] | ≥ 2000 px de ancho |
+| `video/feria.mp4` + `feria.webm` | Si llega un video de la feria: 1280×720, 8–15 s en loop, sin audio | ≤ 2,5 MB / ≤ 2 MB |
+| `logo/logo.svg` | Logo vectorial (color y blanco) | SVG |

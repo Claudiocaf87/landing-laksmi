@@ -1,10 +1,11 @@
-// Medición de rendimiento sobre el build de producción (npm run build && npm run medir).
-// Abre Chrome (con ventana, para usar la GPU real) vía Playwright y mide:
-//   · draw calls y triángulos en cada estación (u = i + 0,5) y el máximo de todo el recorrido
-//   · fps promedio, mínimo (peor ventana de 0,5 s) y 1 % low, normal y con CPU 4x (CDP)
-//   · largo total de scroll en desktop (1440×900) y mobile (390×844, táctil → modo liviano)
-// Guarda capturas en docs/capturas/ y los números en docs/medicion-fase2.json.
-import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+// Medición sobre el build de producción (npm run build && npm run medir).
+// Abre Chrome con ventana (GPU real) vía Playwright y mide:
+//   · peso de la carga inicial (bytes transferidos hasta que el hero está listo, vía CDP)
+//   · fps promedio, mínimo (peor ventana de 0,5 s) y 1 % low, normal y con CPU 4x
+//   · largo total de scroll en desktop (1440×900) y mobile (390×844)
+// Además guarda capturas por etapa en docs/capturas/ y, con VIDEO=1, videos del scroll en docs/videos/.
+// SOLO=capturas → solo capturas (sin fps). U=2.3,5.4 → capturas extra en esos u. SEG=3 → segundos por etapa.
+import { existsSync, mkdirSync, renameSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
 import { preview } from 'vite';
@@ -16,8 +17,13 @@ const CHROME = [
   '/usr/bin/google-chrome',
 ].find((p) => existsSync(p));
 const OUT = new URL('../docs/', import.meta.url);
-mkdirSync(new URL('capturas/', OUT), { recursive: true });
-const SECONDS_PER_STAGE = Number(process.env.SEG || 3);
+const file = (rel) => fileURLToPath(new URL(rel, OUT));
+mkdirSync(file('capturas/'), { recursive: true });
+mkdirSync(file('videos/'), { recursive: true });
+const SEG = Number(process.env.SEG || 3);
+const SOLO = process.env.SOLO === 'capturas';
+const VIDEO = process.env.VIDEO === '1';
+const EXTRA = (process.env.U || '').split(',').filter(Boolean).map(Number);
 
 const server = await preview({ preview: { port: 4179, strictPort: true }, logLevel: 'warn' });
 const url = 'http://localhost:4179/?medir=1';
@@ -27,170 +33,150 @@ const browser = await chromium.launch({
   args: ['--ignore-gpu-blocklist', '--enable-gpu-rasterization', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--window-position=40,40'],
 });
 
-async function open(ctxOpts) {
-  const ctx = await browser.newContext(ctxOpts);
+const VIEWPORTS = {
+  desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 },
+  mobile: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
+};
+
+async function open(name, { video = false } = {}) {
+  const opts = { ...VIEWPORTS[name] };
+  if (video) opts.recordVideo = { dir: file('videos/'), size: opts.viewport };
+  const ctx = await browser.newContext(opts);
   const page = await ctx.newPage();
+  const cdp = await ctx.newCDPSession(page);
+  await cdp.send('Network.enable');
+  await cdp.send('Network.setCacheDisabled', { cacheDisabled: true });
+  let bytes = 0;
+  const byType = {};
+  cdp.on('Network.loadingFinished', (e) => (bytes += e.encodedDataLength));
+  cdp.on('Network.responseReceived', (e) => (byType[e.requestId] = e.type));
   await page.goto(url);
   await page.waitForFunction(() => window.__journey && !document.querySelector('.loader'), null, { timeout: 60000 });
-  await page.evaluate(() => window.__stage.deferred); // carteles, pantalla y recorte
-  await page.waitForTimeout(600);
-  return { ctx, page };
+  await page.waitForTimeout(1200);
+  return { ctx, page, cdp, initialBytes: bytes };
 }
 
 const frames = (page, n = 3) => page.evaluate((n) => new Promise((r) => { let i = 0; const f = () => (++i >= n ? r() : requestAnimationFrame(f)); requestAnimationFrame(f); }), n);
 
-async function stations(page, tag) {
+async function captures(page, tag) {
   const N = await page.evaluate(() => window.__journey.N);
-  const rows = [];
+  await page.evaluate(() => window.__journey.loadAll());
+  await page.waitForTimeout(1500);
   for (let i = 0; i < N; i++) {
-    const u = i + 0.5;
+    const u = await page.evaluate((i) => window.__journey.station(i), i);
+    await page.evaluate((u) => window.__journey.seek(u), u === 0 ? 0.3 : u);
+    await frames(page, 4);
+    await page.screenshot({ path: file(`capturas/${tag}-etapa-${String(i).padStart(2, '0')}.jpg`), type: 'jpeg', quality: 74 });
+  }
+  for (const u of EXTRA) {
     await page.evaluate((u) => window.__journey.seek(u), u);
     await frames(page, 4);
-    const r = await page.evaluate(() => {
-      const s = window.__stage;
-      const { calls, triangles } = s.renderer.info.render;
-      return { u: s.u, set: s.set, calls, triangles };
-    });
-    rows.push(r);
-    await page.screenshot({ path: fileURLToPath(new URL(`capturas/${tag}-estacion-${String(i).padStart(2, '0')}.jpg`, OUT)), type: 'jpeg', quality: 72 });
+    await page.screenshot({ path: file(`capturas/${tag}-u${u.toFixed(2)}.jpg`), type: 'jpeg', quality: 74 });
   }
-  // momentos intermedios para revisar a ojo (U=4.05,4.28 …)
-  for (const u of (process.env.U || '').split(',').filter(Boolean).map(Number)) {
-    await page.evaluate((u) => window.__journey.seek(u), u);
-    await frames(page, 4);
-    await page.screenshot({ path: fileURLToPath(new URL(`capturas/${tag}-u${u.toFixed(2)}.jpg`, OUT)), type: 'jpeg', quality: 72 });
-  }
-  if (process.env.SOLO === 'capturas') return { rows, worst: {}, worstTris: {} };
-  // barrido fino de todo el recorrido para encontrar el peor fotograma
-  const sweep = await page.evaluate(async (N) => {
-    let worst = { calls: 0 };
-    let worstTris = { triangles: 0 };
-    for (let u = 0; u < N; u += 0.01) {
-      window.__journey.seek(u);
-      const s = window.__stage;
-      s.measureAt(u);
-      const { calls, triangles } = s.renderer.info.render;
-      if (calls > worst.calls) worst = { u: +u.toFixed(2), set: s.set, calls, triangles };
-      if (triangles > worstTris.triangles) worstTris = { u: +u.toFixed(2), set: s.set, calls, triangles };
-    }
-    return { worst, worstTris };
-  }, N);
-  return { rows, ...sweep };
 }
 
 // recorre todo el journey a velocidad constante y registra la duración de cada fotograma
-async function fpsRun(page) {
-  return page.evaluate(async (secPerStage) => {
+const fpsRun = (page) =>
+  page.evaluate(async (sec) => {
     const j = window.__journey;
-    const total = j.scrollForU(j.N) - j.scrollForU(0);
+    const from = j.scrollForU(0);
+    const total = j.scrollForU(j.N) - from;
     j.seek(0);
     await new Promise((r) => setTimeout(r, 400));
-    const dur = j.N * secPerStage * 1000;
+    const dur = j.N * sec * 1000;
     const times = [];
-    let worst = {};
+    let worst = { ms: 0 };
     return new Promise((resolve) => {
       let start = null;
       let last = null;
       const f = (now) => {
         if (start === null) start = last = now;
         const t = (now - start) / dur;
-        j.lenis.scrollTo(j.scrollForU(0) + Math.min(1, t) * total, { immediate: true, force: true });
+        j.lenis.scrollTo(from + Math.min(1, t) * total, { immediate: true, force: true });
         if (now !== last) {
           times.push(now - last);
-          if (now - last > (worst.ms || 0)) worst = { ms: +(now - last).toFixed(1), u: +window.__stage.u.toFixed(3), set: window.__stage.set };
+          if (now - last > worst.ms) worst = { ms: +(now - last).toFixed(1), u: +j.proxy.u.toFixed(2) };
         }
         last = now;
-        if (t < 1) requestAnimationFrame(f);
-        else {
-          const sum = times.reduce((a, b) => a + b, 0);
-          const sorted = [...times].sort((a, b) => b - a);
-          const p99 = sorted[Math.floor(sorted.length * 0.01)];
-          // peor ventana de 500 ms
-          let minFps = Infinity;
-          let acc = 0;
-          let cnt = 0;
-          let i0 = 0;
-          for (let i = 0; i < times.length; i++) {
-            acc += times[i];
-            cnt++;
-            while (acc > 500) {
-              minFps = Math.min(minFps, (cnt * 1000) / acc);
-              acc -= times[i0++];
-              cnt--;
-            }
+        if (t < 1) return requestAnimationFrame(f);
+        const sum = times.reduce((a, b) => a + b, 0);
+        const sorted = [...times].sort((a, b) => b - a);
+        let minFps = Infinity;
+        let acc = 0;
+        let cnt = 0;
+        let i0 = 0;
+        for (let i = 0; i < times.length; i++) {
+          acc += times[i];
+          cnt++;
+          while (acc > 500) {
+            minFps = Math.min(minFps, (cnt * 1000) / acc);
+            acc -= times[i0++];
+            cnt--;
           }
-          resolve({ frames: times.length, avgFps: +((times.length * 1000) / sum).toFixed(1), minFps: +minFps.toFixed(1), low1: +(1000 / p99).toFixed(1), worstFrame: worst });
         }
+        resolve({ avgFps: +((times.length * 1000) / sum).toFixed(1), minFps: +minFps.toFixed(1), low1: +(1000 / sorted[Math.floor(sorted.length * 0.01)]).toFixed(1), worstFrame: worst });
       };
       requestAnimationFrame(f);
     });
-  }, SECONDS_PER_STAGE);
-}
+  }, SEG);
 
-async function scrollLength(page) {
-  return page.evaluate(() => {
+const scrollLength = (page) =>
+  page.evaluate(() => {
     const vh = window.innerHeight;
     const total = document.documentElement.scrollHeight - vh;
     const j = document.querySelector('.journey');
-    const journey = j.offsetHeight - vh;
-    return { viewport: `${window.innerWidth}×${vh}`, totalPx: total, totalScreens: +(total / vh).toFixed(1), journeyPx: journey, journeyScreens: +(journey / vh).toFixed(1) };
+    return { totalPx: total, totalScreens: +(total / vh).toFixed(1), journeyPx: j.offsetHeight - vh, journeyScreens: +((j.offsetHeight - vh) / vh).toFixed(1) };
   });
-}
 
 const result = { fecha: new Date().toISOString(), navegador: CHROME };
-
-// ---------- desktop ----------
-{
-  const { ctx, page } = await open({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
-  result.gpu = await page.evaluate(() => {
-    const gl = document.createElement('canvas').getContext('webgl2');
-    const ext = gl.getExtension('WEBGL_debug_renderer_info');
-    return ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
-  });
-  result.desktop = { scroll: await scrollLength(page), estaciones: await stations(page, 'desktop') };
-  if (process.env.SOLO === 'capturas') {
-    // solo capturas: también mobile, sin medir fps
-    await ctx.close();
-    const m = await open({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
-    await stations(m.page, 'mobile');
-    await m.ctx.close();
-    await browser.close();
-    await server.close();
-    console.log(result.desktop.estaciones.rows.map((r) => `${r.u} ${r.set} ${r.calls}`).join('\n'));
-    process.exit(0);
+for (const name of ['desktop', 'mobile']) {
+  const { ctx, page, cdp, initialBytes } = await open(name);
+  const r = (result[name] = { cargaInicialKB: +(initialBytes / 1024).toFixed(1), scroll: await scrollLength(page) });
+  r.globo3D = await page.evaluate(() => Boolean(window.__stage));
+  await captures(page, name);
+  if (!SOLO) {
+    r.fps = await fpsRun(page);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
+    r.fpsCpu4x = await fpsRun(page);
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
   }
-  result.desktop.fps = await fpsRun(page);
-  const cdp = await ctx.newCDPSession(page);
-  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
-  result.desktop.fpsCpu4x = await fpsRun(page);
-  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
   await ctx.close();
+  if (VIDEO) {
+    const v = await open(name, { video: true });
+    await v.page.evaluate(() => window.__journey.seek(0));
+    await v.page.waitForTimeout(1500);
+    // scroll suave de punta a punta (incluye los bloques HTML del final)
+    await v.page.evaluate(async (sec) => {
+      const j = window.__journey;
+      const end = document.documentElement.scrollHeight - innerHeight;
+      await new Promise((resolve) => {
+        const dur = (j.N + 2) * sec * 1000;
+        const t0 = performance.now();
+        const f = (now) => {
+          const t = Math.min(1, (now - t0) / dur);
+          j.lenis.scrollTo(t * end, { immediate: true, force: true });
+          if (t < 1) requestAnimationFrame(f);
+          else resolve();
+        };
+        requestAnimationFrame(f);
+      });
+    }, 2.6);
+    await v.page.waitForTimeout(800);
+    const path = await v.page.video().path();
+    await v.ctx.close();
+    renameSync(path, file(`videos/scroll-${name}.webm`));
+  }
 }
-
-// ---------- mobile (táctil → modo liviano, pixel ratio 1) ----------
-{
-  const { ctx, page } = await open({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, isMobile: true, hasTouch: true });
-  result.mobile = { scroll: await scrollLength(page), estaciones: await stations(page, 'mobile') };
-  result.mobile.fps = await fpsRun(page);
-  const cdp = await ctx.newCDPSession(page);
-  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 });
-  result.mobile.fpsCpu4x = await fpsRun(page);
-  await ctx.close();
-}
-
 await browser.close();
 await server.close();
-writeFileSync(new URL('medicion-fase2.json', OUT), JSON.stringify(result, null, 2));
-
-const table = (rows) => rows.map((r) => `  u=${r.u.toFixed(1)}  ${r.set.padEnd(6)} calls ${String(r.calls).padStart(3)}  tris ${String(r.triangles).padStart(7)}`).join('\n');
-console.log(`GPU: ${result.gpu}`);
-for (const k of ['desktop', 'mobile']) {
-  const d = result[k];
-  console.log(`\n== ${k} (${d.scroll.viewport}) ==`);
-  console.log(table(d.estaciones.rows));
-  console.log(`  peor fotograma: calls ${d.estaciones.worst.calls} (u=${d.estaciones.worst.u}, ${d.estaciones.worst.set}) · tris máx ${d.estaciones.worstTris.triangles} (u=${d.estaciones.worstTris.u})`);
-  const w = (f) => `peor ${f.worstFrame.ms} ms en u=${f.worstFrame.u} (${f.worstFrame.set})`;
-  console.log(`  fps:        prom ${d.fps.avgFps} · mín ${d.fps.minFps} · 1% low ${d.fps.low1} · ${w(d.fps)}`);
-  console.log(`  fps CPU 4x: prom ${d.fpsCpu4x.avgFps} · mín ${d.fpsCpu4x.minFps} · 1% low ${d.fpsCpu4x.low1} · ${w(d.fpsCpu4x)}`);
-  console.log(`  scroll: total ${d.scroll.totalPx}px (${d.scroll.totalScreens} pantallas) · recorrido 3D ${d.scroll.journeyPx}px (${d.scroll.journeyScreens} pantallas)`);
+writeFileSync(file('medicion-fase3.json'), JSON.stringify(result, null, 2));
+for (const name of ['desktop', 'mobile']) {
+  const d = result[name];
+  console.log(`\n== ${name} == globo 3D: ${d.globo3D} · carga inicial: ${d.cargaInicialKB} KB`);
+  console.log(`  scroll: total ${d.scroll.totalPx}px (${d.scroll.totalScreens} pantallas) · recorrido ${d.scroll.journeyPx}px (${d.scroll.journeyScreens} pantallas)`);
+  if (d.fps) {
+    const w = (f) => `peor ${f.worstFrame.ms} ms en u=${f.worstFrame.u}`;
+    console.log(`  fps:        prom ${d.fps.avgFps} · mín ${d.fps.minFps} · 1% low ${d.fps.low1} · ${w(d.fps)}`);
+    console.log(`  fps CPU 4x: prom ${d.fpsCpu4x.avgFps} · mín ${d.fpsCpu4x.minFps} · 1% low ${d.fpsCpu4x.low1} · ${w(d.fpsCpu4x)}`);
+  }
 }

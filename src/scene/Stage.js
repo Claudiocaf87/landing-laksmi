@@ -1,58 +1,53 @@
-import { LoadingManager, NeutralToneMapping, PerspectiveCamera, PMREMGenerator, Scene, SRGBColorSpace, WebGLRenderer } from 'three';
+import { Color, Group, LoadingManager, NeutralToneMapping, PerspectiveCamera, PMREMGenerator, Scene, SRGBColorSpace, WebGLRenderer } from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { buildWorld } from './world.js';
 import { CameraRig } from './cameraRig.js';
+import { CLOSE_START, buildGlobe } from './globe.js';
+import { PALETTE } from './common.js';
 
-// Renderer + escena + cámara. El progreso del recorrido (u) llega de la timeline maestra y acá
-// se amortigua, para que la cámara se mueva suave aunque el scroll sea brusco.
-// snap (prefers-reduced-motion): sin vuelos de cámara; salta de estación en estación con un fundido.
+// Lo único en 3D es el globo: aparece en el hero (u 0 … 1) y en el cierre (u ≥ CLOSE_START).
+// El progreso (u) llega de la timeline maestra y acá se amortigua. Entre medio no se dibuja nada.
+// snap (prefers-reduced-motion): el globo queda quieto en su estación, sin giro ni zambullida.
+export const globeVisible = (u) => u < 1.08 || u >= CLOSE_START - 0.06;
+
 export class Stage {
-  constructor(canvas, { lite = false, snap = false, veil = null, onProgress = () => {} } = {}) {
+  constructor(canvas, { lite = false, snap = false, onProgress = () => {} } = {}) {
     this.canvas = canvas;
     this.lite = lite;
     this.snap = snap;
-    this.veil = veil;
     this.onProgress = onProgress;
     this.u = 0;
     this.targetU = 0;
     this.time = 0;
-    this.flash = 0;
-    this.set = 'globe';
-    // todo loader (modelos, texturas, datos) usa este manager → el % del loader es real
     this.manager = new LoadingManager();
   }
 
   async build() {
     const r = new WebGLRenderer({ canvas: this.canvas, antialias: !this.lite, powerPreference: 'high-performance', stencil: false });
     r.setPixelRatio(Math.min(window.devicePixelRatio, this.lite ? 1 : 1.5));
-    r.setSize(window.innerWidth, window.innerHeight, false);
-    r.toneMapping = NeutralToneMapping; // conserva blancos limpios (ACES los agrisa)
-    r.toneMappingExposure = 1.0;
+    r.toneMapping = NeutralToneMapping;
     r.outputColorSpace = SRGBColorSpace;
     this.renderer = r;
 
     this.scene = new Scene();
-    // entorno generado por código (sin HDR que descargar): da reflejos al dorado metálico
+    this.scene.background = new Color(PALETTE.cream);
+    // entorno generado por código (sin HDR): reflejos para los pines dorados
     const pmrem = new PMREMGenerator(r);
     this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
     this.scene.environmentIntensity = 0.55;
     pmrem.dispose();
-    this.camera = new PerspectiveCamera(45, 1, 0.1, 900);
-    this.rig = new CameraRig();
-    this.resize();
 
-    this.world = await buildWorld(this.scene, { lite: this.lite, manager: this.manager, onStep: (p) => this.onProgress(p * 0.9) });
-    // compila los shaders de todos los sets ahora, para que no haya tirones al cambiar de set
-    this.world.showAll(true);
+    this.camera = new PerspectiveCamera(45, 1, 0.1, 400);
+    this.rig = new CameraRig();
+    const group = new Group();
+    this.scene.add(group);
+    this.globe = await buildGlobe({ group, manager: this.manager, lite: this.lite });
+    this.onProgress(0.8);
+    this.resize();
     this.rig.apply(this.camera, 0);
+    this.globe.update(0, 0);
     await r.compileAsync(this.scene, this.camera);
-    this.world.showAll(false);
-    this.frame();
     this.onProgress(1);
     window.addEventListener('resize', this.resize);
-    // fotos de carteles, pantalla y recorte: después del primer fotograma (no suman a la carga inicial)
-    const idle = window.requestIdleCallback || ((f) => setTimeout(f, 700));
-    this.deferred = new Promise((resolve) => idle(() => import('./deferred.js').then(({ loadDeferred }) => loadDeferred(this)).then(resolve), { timeout: 2500 }));
   }
 
   resize = () => {
@@ -60,49 +55,33 @@ export class Stage {
     const h = window.innerHeight;
     this.camera.aspect = w / h;
     this.camera.fov = w / h < 0.8 ? 58 : 45;
-    this.renderer?.setSize(w, h, false);
+    this.renderer.setSize(w, h, false);
     this.frame();
   };
 
-  // Encuadre: en desktop el sujeto queda a la derecha (el texto va a la izquierda);
-  // en vertical queda arriba (el texto va abajo). Se corre la ventana de proyección, no la cámara.
-  // El globo se ubica y escala en el hueco libre entre la columna de texto y el HUD.
+  // Encuadre: en desktop el globo va en el hueco a la derecha de la columna de texto;
+  // en vertical, arriba. Se corre la ventana de proyección (no la cámara) y se escala el globo.
   frame() {
     const w = window.innerWidth;
     const h = window.innerHeight;
     const cam = this.camera;
-    let ox = w / h >= 1 ? -w * 0.1 : 0;
-    const oy = w / h >= 1 ? 0 : h * 0.16;
-    let tight = false;
-    const globe = this.world?.sets.globe.api;
-    if (globe) {
-      let fit = 1;
-      if (w / h >= 1) {
-        const inners = document.querySelectorAll('.etapa__inner');
-        const textRight = Math.max(...[inners[0], inners[inners.length - 1]].filter(Boolean).map((el) => el.getBoundingClientRect().right), w * 0.3);
-        const hud = document.querySelector('.hud');
-        const hudLeft = hud && hud.offsetWidth ? hud.getBoundingClientRect().left : w;
-        const left = textRight + 28;
-        let right = hudLeft - 28;
-        if (right - left < 340) {
-          right = w - 28; // no entra entre texto y HUD: el HUD se oculta mientras se ve el globo
-          tight = true;
-        }
-        const rpx = Math.min((right - left) / 2, h * 0.37);
-        ox = -((left + right) / 2 - w / 2);
-        // radio en pantalla → escala del globo para la distancia de la cámara en la estación (≈ 41)
-        const tanA = (rpx * Math.tan((cam.fov * Math.PI) / 360)) / (h / 2);
-        fit = Math.min(1.1, Math.max(0.45, (41 * Math.sin(Math.atan(tanA))) / 10));
-      }
-      globe.setFit(fit);
-      this.globeOffset = ox;
+    let ox = 0;
+    let oy = h * 0.16;
+    let fit = 1;
+    if (w / h >= 1) {
+      oy = 0;
+      const inner = document.querySelector('.etapa__inner');
+      const textRight = Math.max(inner ? inner.getBoundingClientRect().right : 0, w * 0.3);
+      const left = textRight + 28;
+      const right = w - Math.max(28, w * 0.04);
+      const rpx = Math.min((right - left) / 2, h * 0.36);
+      ox = -((left + right) / 2 - w / 2);
+      const tanA = (rpx * Math.tan((cam.fov * Math.PI) / 360)) / (h / 2);
+      fit = Math.min(1.1, Math.max(0.45, (41 * Math.sin(Math.atan(tanA))) / 10));
     }
-    this.baseOffset = w / h >= 1 ? -w * 0.1 : 0;
-    this.tightGlobe = tight;
-    const x = this.set === 'globe' && this.globeOffset != null ? this.globeOffset : this.baseOffset;
-    cam.setViewOffset(w, h, x, oy, w, h);
+    this.globe.setFit(fit);
+    cam.setViewOffset(w, h, ox, oy, w, h);
     cam.updateProjectionMatrix();
-    document.documentElement.classList.toggle('is-globe-tight', tight && this.set === 'globe');
   }
 
   setTarget(u) {
@@ -113,52 +92,20 @@ export class Stage {
     this.u = this.targetU = u;
   }
 
-  // dt en segundos. Devuelve false si no hizo falta dibujar.
-  tick(dt, maxU) {
+  // dt en segundos. Devuelve false si el globo no está en pantalla (no dibuja).
+  tick(dt) {
     this.time += dt;
-    if (this.snap) {
-      const station = Math.min(maxU - 0.5, Math.floor(this.targetU) + 0.5);
-      if (Math.abs(station - this.u) > 1e-3) {
-        this.u = station;
-        this.flash = 1;
-      }
-      this.flash = Math.max(0, this.flash - dt * 2.5);
-    } else {
+    if (this.snap) this.u = this.targetU < 1 ? 0.5 : this.targetU >= CLOSE_START ? CLOSE_START + 0.25 : this.targetU;
+    else {
       const k = 1 - Math.exp(-dt * 5.5);
       this.u += (this.targetU - this.u) * k;
       if (Math.abs(this.targetU - this.u) < 1e-4) this.u = this.targetU;
     }
-    // con los bloques HTML tapando la pantalla no hace falta dibujar
-    if (this.u >= maxU - 0.002 && this.targetU >= maxU - 0.002) return false;
-
-    const u = Math.min(this.u, maxU - 1e-4);
-    const set = this.rig.setAt(u);
-    if (set !== this.set) {
-      this.set = set;
-      this.frame();
-    }
-    if (this.veil) {
-      const d = this.rig.cutDistance(u);
-      const cut = 1 - Math.min(1, Math.max(0, (d - 0.004) / 0.04));
-      this.veil.style.opacity = Math.max(cut, this.flash).toFixed(3);
-    }
+    if (!globeVisible(this.u)) return false;
+    const u = Math.min(this.u, 10 - 1e-4);
     this.rig.apply(this.camera, u);
-    this.world.update(u, this.time, this.set);
+    this.globe.update(u, this.snap ? 0 : this.time);
     this.renderer.render(this.scene, this.camera);
     return true;
-  }
-
-  // renderiza una estación puntual y devuelve las estadísticas (para medir)
-  measureAt(u) {
-    const set = this.rig.setAt(u);
-    if (set !== this.set) {
-      this.set = set;
-      this.frame();
-    }
-    this.rig.apply(this.camera, u);
-    this.world.update(u, this.time, this.set);
-    this.renderer.render(this.scene, this.camera);
-    const { calls, triangles } = this.renderer.info.render;
-    return { u, set: this.set, calls, triangles };
   }
 }
