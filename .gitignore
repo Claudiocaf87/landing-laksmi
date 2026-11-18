@@ -2,3 +2,4 @@ node_modules
 dist
 .env
 docs/medicion-*.json
+docs/capturas/

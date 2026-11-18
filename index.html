@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="%LANG%" class="is-loading">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>%TITLE%</title>
+    <meta name="description" content="%DESCRIPTION%" />
+    <meta name="theme-color" content="#1C1615" />
+    <meta property="og:title" content="%TITLE%" />
+    <meta property="og:description" content="%DESCRIPTION%" />
+    <meta property="og:image" content="/assets/logo/logo-color.png" />
+    <link rel="icon" href="/assets/logo/favicon.png" type="image/png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Poppins:wght@400;500;600;700;800&display=swap"
+    />
+  </head>
+  <body>
+    <a class="skip" href="#contenido">%SKIP%</a>
+
+    <div class="loader" role="progressbar" aria-label="%LOADING%" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <img class="loader__logo" src="%LOGO%" alt="" width="410" height="234" />
+      <p class="loader__label">%LOADING%</p>
+      <div class="loader__bar"><span></span></div>
+      <p class="loader__num mono"><span>0</span>%</p>
+    </div>
+
+    <canvas class="stage" aria-hidden="true"></canvas>
+    <div class="scrim" aria-hidden="true"></div>
+    <div class="veil" aria-hidden="true"></div>
+
+    <!--HEADER-->
+    <!--HUD-->
+
+    <p class="scroll-hint" aria-hidden="true">%SCROLL%<span></span></p>
+
+    <main id="contenido">
+      <div class="journey"><!--ETAPAS--></div>
+      <!--BLOQUES-->
+    </main>
+
+    <!--FOOTER-->
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

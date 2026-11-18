@@ -1,0 +1,241 @@
+{
+  "meta": {
+    "titulo": "Laksmi Latam Group — Tu agente de compras en China",
+    "descripcion": "Agente de compras en China para importadores de Latinoamérica: búsqueda y auditoría de proveedores, negociación en mandarín, control de calidad del 100 % y logística hasta tu almacén. Comisión fija del 5 %."
+  },
+  "ui": {
+    "saltar": "Saltar al contenido",
+    "cargando": "Preparando tu envío",
+    "menu": "Menú",
+    "abrirMenu": "Abrir menú",
+    "cerrarMenu": "Cerrar menú",
+    "menuPrincipal": "Menú principal",
+    "redes": "Redes sociales",
+    "scroll": "Desliza para seguir tu envío",
+    "etapa": "Etapa"
+  },
+  "marca": {
+    "nombre": "Laksmi Latam Group",
+    "bajada": "Tu agente de compras en China",
+    "logo": "/assets/logo/logo-blanco.webp",
+    "logoColor": "/assets/logo/logo-color.webp",
+    "cta": { "texto": "Cotiza tu importación", "href": "#cotizar" }
+  },
+  "contacto": {
+    "telefono": "+58 422-8368275",
+    "whatsapp": "584228368275",
+    "email": "Info@laksmigroup.com",
+    "rif": "J-50510379-2",
+    "oficinas": [
+      { "lugar": "Margarita, Venezuela", "direccion": "Edif. Centro Profesional San Nicolás, piso 1, oficinas A09 y A10, Calle Las Flores c/c Calle El Colegio, Sector El Poblado, Porlamar, Nueva Esparta." },
+      { "lugar": "Caracas, Venezuela", "direccion": "[DIRECCIÓN EN CARACAS]" },
+      { "lugar": "Ningbo, China", "direccion": "23F Greenpark Building, 588 Canghai Road, Ningbo." }
+    ]
+  },
+  "redes": [
+    { "red": "instagram", "etiqueta": "Instagram", "url": "https://instagram.com/laksmigroup" },
+    { "red": "facebook", "etiqueta": "Facebook", "url": "#" },
+    { "red": "x", "etiqueta": "X", "url": "https://twitter.com/laksmigroup" }
+  ],
+  "navegacion": [
+    { "texto": "El proceso", "href": "#plan" },
+    { "texto": "Testimonios", "href": "#testimonios" },
+    { "texto": "Preguntas", "href": "#preguntas" }
+  ],
+  "hud": {
+    "titulo": "Seguimiento del envío",
+    "codigo": "LK · CN → LATAM",
+    "estados": [
+      { "texto": "Pedido creado", "desde": 0, "ir": "inicio" },
+      { "texto": "Plan aprobado", "desde": 1, "ir": "plan" },
+      { "texto": "Proveedor verificado", "desde": 2, "ir": "proveedor" },
+      { "texto": "Calidad verificada", "desde": 3, "ir": "calidad" },
+      { "texto": "Cargado y precintado", "desde": 4, "ir": "despacho" },
+      { "texto": "Embarcado", "desde": 4.62, "ir": "despacho", "u": 4.8 },
+      { "texto": "En tránsito", "desde": 5, "ir": "transito" },
+      { "texto": "Liberado en aduana", "desde": 6, "ir": "aduana" },
+      { "texto": "Entregado", "desde": 7, "ir": "entrega" }
+    ]
+  },
+  "etapas": [
+    {
+      "id": "inicio",
+      "menu": "Inicio",
+      "numero": "00",
+      "etiqueta": "Tu agente de compras en China",
+      "titulo": ["Tu equipo en China,", "de la fábrica a tu almacén."],
+      "subtitulo": "Buscamos proveedores, negociamos en mandarín, inspeccionamos cada unidad y llevamos tu mercancía a Venezuela y a toda Latinoamérica.",
+      "chips": ["Yiwu", "Guangzhou", "Ningbo", "Shantou"],
+      "cta": { "texto": "Cotiza tu importación", "href": "#cotizar" },
+      "ctaWhatsapp": true
+    },
+    {
+      "id": "plan",
+      "menu": "Diagnóstico",
+      "numero": "01",
+      "etiqueta": "Diagnóstico y estrategia",
+      "titulo": ["Antes de comprar,", "un plan."],
+      "subtitulo": "Revisamos qué importas, a quién le compras, tus volúmenes y lo que salió mal antes. En 48 horas te decimos qué se puede mejorar. Tú apruebas el plan antes de avanzar.",
+      "puntos": ["Diagnóstico gratuito en 48 horas", "Acuerdo de confidencialidad antes de operar", "Comisión fija del 5 %, sin costos ocultos"]
+    },
+    {
+      "id": "proveedor",
+      "menu": "Proveedores",
+      "numero": "02",
+      "etiqueta": "Búsqueda, auditoría y negociación",
+      "titulo": ["Estamos en la fábrica,", "no detrás de un correo."],
+      "subtitulo": "Contactamos fábricas, negociamos en mandarín, hacemos visitas presenciales y documentamos todo con reportes en tiempo real. Si ya tienes proveedores, los validamos.",
+      "puntos": ["Verificamos la capacidad real de producción antes del pago", "Feria de Cantón y Mercado de Yiwu", "Supervisión de la producción"],
+      "chips": ["Ferretería e insumos industriales", "Equipos médicos", "Automotriz", "Bisutería y accesorios", "Tecnología"]
+    },
+    {
+      "id": "calidad",
+      "menu": "Calidad",
+      "numero": "03",
+      "etiqueta": "Inspección previa al embarque",
+      "titulo": ["Revisamos el 100 %", "antes de que salga."],
+      "subtitulo": "Inspeccionamos todas las unidades antes del despacho. Si algo no cumple las especificaciones acordadas, el envío se detiene."
+    },
+    {
+      "id": "despacho",
+      "menu": "Despacho",
+      "numero": "04",
+      "etiqueta": "Despacho en origen",
+      "titulo": ["Cargado, precintado", "y a bordo."],
+      "subtitulo": "Coordinamos la carga, la documentación de exportación y el embarque desde los puertos de China.",
+      "chips": ["Flete marítimo", "Flete aéreo", "Transporte terrestre"]
+    },
+    {
+      "id": "transito",
+      "menu": "Tránsito",
+      "numero": "05",
+      "etiqueta": "Transporte internacional",
+      "titulo": ["Tu carga en camino,", "y tú al tanto."],
+      "subtitulo": "Del proveedor a tu almacén: entre 60 y 90 días en promedio, según el producto y la fábrica.",
+      "mapa": { "origen": "Puertos de China", "destino": "[PUERTO DE DESTINO]", "dias": "[DÍAS DE TRÁNSITO]", "etiquetaDias": "días de navegación" }
+    },
+    {
+      "id": "aduana",
+      "menu": "Aduana",
+      "numero": "06",
+      "etiqueta": "Llegada y aduana",
+      "titulo": ["Lo que se declara", "es lo que llega."],
+      "subtitulo": "Coordinamos la documentación y el proceso aduanero en destino. [ALCANCE DEL SERVICIO ADUANERO: A CONFIRMAR]"
+    },
+    {
+      "id": "entrega",
+      "menu": "Entrega",
+      "numero": "07",
+      "etiqueta": "Entrega",
+      "titulo": ["Hasta la puerta", "de tu almacén."],
+      "subtitulo": "Despacho en origen, transporte internacional, coordinación aduanera y entrega. Un solo equipo responsable de punta a punta."
+    },
+    {
+      "id": "resultados",
+      "menu": "Resultados",
+      "numero": "08",
+      "etiqueta": "Resultados",
+      "titulo": ["Así llegamos a", "toda Latinoamérica."],
+      "subtitulo": "Venezuela, Colombia, Chile, Perú, México y más.",
+      "stats": [
+        { "valor": "7", "prefijo": "+", "etiqueta": "años de experiencia" },
+        { "valor": "127", "prefijo": "+", "etiqueta": "importadores activos" },
+        { "valor": "1682", "prefijo": "+", "etiqueta": "envíos completados" },
+        { "valor": "4", "prefijo": "", "etiqueta": "oficinas propias en China" }
+      ],
+      "nota": "[Cifras publicadas en laksmigroup.com: a confirmar antes de publicar]",
+      "cta": { "texto": "Cotiza tu importación", "href": "#cotizar" }
+    }
+  ],
+  "testimonios": {
+    "id": "testimonios",
+    "etiqueta": "Testimonios",
+    "titulo": "Lo que dicen los importadores",
+    "nota": "[Textos y permiso de uso a confirmar]",
+    "items": [
+      { "nombre": "Sofía Rivas", "cargo": "Emprendedora, sector comercial", "cita": "[CITA TEXTUAL DEL TESTIMONIO]" },
+      { "nombre": "Carlos Mendoza", "cargo": "Gerente de operaciones", "cita": "[CITA TEXTUAL DEL TESTIMONIO]" },
+      { "nombre": "Alejandro Torres", "cargo": "Director comercial", "cita": "[CITA TEXTUAL DEL TESTIMONIO]" },
+      { "nombre": "Daniela González", "cargo": "Coordinadora de cadena de suministro", "cita": "[CITA TEXTUAL DEL TESTIMONIO]" }
+    ]
+  },
+  "faq": {
+    "id": "preguntas",
+    "etiqueta": "Preguntas frecuentes",
+    "titulo": "Lo que nos preguntan antes de empezar",
+    "items": [
+      { "p": "¿Qué hace un agente de compras en China?", "r": "Te representa en origen: busca proveedores, negocia en mandarín, audita fábricas, supervisa la producción y coordina el envío." },
+      { "p": "Ya tengo proveedores, ¿por qué cambiar?", "r": "No tienes que cambiarlos. Validamos a tus proveedores actuales en lugar de reemplazarlos, y la auditoría inicial es gratuita." },
+      { "p": "¿Cuánto cobran?", "r": "Una comisión fija del 5 % sobre el valor de la mercancía, acordada antes de empezar. Sin costos ocultos." },
+      { "p": "¿Van a contactar a mi proveedor directamente?", "r": "No sin tu autorización: firmamos un acuerdo de confidencialidad antes de cualquier operación." },
+      { "p": "¿Solo trabajan con Venezuela?", "r": "No. Atendemos empresas de toda Latinoamérica, incluyendo Colombia, Chile, Perú y México." },
+      { "p": "¿Cuánto demora una importación?", "r": "Entre 60 y 90 días en promedio, desde la búsqueda del proveedor hasta la entrega en tu almacén, según el producto y la fábrica." },
+      { "p": "¿Y si la mercancía llega defectuosa?", "r": "Inspeccionamos antes del despacho. Si la mercancía no cumple las especificaciones, el envío se detiene antes de salir de China." },
+      { "p": "¿Tienen experiencia en mi rubro?", "r": "Trabajamos con ferretería e insumos industriales, equipos médicos, automotriz, bisutería y accesorios, y tecnología. Si tu rubro es otro, cuéntanos en el diagnóstico." }
+    ]
+  },
+  "perfiles": {
+    "id": "tu-caso",
+    "etiqueta": "Tu caso",
+    "titulo": "¿Cuál se parece más a ti?",
+    "subtitulo": "Elige una opción y adaptamos el diagnóstico a tu situación.",
+    "items": [
+      { "id": "importador-consolidado", "titulo": "Ya importo volumen", "texto": "Tengo proveedores y quiero mejores precios y más control sobre la calidad.", "problema": "Precios altos" },
+      { "id": "emprendedor-quemado", "titulo": "Me fue mal antes", "texto": "Recibí mercancía defectuosa, tuve retrasos o un proveedor que no cumplió.", "problema": "Calidad" },
+      { "id": "veterano-cauteloso", "titulo": "Conozco China y voy con cuidado", "texto": "Quiero validar a mis proveedores y dejar de depender de una sola fuente.", "problema": "Dependencia" }
+    ]
+  },
+  "cotizacion": {
+    "id": "cotizar",
+    "menu": "Cotizar",
+    "numero": "09",
+    "etiqueta": "Cotización",
+    "titulo": ["Cotiza tu", "importación."],
+    "subtitulo": "Cuéntanos qué quieres importar. Te respondemos con un diagnóstico gratuito en 48 horas.",
+    "campos": {
+      "nombre": "Nombre",
+      "email": "Email",
+      "telefono": "WhatsApp / teléfono",
+      "pais": "País",
+      "producto": "¿Qué quieres importar?",
+      "productoAyuda": "Producto, cantidades aproximadas y cualquier detalle útil.",
+      "imagen": "Imagen o referencia del producto (opcional)",
+      "imagenAyuda": "JPG, PNG o PDF, máximo 10 MB. También puedes enviarla por WhatsApp.",
+      "volumen": "¿Cuánto importas de China al año?",
+      "comercializa": "¿Cómo comercializas?",
+      "tamano": "Tamaño de tu empresa",
+      "servicio": "Servicio de interés",
+      "problema": "Mayor problema al importar",
+      "elegir": "Elige una opción"
+    },
+    "opciones": {
+      "pais": ["Venezuela", "Colombia", "Chile", "Perú", "México", "Otro país de Latinoamérica"],
+      "volumen": ["USD 100K – 200K", "USD 200K – 400K", "USD 400K – 600K", "USD 600K – 1M", "Más de USD 1M"],
+      "comercializa": ["Minorista (mín. USD 5.000)", "Mayorista", "Ambas"],
+      "tamano": ["1 a 10 empleados", "10 a 50 empleados", "50 a 200 empleados"],
+      "servicio": ["Agente de compras (todo el proceso)", "Búsqueda y negociación con fábricas", "Auditoría de proveedores", "Control de calidad e inspección", "Logística internacional"],
+      "problema": ["Precios altos", "Calidad", "Retrasos", "Dependencia", "Todos"]
+    },
+    "boton": "Solicitar diagnóstico gratuito",
+    "privacidad": "Tus datos se usan solo para responder tu solicitud. [ENLACE A POLÍTICA DE PRIVACIDAD]",
+    "whatsapp": {
+      "titulo": "¿Prefieres hablar ya?",
+      "texto": "Escríbenos por WhatsApp",
+      "mensaje": "Hola, Laksmi. Quiero cotizar una importación desde China.",
+      "mensajeConDatos": "Hola, Laksmi. Soy {nombre} y acabo de pedir una cotización para: {producto}. Les envío la imagen del producto por aquí."
+    },
+    "mensajes": {
+      "requerido": "Completa este campo.",
+      "email": "Revisa el email: parece incompleto.",
+      "archivo": "El archivo supera los 10 MB. Envíalo por WhatsApp.",
+      "enviando": "Enviando…",
+      "exito": "¡Listo! Recibimos tu solicitud. Te respondemos en menos de 48 horas.",
+      "exitoSinArchivo": "¡Listo! Recibimos tu solicitud, pero no pudimos adjuntar la imagen. Envíala por WhatsApp:",
+      "error": "No pudimos enviar el formulario. Intenta de nuevo o escríbenos por WhatsApp.",
+      "noConfigurado": "Formulario de muestra: falta configurar el endpoint (VITE_FORM_ENDPOINT). Escríbenos por WhatsApp."
+    }
+  },
+  "pie": {
+    "texto": "Laksmi Group · RIF J-50510379-2"
+  }
+}
