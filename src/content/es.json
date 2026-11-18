@@ -234,18 +234,21 @@
         {
           "id": "feria-01",
           "focal": "40% 40%",
-          "alt": "Dos compradores con credencial recorren el pasillo de una feria comercial; él señala un exhibidor de productos"
+          "alt": "Dos compradores con credencial recorren el pasillo de una feria comercial; él señala un exhibidor de productos",
+          "fuga": "54% 40%"
         },
         {
           "id": "feria-02",
           "focal": "60% 40%",
-          "alt": "Un comprador examina un teléfono de muestra en un stand mientras el expositor le explica"
+          "alt": "Un comprador examina un teléfono de muestra en un stand mientras el expositor le explica",
+          "fuga": "30% 40%"
         },
         {
           "id": "feria-detalle",
           "focal": "62% 50%",
           "alt": "Primer plano de una mano que anota en una libreta junto a un disco de freno de muestra",
-          "frase": "Anotamos cada muestra."
+          "frase": "Anotamos cada muestra.",
+          "fuga": "42% 32%"
         }
       ]
     },
@@ -273,7 +276,8 @@
         {
           "id": "negociacion",
           "focal": "52% 40%",
-          "alt": "Tres personas conversan en una mesa de reunión con muestras de producto, planos y una tablet"
+          "alt": "Tres personas conversan en una mesa de reunión con muestras de producto, planos y una tablet",
+          "fuga": "52% 42%"
         }
       ]
     },
@@ -292,7 +296,8 @@
         {
           "id": "calidad",
           "focal": "55% 42%",
-          "alt": "En un depósito, un inspector revisa una caja abierta y completa una lista de control"
+          "alt": "En un depósito, un inspector revisa una caja abierta y completa una lista de control",
+          "fuga": "80% 44%"
         }
       ]
     },
@@ -834,5 +839,33 @@
         "placeholder": "[FOTO TECNOLOGÍA]"
       }
     ]
+  },
+  "prototipos": {
+    "titulo": "Prototipo de avance",
+    "versiones": [
+      {
+        "id": "lateral",
+        "nombre": "A · Viaje lateral",
+        "href": "/prototipo-lateral.html"
+      },
+      {
+        "id": "zoom",
+        "nombre": "B · Zoom con profundidad",
+        "href": "/prototipo-zoom.html"
+      },
+      {
+        "id": "video",
+        "nombre": "C · Video con scroll",
+        "href": "/prototipo-video.html"
+      }
+    ],
+    "fin": "Fin del tramo de prueba",
+    "volver": "Volver al recorrido completo",
+    "intro": "Desliza para recorrer el tramo",
+    "video": {
+      "desktop": "/assets/video/puerto-desktop",
+      "mobile": "/assets/video/puerto-mobile",
+      "poster": "puerto"
+    }
   }
 }

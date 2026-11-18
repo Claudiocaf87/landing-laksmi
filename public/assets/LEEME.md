@@ -60,3 +60,14 @@ Si cambia el globo: `npm run build && npm run globo-imagen && npm run imagenes`.
 | Fotos reales del equipo en la Feria de Cantón | Para las etapas de ferias y negociación, con leyenda [FERIA, AÑO, QUIÉN ES] | ≥ 2000 px de ancho |
 | `video/feria.mp4` + `feria.webm` | Si llega un video de la feria: 1280×720, 8–15 s en loop, sin audio | ≤ 2,5 MB / ≤ 2 MB |
 | `logo/logo.svg` | Logo vectorial (color y blanco) | SVG |
+
+## Prototipos de avance (rama `prototipo-avance`, no publicados)
+
+| Archivo | Uso | Cómo se genera | Peso |
+|---|---|---|---|
+| `video/puerto-desktop-{24,12}fps.{mp4,webm}` | Versión C (desktop y pantallas horizontales) | `npm run video` desde `assets-fuente/puerto-video.mp4` (1280×720) | ≤ 2,5 MB |
+| `video/puerto-mobile-{24,12}fps.{mp4,webm}` | Versión C (mobile y pantallas verticales) | `npm run video` desde `assets-fuente/puerto-video-vertical.mp4` (720×1280) | ≤ 1,5 MB |
+| `profundidad/<id>-{desktop,mobile}.webp` | Versión B (mapa de profundidad por foto, blanco = cerca) | `npm run profundidad` (Depth Anything V2 Small en ONNX, en CPU; modelo en `.cache/`) | 1,5–2,7 KB c/u |
+
+Videos sin audio, con un keyframe cada ½ s para que el avance con el scroll sea fluido en ambos sentidos.
+El punto de fuga de cada foto de la versión B está en `es.json` (`fotos[].fuga`).

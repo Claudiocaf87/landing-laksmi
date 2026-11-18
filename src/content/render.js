@@ -115,7 +115,7 @@ function tracker(c) {
 
 // <picture> con AVIF/WebP y versión vertical para mobile. Las fuentes van en data-*: journey.js
 // carga solo la foto actual y la siguiente. <noscript> deja la imagen para quien no tiene JS.
-function picture(base, { alt = '', w = 1920, h = 1071, focal = '50% 50%', cls = '' } = {}) {
+export function picture(base, { alt = '', w = 1920, h = 1071, focal = '50% 50%', cls = '' } = {}) {
   const portrait = '(orientation: portrait)';
   return `<picture class="${cls}">
       <source type="image/avif" media="${portrait}" data-srcset="${base}-mobile.avif">
@@ -173,19 +173,22 @@ function extras(e, c) {
   return out;
 }
 
-function etapa(e, i, c) {
-  const h = i === 0 ? 'h1' : 'h2';
-  const panel = i === 0 || i === c.etapas.length - 1 ? '' : ' etapa__inner--panel';
-  return `
-<section class="etapa" id="${esc(e.id)}" data-etapa="${i}" aria-labelledby="${esc(e.id)}-t"${e.mapaGrande ? ' data-mapa="grande"' : ''}${i === c.etapas.length - 1 ? ' data-cierre' : ''}>
-  ${fotos(e, i, c)}
-  <div class="etapa__content">
-    <div class="etapa__inner${panel}">
+// bloque de texto de una etapa (también lo usan los prototipos)
+export function etapaInner(e, i, c, { panel = i !== 0 && i !== c.etapas.length - 1, h = i === 0 ? 'h1' : 'h2' } = {}) {
+  return `<div class="etapa__inner${panel ? ' etapa__inner--panel' : ''}">
       <p class="kicker"><span class="mono">${esc(e.numero)}</span>${esc(e.etiqueta)}</p>
       <${h} class="etapa__title" id="${esc(e.id)}-t">${lines(e.titulo)}</${h}>
       ${e.subtitulo ? `<p class="etapa__sub">${esc(e.subtitulo)}</p>` : ''}
       ${extras(e, c)}
-    </div>
+    </div>`;
+}
+
+function etapa(e, i, c) {
+  return `
+<section class="etapa" id="${esc(e.id)}" data-etapa="${i}" aria-labelledby="${esc(e.id)}-t"${e.mapaGrande ? ' data-mapa="grande"' : ''}${i === c.etapas.length - 1 ? ' data-cierre' : ''}>
+  ${fotos(e, i, c)}
+  <div class="etapa__content">
+    ${etapaInner(e, i, c)}
   </div>
 </section>`;
 }

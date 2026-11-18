@@ -33,6 +33,18 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [contentPlugin(lang)],
     server: { port: 5174, strictPort: true },
-    build: { target: 'es2020', chunkSizeWarningLimit: 900 },
+    build: {
+      target: 'es2020',
+      chunkSizeWarningLimit: 900,
+      // prototipos de comparación (rama prototipo-avance): páginas separadas, no tocan el recorrido principal
+      rollupOptions: {
+        input: {
+          main: resolve(root, 'index.html'),
+          lateral: resolve(root, 'prototipo-lateral.html'),
+          zoom: resolve(root, 'prototipo-zoom.html'),
+          video: resolve(root, 'prototipo-video.html'),
+        },
+      },
+    },
   };
 });

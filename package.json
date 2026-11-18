@@ -14,7 +14,11 @@
     "contraste": "node scripts/contrast.mjs",
     "imagenes": "python scripts/optimizar-imagenes.py",
     "globo-imagen": "node scripts/capturar-globo.mjs",
-    "revision": "node scripts/revision.mjs"
+    "revision": "node scripts/revision.mjs",
+    "dev:red": "vite --host",
+    "video": "python scripts/optimizar-video.py",
+    "profundidad": "python scripts/profundidad.py",
+    "medir:prototipos": "node scripts/prototipos.mjs"
   },
   "dependencies": {
     "gsap": "^3.15.1",
