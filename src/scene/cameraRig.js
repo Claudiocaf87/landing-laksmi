@@ -2,13 +2,13 @@ import { CatmullRomCurve3, Vector3 } from 'three';
 import { CLOSE_START } from './globe.js';
 
 // Cámara del globo. u está en "unidades de etapa" de la timeline maestra:
-// hero = 0 … 1 (gira, dibuja la ruta y se zambulle hacia China) · cierre = CLOSE_START … 10 (se aleja).
-// p = posición, l = punto de mira. Dos tramos independientes: entre ellos el globo no se dibuja.
+// Dos estados de cámara para el mismo globo:
+// hero = 0 … 1 (se acerca apenas mientras el globo gira de China a América) · cierre = CLOSE_START … 10 (se aleja).
+// En ambos la estación queda a 41 m: el hero termina en el mismo encuadre que el cierre.
 const HERO = [
-  { u: 0.0, p: [0, 3, 44], l: [0, 0.6, 0] },
-  { u: 0.5, p: [0, 2.6, 41], l: [0, 0.4, 0] },
-  { u: 0.8, p: [0, 1.4, 22], l: [0, 0.1, 0] },
-  { u: 0.99, p: [0, 0.6, 12.4], l: [0, 0, 0] },
+  { u: 0.0, p: [0, 3, 44], l: [0, 0.4, 0] },
+  { u: 0.6, p: [0, 2, 41], l: [0, 0, 0] },
+  { u: 1.0, p: [0, 2, 41], l: [0, 0, 0] },
 ];
 const CLOSE = [
   { u: CLOSE_START, p: [0, 1.5, 30], l: [0, 0, 0] },

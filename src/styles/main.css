@@ -94,6 +94,16 @@ h3 {
 .skip:focus {
   top: 16px;
 }
+/* Descendentes en títulos con degradado: background-clip: text solo pinta dentro de la caja del
+   elemento, y con un interlineado ajustado (1,04) la caja es más baja que el área de las letras,
+   así que se cortaban la g, j, p, q, y (y los acentos de las mayúsculas). El padding agranda el
+   área pintada y el margen negativo igual lo compensa: el interlineado visual no cambia. */
+.gold-metal,
+.etapa__title span + span,
+.block__title--xl span + span {
+  padding-block: 0.22em;
+  margin-block: -0.22em;
+}
 /* título con dorado metálico (ver --gold-metal) */
 .gold-metal {
   color: var(--gold-title);
@@ -1040,34 +1050,6 @@ button.btn:disabled {
   color: var(--muted);
   font-size: clamp(1rem, 1.2vw, 1.1rem);
 }
-/* persona con la caja: capa con parallax sobre fondo crema */
-.foto--recorte {
-  background: radial-gradient(120% 90% at 70% 40%, var(--white) 0%, var(--cream) 62%);
-}
-.recorte {
-  position: absolute;
-  right: 7%;
-  bottom: 0;
-  width: 44vw;
-  height: 90vh;
-}
-.recorte img {
-  object-fit: contain;
-  object-position: 50% 100%;
-}
-@media (max-width: 899px), (orientation: portrait) {
-  .recorte {
-    left: 0;
-    right: 0;
-    width: auto;
-    top: calc(var(--header-h) + 8px);
-    height: 52vh;
-    bottom: auto;
-  }
-  .recorte img {
-    object-position: 50% 50%;
-  }
-}
 /* globo como imagen fija (sin WebGL, ahorro de datos o gama baja) */
 .globo-img {
   display: none;
@@ -1511,11 +1493,6 @@ button.btn:disabled {
   height: 100%;
   object-fit: cover;
   object-position: var(--focal, 50% 50%);
-}
-.is-static .foto--recorte {
-  aspect-ratio: auto;
-  height: 70vh;
-  position: relative;
 }
 .is-static .globo-img {
   display: block;

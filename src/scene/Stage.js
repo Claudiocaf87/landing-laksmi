@@ -6,7 +6,7 @@ import { PALETTE } from './common.js';
 
 // Lo único en 3D es el globo: aparece en el hero (u 0 … 1) y en el cierre (u ≥ CLOSE_START).
 // El progreso (u) llega de la timeline maestra y acá se amortigua. Entre medio no se dibuja nada.
-// snap (prefers-reduced-motion): el globo queda quieto en su estación, sin giro ni zambullida.
+// snap (prefers-reduced-motion): el globo queda quieto en el encuadre sobre América, sin giro.
 export const globeVisible = (u) => u < 1.08 || u >= CLOSE_START - 0.06;
 
 export class Stage {
@@ -40,7 +40,9 @@ export class Stage {
     this.rig = new CameraRig();
     const group = new Group();
     this.scene.add(group);
-    this.globe = await buildGlobe({ group, manager: this.manager, lite: this.lite });
+    // en pantallas verticales / chicas el giro del hero es más corto (no se siente lento)
+    const fast = window.innerWidth < 900 || window.innerHeight > window.innerWidth;
+    this.globe = await buildGlobe({ group, manager: this.manager, lite: this.lite, fast });
     this.onProgress(0.8);
     this.resize();
     this.rig.apply(this.camera, 0);
@@ -95,7 +97,7 @@ export class Stage {
   // dt en segundos. Devuelve false si el globo no está en pantalla (no dibuja).
   tick(dt) {
     this.time += dt;
-    if (this.snap) this.u = this.targetU < 1 ? 0.5 : this.targetU >= CLOSE_START ? CLOSE_START + 0.25 : this.targetU;
+    if (this.snap) this.u = this.targetU < 1 ? 0.8 : this.targetU >= CLOSE_START ? CLOSE_START + 0.25 : this.targetU; // quieto, en el encuadre final
     else {
       const k = 1 - Math.exp(-dt * 5.5);
       this.u += (this.targetU - this.u) * k;

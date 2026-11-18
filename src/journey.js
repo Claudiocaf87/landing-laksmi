@@ -37,13 +37,15 @@ export function createJourney({ stage = null, content, reduced = false }) {
 
   sections.forEach((sec, i) => {
     // ---------- fotos ----------
-    const figs = [...sec.querySelectorAll('.foto:not(.foto--recorte)')];
+    const figs = [...sec.querySelectorAll('.foto')];
     const n = figs.length;
+    // cierre: la foto final tiene su momento sola y después se funde para dejar ver el globo
+    const closing = sec.hasAttribute('data-cierre');
     figs.forEach((fig, k) => {
       const img = fig.querySelector('img');
       const start = i + k / n; // momento en que esta foto ocupa la pantalla
       const tin = k === 0 ? i - 0.14 : start - 0.08; // entra un poco antes: nunca hay pantalla vacía
-      const end = i + 1.14; // la tapa la etapa siguiente
+      const end = closing ? i + 0.44 : i + 1.14; // la tapa la etapa siguiente (o el globo, en el cierre)
       const type = fig.dataset.transicion;
       tl.set(fig, { visibility: 'visible' }, tin);
       if (reduced) {
@@ -55,28 +57,15 @@ export function createJourney({ stage = null, content, reduced = false }) {
         // zoom lento tipo Ken Burns (con un leve desplazamiento lateral alternado)
         tl.fromTo(img, { scale: 1.12, xPercent: k % 2 ? -1.5 : 1.5 }, { scale: 1, xPercent: 0, duration: end - tin }, tin);
       }
+      if (closing) tl.to(fig, { opacity: 0, duration: 0.12, ease: 'power1.inOut' }, i + 0.3);
       tl.set(fig, { visibility: 'hidden' }, end + 0.02);
     });
-
-    // persona con la caja → la cámara se aleja al globo del cierre
-    const rec = sec.querySelector('.foto--recorte');
-    if (rec) {
-      const person = rec.querySelector('.recorte');
-      tl.set(rec, { visibility: 'visible' }, i - 0.14);
-      tl.fromTo(rec, { opacity: 0 }, { opacity: 1, duration: 0.16 }, i - 0.14);
-      if (!reduced) {
-        tl.fromTo(person, { yPercent: 12, scale: 0.96 }, { yPercent: -3, scale: 1.04, duration: 0.42 }, i - 0.1);
-        tl.to(person, { scale: 0.62, yPercent: -10, opacity: 0, duration: 0.12, ease: 'power2.in' }, i + 0.3);
-      } else tl.to(person, { opacity: 0, duration: 0.1 }, i + 0.3);
-      tl.to(rec, { opacity: 0, duration: 0.12 }, i + 0.32);
-      tl.set(rec, { visibility: 'hidden' }, i + 0.45);
-    }
 
     // ---------- textos ----------
     const inner = sec.querySelector('.etapa__inner');
     const last = i === N - 1;
-    // en el cierre, la persona con la caja tiene su momento sola: el texto entra con el globo
-    const textIn = rec ? i + 0.3 : i + 0.05;
+    // en el cierre, la foto tiene su momento sola: el texto entra con el globo
+    const textIn = closing ? i + 0.32 : i + 0.05;
     if (i > 0) tl.fromTo(inner, { autoAlpha: 0, y: reduced ? 0 : 50 }, { autoAlpha: 1, y: 0, duration: 0.12, ease: 'power2.out' }, textIn);
     if (!last) tl.to(inner, { autoAlpha: 0, y: reduced ? 0 : -50, duration: 0.12, ease: 'power2.in' }, i + 0.84);
 

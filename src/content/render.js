@@ -137,14 +137,9 @@ function fotos(e, i, c) {
   </figure>`,
     )
     .join('');
-  if (e.recorte) {
-    out += `
-  <figure class="foto foto--recorte" data-etapa="${i}" data-k="0">
-    <div class="recorte">${picture(base + e.recorte.id, { alt: e.recorte.alt, w: 707, h: 1024 })}</div>
-  </figure>`;
-  }
   const g = c.imagenes.globo;
-  if (i === 0 || e.recorte) {
+  const last = i === c.etapas.length - 1;
+  if (i === 0 || last) {
     const cual = i === 0 ? 'hero' : 'cierre';
     out += `
   <figure class="globo-img" data-cual="${cual}">${picture(g[cual], { alt: g.alt, w: 900, h: 900, cls: 'globo-img__pic' })}</figure>`;
@@ -180,9 +175,9 @@ function extras(e, c) {
 
 function etapa(e, i, c) {
   const h = i === 0 ? 'h1' : 'h2';
-  const panel = i === 0 || e.recorte ? '' : ' etapa__inner--panel';
+  const panel = i === 0 || i === c.etapas.length - 1 ? '' : ' etapa__inner--panel';
   return `
-<section class="etapa" id="${esc(e.id)}" data-etapa="${i}" aria-labelledby="${esc(e.id)}-t"${e.mapaGrande ? ' data-mapa="grande"' : ''}>
+<section class="etapa" id="${esc(e.id)}" data-etapa="${i}" aria-labelledby="${esc(e.id)}-t"${e.mapaGrande ? ' data-mapa="grande"' : ''}${i === c.etapas.length - 1 ? ' data-cierre' : ''}>
   ${fotos(e, i, c)}
   <div class="etapa__content">
     <div class="etapa__inner${panel}">

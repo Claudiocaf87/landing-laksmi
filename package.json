@@ -13,7 +13,8 @@
     "probar": "node scripts/check-ui.mjs",
     "contraste": "node scripts/contrast.mjs",
     "imagenes": "python scripts/optimizar-imagenes.py",
-    "globo-imagen": "node scripts/capturar-globo.mjs"
+    "globo-imagen": "node scripts/capturar-globo.mjs",
+    "revision": "node scripts/revision.mjs"
   },
   "dependencies": {
     "gsap": "^3.15.1",

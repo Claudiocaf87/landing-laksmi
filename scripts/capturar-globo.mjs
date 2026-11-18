@@ -17,7 +17,7 @@ await page.waitForTimeout(3500); // que la ruta termine de dibujarse
 await page.addStyleTag({ content: '.header, .tracker, .etapa__content, .scroll-hint, .foto { visibility: hidden !important; }' });
 
 for (const [name, u] of [
-  ['hero', 0.3],
+  ['hero', 0.8], // al terminar el giro: mismo encuadre que el cierre
   ['cierre', 9.7],
 ]) {
   await page.evaluate((u) => window.__journey.seek(u), u);

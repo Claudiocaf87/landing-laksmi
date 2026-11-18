@@ -113,6 +113,48 @@ const loadedStages = (p) =>
   await ctx.close();
 }
 
+// ---------- títulos: ninguno recorta su texto (descendentes g, j, p, q, y y acentos) ----------
+// Compara las cajas de línea del texto (área de las letras) con el área donde se pinta:
+// la caja del propio elemento si usa background-clip: text, y cualquier ancestro con overflow.
+const titleClip = (p) =>
+  p.evaluate(() => {
+    const bad = [];
+    const els = [...document.querySelectorAll('.etapa__title span, .block__title, .block__title--xl span')];
+    for (const el of els) {
+      const box = el.getBoundingClientRect();
+      if (!box.width) continue;
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const clips = [];
+      const cs = getComputedStyle(el);
+      if (cs.backgroundClip === 'text' || cs.webkitBackgroundClip === 'text') clips.push(box);
+      for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+        const c = getComputedStyle(a);
+        if (c.overflowY !== 'visible' || c.clipPath !== 'none') clips.push(a.getBoundingClientRect());
+      }
+      const cut = [...range.getClientRects()].some((t) => clips.some((b) => t.top < b.top - 0.5 || t.bottom > b.bottom + 0.5));
+      if (cut) bad.push(el.textContent.trim().slice(0, 32));
+    }
+    return { count: els.length, bad: [...new Set(bad)] };
+  });
+for (const [name, opts] of [
+  ['desktop', DESKTOP],
+  ['mobile', MOBILE],
+]) {
+  const { ctx, p } = await page(opts);
+  const N = await p.evaluate(() => window.__journey.N);
+  let worst = { count: 0, bad: [] };
+  for (let i = 0; i < N; i++) {
+    for (const u of [i + 0.08, await p.evaluate((i) => window.__journey.station(i), i)]) {
+      await p.evaluate((u) => window.__journey.seek(u), u);
+      const r = await titleClip(p);
+      worst = { count: r.count, bad: [...new Set([...worst.bad, ...r.bad])] };
+    }
+  }
+  ok(worst.bad.length === 0, `títulos ${name}: ninguno recorta su texto, también durante la entrada (${worst.count} títulos${worst.bad.length ? ' · cortados: ' + worst.bad.join(' | ') : ''})`);
+  await ctx.close();
+}
+
 // ---------- globo: no se superpone al texto ----------
 for (const [w, h] of [
   [1920, 1080],

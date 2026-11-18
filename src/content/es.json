@@ -41,6 +41,9 @@
     "fotosReales": {
       "nota": "Fotos reales del equipo en la Feria de Cantón: pendientes. Leyenda: [FERIA, AÑO, QUIÉN ES]",
       "items": []
+    },
+    "alternativas": {
+      "nota": "Opción A en su depósito: no se publica (guardar en assets-fuente/ como alternativa)."
     }
   },
   "contacto": {
@@ -326,7 +329,7 @@
         },
         {
           "id": "precinto",
-          "focal": "58% 55%",
+          "focal": "60% 58%",
           "alt": "Mano con guante cierra con candado las puertas de un contenedor"
         },
         {
@@ -432,10 +435,16 @@
         "href": "#cotizar"
       },
       "leyenda": true,
-      "recorte": {
-        "id": "persona-caja",
-        "alt": "Hombre de saco azul sonríe mientras abre una caja de cartón sobre una mesa blanca"
-      }
+      "transicion": "diagonal",
+      "fotos": [
+        {
+          "id": "tienda",
+          "focal": "38% 40%",
+          "vertical": true,
+          "focalVertical": "60% 45%",
+          "alt": "Hombre de saco azul sonríe mientras abre una caja de cartón sobre el mostrador de una tienda; al fondo, un repartidor sale por la puerta"
+        }
+      ]
     }
   ],
   "testimonios": {

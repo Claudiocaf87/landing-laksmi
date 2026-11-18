@@ -22,7 +22,7 @@ import {
   Vector3,
 } from 'three';
 import { content } from '../content/index.js';
-import { PALETTE, clamp01, keyframes, smooth } from './common.js';
+import { PALETTE, clamp01 } from './common.js';
 
 // Globo (hero = etapa 00 y cierre = etapa 09). Radio 10. Claro, con puntos dorados.
 // Orígenes y destinos salen de es.json → globo (oficina = pin dorado, origen = anillo dorado,
@@ -98,20 +98,15 @@ function graticule() {
   return new LineSegments(g, new LineBasicMaterial({ color: PALETTE.gold, transparent: true, opacity: 0.22 }));
 }
 
-const FOCUS_OPEN = [
-  { u: 0, lat: 24, lon: 197 },
-  { u: 0.5, lat: 22, lon: 200 },
-  { u: 0.98, lat: 29, lon: 122 },
-];
-// cierre: entre el Atlántico y el Pacífico para que se vean todas las rutas que llegan a Latinoamérica
-export const CLOSE_START = 9.32; // el globo del cierre aparece después de la persona con la caja
-const FOCUS_CLOSE = [
-  { u: CLOSE_START, lat: 14, lon: 228 },
-  { u: CLOSE_START + 0.2, lat: 4, lon: 292 },
-  { u: 10, lat: 0, lon: 296 },
-];
+// Un solo globo con dos estados de encuadre: CHINA (las 4 oficinas) y AMERICA (todas las rutas que
+// llegan a Latinoamérica, el mismo encuadre del cierre). El hero va de uno al otro hacia el este,
+// cruzando el Pacífico, mientras se dibujan las rutas.
+export const CHINA = { lat: 26, lon: 117 };
+export const AMERICA = { lat: 4, lon: 292 };
+export const CLOSE_START = 9.32; // el globo del cierre aparece después de la foto final
+const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 
-export async function buildGlobe({ group, manager, lite = false }) {
+export async function buildGlobe({ group, manager, lite = false, fast = false }) {
   const spin = new Group();
   group.add(spin);
 
@@ -176,24 +171,31 @@ export async function buildGlobe({ group, manager, lite = false }) {
   [main, ...otherRoutes, ...branches].forEach((r) => reveal(r, 0));
 
   let introStart = null;
+  const INTRO = fast ? 0.5 : 0.35; // cuánto gira solo, sin scroll
+  const HERO_END = fast ? 0.55 : 0.75; // u en el que el giro termina con scroll
   let fit = 1; // escala para que el globo entre en el hueco libre de la pantalla (la calcula Stage)
   return {
     setFit(f) {
       fit = f;
     },
-    update(u, time) {
-      const closing = u >= 9;
-      spin.scale.setScalar(closing ? fit : fit + (1 - fit) * smooth(0.55, 0.95, u));
-      const keys = closing ? FOCUS_CLOSE : FOCUS_OPEN;
-      const lat = keyframes(keys, u, 'lat');
-      const lon = keyframes(keys, u, 'lon') + (closing ? 0 : Math.sin(time * 0.15) * 2.5 * (1 - smooth(0.4, 0.8, u)));
-      spin.rotation.set(lat * D2R, -lon * D2R, 0, 'XYZ');
-
+    // progreso del giro China → América (0 … 1). En el hero lo empuja la animación de entrada
+    // (hasta INTRO) y el scroll (completo en HERO_END). En mobile es más corto para que no se sienta lento.
+    progress(u, time) {
+      if (u >= 9) return 1;
       if (introStart === null) introStart = time;
-      const intro = closing ? 1 : (time - introStart - 0.5) / 2.6;
-      reveal(main, intro);
-      otherRoutes.forEach((r) => reveal(r, closing ? 1 : intro - 0.3));
-      branches.forEach((b, i) => reveal(b, closing ? smooth(CLOSE_START + 0.02 + i * 0.03, CLOSE_START + 0.17 + i * 0.03, u) : 0));
+      const intro = INTRO * ease(clamp01((time - introStart - 0.4) / (fast ? 1.8 : 2.4)));
+      return Math.max(intro, ease(clamp01(u / HERO_END)));
+    },
+    update(u, time) {
+      spin.scale.setScalar(fit);
+      const p = this.progress(u, time);
+      const lat = CHINA.lat + (AMERICA.lat - CHINA.lat) * p;
+      const lon = CHINA.lon + (AMERICA.lon - CHINA.lon) * p;
+      spin.rotation.set(lat * D2R, -lon * D2R, 0, 'XYZ');
+      // las rutas se dibujan mientras el globo gira: primero China → Latinoamérica, después el resto
+      reveal(main, p / 0.75);
+      otherRoutes.forEach((r) => reveal(r, (p - 0.55) / 0.4));
+      branches.forEach((b, i) => reveal(b, (p - 0.68 - i * 0.04) / 0.25));
     },
   };
 }

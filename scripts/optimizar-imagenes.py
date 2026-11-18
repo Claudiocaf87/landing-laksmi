@@ -3,7 +3,7 @@
 - Fotos de etapa: desktop 1920 px de ancho (≤ 250 KB) y mobile en vertical 9:16 de 900 px de ancho (≤ 120 KB),
   en AVIF + WebP. El recorte vertical se centra en el punto focal definido en src/content/es.json
   (campo "focal", p. ej. "60% 40%"), así en mobile no se cortan caras ni manos.
-- Persona con la caja: PNG con transparencia → AVIF/WebP con alfa, recortado al contenido.
+- Fotos con "vertical": true en es.json usan su propio original vertical (<id>-vertical.jpg) para mobile.
 - Rubros: tarjeta cuadrada. og: 1200×630 JPG.
 - Sin metadatos (se copian solo los píxeles). Si una imagen no entra en el peso, se baja la calidad.
 Requiere Pillow con AVIF (pip install pillow).
@@ -71,15 +71,14 @@ for etapa in CONTENT["etapas"]:
         fx, fy = focal(f["focal"])
         desk = im if im.width <= 1920 else im.resize((1920, round(im.height * 1920 / im.width)), Image.LANCZOS)
         emit(desk, f"{f['id']}-desktop", 250)
-        mob = crop_ratio(im, 9 / 16, fx, fy).resize((900, 1600), Image.LANCZOS)
+        if f.get("vertical"):
+            # dirección de arte: la versión vertical sale de su propio original (sin agrandar)
+            v = clean(Image.open(SRC / f"{f['id']}-vertical.jpg"))
+            v = crop_ratio(v, 9 / 16, *focal(f.get("focalVertical", "50% 50%")))
+            mob = v.resize((900, 1600), Image.LANCZOS) if v.width >= 900 else v
+        else:
+            mob = crop_ratio(im, 9 / 16, fx, fy).resize((900, 1600), Image.LANCZOS)
         emit(mob, f"{f['id']}-mobile", 120)
-
-# persona con la caja (con transparencia)
-p = clean(Image.open(SRC / "persona-caja.webp"), alpha=True)
-p = p.crop(p.getchannel("A").getbbox())
-for name, hgt, kb in (("persona-caja-desktop", 1024, 160), ("persona-caja-mobile", 720, 90)):
-    v = p if p.height <= hgt else p.resize((round(p.width * hgt / p.height), hgt), Image.LANCZOS)
-    emit(v, name, kb)
 
 # globo como imagen fija (capturado de la escena 3D con scripts/capturar-globo.mjs)
 for cual in ("hero", "cierre"):
