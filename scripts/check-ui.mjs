@@ -92,6 +92,42 @@ async function page(opts, q = '?medir=1') {
   await ctx.close();
 }
 
+// ---------- globo: no se superpone al texto ni al HUD ----------
+for (const [w, h] of [
+  [1920, 1080],
+  [1440, 900],
+  [1280, 720],
+  [1024, 768],
+]) {
+  const { ctx, p } = await page({ viewport: { width: w, height: h } });
+  for (const u of [0.5, 8.5]) {
+    await p.evaluate((u) => window.__journey.seek(u), u);
+    await p.waitForTimeout(300);
+    const r = await p.evaluate((u) => {
+      const s = window.__stage;
+      const g = s.world.sets.globe.group;
+      const spin = g.children[0];
+      const c = g.getWorldPosition(new s.camera.position.constructor());
+      const d = c.distanceTo(s.camera.position);
+      const R = 10 * spin.scale.x;
+      const v = c.clone().project(s.camera);
+      const cx = ((v.x + 1) / 2) * innerWidth;
+      const cy = ((1 - v.y) / 2) * innerHeight;
+      const rpx = (Math.tan(Math.asin(R / d)) / Math.tan((s.camera.fov * Math.PI) / 360)) * (innerHeight / 2);
+      const inner = document.querySelectorAll('.etapa__inner')[Math.floor(u)].getBoundingClientRect();
+      const hud = document.querySelector('.hud');
+      const hudOn = getComputedStyle(hud).opacity !== '0';
+      const hr = hud.getBoundingClientRect();
+      return { left: cx - rpx, right: cx + rpx, textRight: inner.right, hudLeft: hudOn ? hr.left : null };
+    }, u);
+    const clearText = r.left >= r.textRight - 1;
+    const clearHud = r.hudLeft == null || r.right <= r.hudLeft + 1;
+    ok(clearText && clearHud, `globo ${w}×${h} u=${u}: ${Math.round(r.left)}–${Math.round(r.right)} px · texto hasta ${Math.round(r.textRight)} · HUD desde ${r.hudLeft == null ? 'oculto' : Math.round(r.hudLeft)}`);
+    if (u === 0.5 && w === 1440) await p.screenshot({ path: shot('hero-1440'), type: 'jpeg', quality: 75 });
+  }
+  await ctx.close();
+}
+
 // ---------- modos alternativos ----------
 {
   const { ctx, p } = await page({ viewport: { width: 1440, height: 900 } }, '?modo=estatico');

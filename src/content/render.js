@@ -284,8 +284,12 @@ function footer(c) {
 export function renderPage(html, c, lang) {
   return html
     .replaceAll('%LANG%', esc(lang))
-    .replace('%TITLE%', esc(c.meta.titulo))
-    .replace('%DESCRIPTION%', esc(c.meta.descripcion))
+    .replace(/<title>[^<]*<\/title>/, `<title>${esc(c.meta.titulo)}</title>`)
+    .replace(/(<meta name="description" content=")[^"]*/, `$1${esc(c.meta.descripcion)}`)
+    .replace(/(<meta property="og:title" content=")[^"]*/, `$1${esc(c.meta.titulo)}`)
+    .replace(/(<meta property="og:description" content=")[^"]*/, `$1${esc(c.meta.descripcion)}`)
+    .replace(/(<meta property="og:image" content=")[^"]*/, `$1${esc(c.imagenes.og.archivo)}`)
+    .replace(/(<meta property="og:image:alt" content=")[^"]*/, `$1${esc(c.imagenes.og.alt)}`)
     .replace('%SKIP%', esc(c.ui.saltar))
     .replaceAll('%LOADING%', esc(c.ui.cargando))
     .replace('%SCROLL%', esc(c.ui.scroll))

@@ -21,6 +21,20 @@
     "logoColor": "/assets/logo/logo-color.webp",
     "cta": { "texto": "Cotiza tu importación", "href": "#cotizar" }
   },
+  "imagenes": {
+    "nota": "Imágenes de muestra (stock / posible IA). No muestran al equipo ni a clientes de Laksmi. Reemplazar por fotos propias antes de publicar.",
+    "og": { "archivo": "/assets/og/og-laksmi.jpg", "alt": "Buque portacontenedores cargado navegando en mar abierto al atardecer" },
+    "carteles": [
+      { "id": "cartel-01", "base": "/assets/carteles/cartel-01", "alt": "Hombre de traje azul sonríe mientras estrecha la mano de otra persona" },
+      { "id": "cartel-02", "base": "/assets/carteles/cartel-02", "alt": "Grupo de profesionales en una oficina luminosa: dos se dan la mano y el resto aplaude" }
+    ],
+    "fallback": {
+      "proveedor": { "base": "/assets/fallback/etapa-02", "ancho": 512, "alto": 512, "alt": "Grupo de profesionales en una oficina luminosa: dos se dan la mano y el resto aplaude" },
+      "despacho": { "base": "/assets/fallback/etapa-04", "ancho": 512, "alto": 512, "alt": "Dos operarios con casco y chaleco reflectivo observan contenedores apilados junto a un montacargas en un patio portuario" },
+      "transito": { "base": "/assets/fallback/etapa-05", "ancho": 1200, "alto": 675, "alt": "Buque portacontenedores cargado navegando en mar abierto al atardecer" },
+      "aduana": { "base": "/assets/fallback/etapa-06", "ancho": 512, "alto": 512, "alt": "Vista aérea de un buque portacontenedores con la cubierta llena de contenedores de colores" }
+    }
+  },
   "contacto": {
     "telefono": "+58 422-8368275",
     "whatsapp": "584228368275",

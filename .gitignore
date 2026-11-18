@@ -3,3 +3,6 @@ dist
 .env
 docs/medicion-*.json
 docs/capturas/
+
+# originales (traen metadatos de Canva con datos personales)
+assets-fuente/

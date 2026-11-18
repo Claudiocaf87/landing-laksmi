@@ -128,9 +128,15 @@ export async function buildGlobe({ group, mats, manager, lite }) {
   branches.forEach((b) => reveal(b, 0));
 
   let introStart = null;
+  let fit = 1; // escala para que el globo entre en el hueco libre de la pantalla (la calcula Stage)
   return {
+    setFit(s) {
+      fit = s;
+    },
     update(u, time) {
       const closing = u >= 8;
+      // en la zambullida vuelve a tamaño real para que la cámara "entre" a China
+      spin.scale.setScalar(closing ? fit : fit + (1 - fit) * smooth(0.55, 0.95, u));
       const keys = closing ? FOCUS_CLOSE : FOCUS_OPEN;
       const lat = keyframes(keys, u, 'lat');
       const lon = keyframes(keys, u, 'lon') + (closing ? 0 : Math.sin(time * 0.15) * 2.5 * (1 - smooth(0.4, 0.8, u)));

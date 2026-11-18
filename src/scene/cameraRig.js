@@ -66,8 +66,8 @@ export const CAMERA_KEYS = [
   // 08 · se abre la caja → vuelta al globo con todas las rutas
   { u: 8.0, s: 'dest', p: [163.7, 1.65, 15.9], l: [165, 0.5, 18.4] },
   { u: 8.28, s: 'dest', p: [164.1, 1.55, 16.3], l: [165.05, 0.6, 18.4] },
-  { u: 8.3, s: 'globe', p: [0, 1.5, 26], l: [0, 0, 0] },
-  { u: 8.55, s: 'globe', p: [0, 2, 40], l: [0, 0, 0] },
+  { u: 8.3, s: 'globe', p: [0, 1.5, 30], l: [0, 0, 0] },
+  { u: 8.45, s: 'globe', p: [0, 2, 41], l: [0, 0, 0] },
   { u: 9.0, s: 'globe', p: [0, 2.6, 43], l: [0, 0, 0] },
 ];
 

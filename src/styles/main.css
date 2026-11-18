@@ -97,13 +97,25 @@ h3 {
   z-index: 1;
   pointer-events: none;
   /* degradado detrás del texto: garantiza contraste sobre cualquier fotograma */
-  background: linear-gradient(90deg, rgba(28, 22, 21, 0.92) 0%, rgba(28, 22, 21, 0.78) 30%, rgba(28, 22, 21, 0.2) 56%, rgba(28, 22, 21, 0) 70%),
-    linear-gradient(180deg, rgba(28, 22, 21, 0.55) 0%, rgba(28, 22, 21, 0) 18%);
+  background: linear-gradient(90deg, rgba(28, 22, 21, 0.95) 0%, rgba(28, 22, 21, 0.9) 34%, rgba(28, 22, 21, 0.62) 50%, rgba(28, 22, 21, 0.16) 64%, rgba(28, 22, 21, 0) 76%),
+    linear-gradient(180deg, rgba(28, 22, 21, 0.6) 0%, rgba(28, 22, 21, 0) 18%);
 }
 @media (max-width: 899px), (orientation: portrait) {
   .scrim {
-    background: linear-gradient(0deg, rgba(28, 22, 21, 0.96) 0%, rgba(28, 22, 21, 0.86) 40%, rgba(28, 22, 21, 0.2) 66%, rgba(28, 22, 21, 0) 78%),
-      linear-gradient(180deg, rgba(28, 22, 21, 0.6) 0%, rgba(28, 22, 21, 0) 16%);
+    background: linear-gradient(0deg, rgba(28, 22, 21, 0.97) 0%, rgba(28, 22, 21, 0.9) 42%, rgba(28, 22, 21, 0.5) 60%, rgba(28, 22, 21, 0.08) 76%, rgba(28, 22, 21, 0) 86%),
+      linear-gradient(180deg, rgba(28, 22, 21, 0.65) 0%, rgba(28, 22, 21, 0) 16%);
+  }
+  /* halo detrás del bloque de texto: acompaña su alto aunque el contenido suba sobre la escena */
+  .is-journey .etapa__inner {
+    position: relative;
+  }
+  .is-journey .etapa__inner::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: -36px calc(-1 * var(--gutter)) -24px;
+    background: linear-gradient(180deg, rgba(28, 22, 21, 0) 0%, rgba(28, 22, 21, 0.86) 48px, rgba(28, 22, 21, 0.9) 100%);
+    pointer-events: none;
   }
 }
 .veil {
@@ -389,6 +401,7 @@ button.btn:disabled {
   display: none;
 }
 .is-past .hud,
+.is-globe-tight .hud,
 .is-static .hud,
 .is-loading .hud {
   opacity: 0;
@@ -573,9 +586,13 @@ button.btn:disabled {
 }
 .kicker {
   display: flex;
+  width: fit-content;
   align-items: center;
   gap: 12px;
   margin: 0 0 18px;
+  padding: 4px 12px 4px 4px;
+  border-radius: 8px;
+  background: rgba(28, 22, 21, 0.82);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -592,6 +609,12 @@ button.btn:disabled {
 }
 .kicker--dark {
   color: var(--muted-dark);
+  background: none;
+  padding: 0;
+}
+.block--ink .kicker {
+  background: none;
+  padding: 0;
 }
 .kicker--dark .mono {
   color: var(--red);

@@ -40,22 +40,60 @@ export class Stage {
     this.rig.apply(this.camera, 0);
     await r.compileAsync(this.scene, this.camera);
     this.world.showAll(false);
+    this.frame();
     this.onProgress(1);
     window.addEventListener('resize', this.resize);
   }
 
-  // Encuadre: en desktop el sujeto queda a la derecha (el texto va a la izquierda);
-  // en vertical queda arriba (el texto va abajo). Se corre la ventana de proyección, no la cámara.
   resize = () => {
     const w = window.innerWidth;
     const h = window.innerHeight;
     this.camera.aspect = w / h;
     this.camera.fov = w / h < 0.8 ? 58 : 45;
-    if (w / h >= 1) this.camera.setViewOffset(w, h, -w * 0.1, 0, w, h);
-    else this.camera.setViewOffset(w, h, 0, h * 0.16, w, h);
-    this.camera.updateProjectionMatrix();
     this.renderer?.setSize(w, h, false);
+    this.frame();
   };
+
+  // Encuadre: en desktop el sujeto queda a la derecha (el texto va a la izquierda);
+  // en vertical queda arriba (el texto va abajo). Se corre la ventana de proyección, no la cámara.
+  // El globo se ubica y escala en el hueco libre entre la columna de texto y el HUD.
+  frame() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const cam = this.camera;
+    let ox = w / h >= 1 ? -w * 0.1 : 0;
+    const oy = w / h >= 1 ? 0 : h * 0.16;
+    let tight = false;
+    const globe = this.world?.sets.globe.api;
+    if (globe) {
+      let fit = 1;
+      if (w / h >= 1) {
+        const inners = document.querySelectorAll('.etapa__inner');
+        const textRight = Math.max(...[inners[0], inners[inners.length - 1]].filter(Boolean).map((el) => el.getBoundingClientRect().right), w * 0.3);
+        const hud = document.querySelector('.hud');
+        const hudLeft = hud && hud.offsetWidth ? hud.getBoundingClientRect().left : w;
+        const left = textRight + 28;
+        let right = hudLeft - 28;
+        if (right - left < 340) {
+          right = w - 28; // no entra entre texto y HUD: el HUD se oculta mientras se ve el globo
+          tight = true;
+        }
+        const rpx = Math.min((right - left) / 2, h * 0.37);
+        ox = -((left + right) / 2 - w / 2);
+        // radio en pantalla → escala del globo para la distancia de la cámara en la estación (≈ 41)
+        const tanA = (rpx * Math.tan((cam.fov * Math.PI) / 360)) / (h / 2);
+        fit = Math.min(1.1, Math.max(0.45, (41 * Math.sin(Math.atan(tanA))) / 10));
+      }
+      globe.setFit(fit);
+      this.globeOffset = ox;
+    }
+    this.baseOffset = w / h >= 1 ? -w * 0.1 : 0;
+    this.tightGlobe = tight;
+    const x = this.set === 'globe' && this.globeOffset != null ? this.globeOffset : this.baseOffset;
+    cam.setViewOffset(w, h, x, oy, w, h);
+    cam.updateProjectionMatrix();
+    document.documentElement.classList.toggle('is-globe-tight', tight && this.set === 'globe');
+  }
 
   setTarget(u) {
     this.targetU = u;
@@ -84,7 +122,11 @@ export class Stage {
     if (this.u >= maxU - 0.002 && this.targetU >= maxU - 0.002) return false;
 
     const u = Math.min(this.u, maxU - 1e-4);
-    this.set = this.rig.setAt(u);
+    const set = this.rig.setAt(u);
+    if (set !== this.set) {
+      this.set = set;
+      this.frame();
+    }
     if (this.veil) {
       const d = this.rig.cutDistance(u);
       const cut = 1 - Math.min(1, Math.max(0, (d - 0.004) / 0.04));
@@ -98,7 +140,11 @@ export class Stage {
 
   // renderiza una estación puntual y devuelve las estadísticas (para medir)
   measureAt(u) {
-    this.set = this.rig.setAt(u);
+    const set = this.rig.setAt(u);
+    if (set !== this.set) {
+      this.set = set;
+      this.frame();
+    }
     this.rig.apply(this.camera, u);
     this.world.update(u, this.time, this.set);
     this.renderer.render(this.scene, this.camera);
