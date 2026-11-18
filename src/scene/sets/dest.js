@@ -55,7 +55,7 @@ export function buildDest({ group, mats }) {
   const truck = createTruck(mats);
   group.add(truck);
   // contenedor con material propio: se vuelve translúcido en el escáner (rayos X)
-  const shellMat = new MeshStandardMaterial({ color: 0x77716c, roughness: 0.75, transparent: true, opacity: 1 });
+  const shellMat = new MeshStandardMaterial({ color: 0xd4a64e, roughness: 0.45, metalness: 0.35, transparent: true, opacity: 1 });
   const box = heroContainer(mats, shellMat);
   group.add(box);
   const beam = new Mesh(new PlaneGeometry(9, 6.6), new MeshBasicMaterial({ color: 0xfbae17, transparent: true, opacity: 0.35, side: DoubleSide, depthWrite: false }));
@@ -78,8 +78,21 @@ export function buildDest({ group, mats }) {
   person.position.set(DOOR.x + 0.85, 0, DOOR.z - 1.25);
   person.rotation.y = Math.PI + 0.35;
   group.add(person);
+  let cutout = false;
 
   return {
+    // foto recortada real (carga diferida): la imagen ya trae la mesa y la caja, así que la caja 3D se oculta
+    setCutout(t) {
+      const h = 1.9;
+      const w = h * (t.image.width / t.image.height);
+      person.geometry.dispose();
+      person.geometry = new PlaneGeometry(w, h).translate(0, h / 2, 0);
+      person.material.map = t;
+      person.material.needsUpdate = true;
+      person.position.set(DOOR.x + 0.15, 0, DOOR.z - 1.45);
+      person.rotation.y = Math.PI + 0.12;
+      cutout = true;
+    },
     update(u) {
       // --- descarga: 6,00 → 6,26 ---
       const onTruckTop = CHASSIS_Y + 2.59;
@@ -119,7 +132,8 @@ export function buildDest({ group, mats }) {
       const open = smooth(7.42, 7.56, u);
       door.position.set(DOOR.x, 2.25 + open * 2.4, DOOR.z - 0.05);
       door.scale.y = 4.5 * (1 - open * 0.9);
-      crate.visible = person.visible = u > 7.5;
+      person.visible = u > 7.5;
+      crate.visible = person.visible && !cutout;
       // la caja se abre en la etapa 08 (8,04 → 8,2)
       const a = smooth(8.04, 8.2, u) * Math.PI * 0.7;
       // tapa: arranca cerrada (horizontal, hacia adentro) y gira hacia afuera sobre la bisagra del borde

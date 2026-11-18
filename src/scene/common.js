@@ -23,26 +23,41 @@ import {
 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
-// Escena gris (fase 2): materiales neutros. En la fase 3 se reemplazan por los finales
-// sin tocar la geometría (cada set pide los materiales por clave).
+// Paleta 3D "clave alta": blancos y marfiles, dorado metálico como acento, azul profundo en detalles.
+// Cada set pide los materiales por clave, así que la geometría no cambia al ajustar el look.
+// Los colores salen de PALETTE para poder cambiar el azul cuando llegue el hex real del cliente.
+export const PALETTE = {
+  white: 0xfbf9f5,
+  ivory: 0xefe7dc,
+  sand: 0xe4d9c8,
+  gold: 0xc9a24a,
+  goldDeep: 0x8a6100,
+  blue: 0x0e2a47, // PROVISIONAL (mismo token que --blue en CSS)
+  red: 0xa00000,
+  graphite: 0x3b4250,
+};
 export function makeMaterials() {
   const std = (color, roughness = 0.85, metalness = 0) => new MeshStandardMaterial({ color, roughness, metalness });
   return {
-    ground: std(0x4b4744, 0.95),
-    concrete: std(0x5f5a56, 0.95),
-    dark: std(0x2f2a28, 0.8),
-    mid: std(0x77716c, 0.75),
-    light: std(0xaaa39c, 0.65),
-    metal: std(0x8b8580, 0.5, 0.2),
-    wood: std(0x6e6258, 0.9),
-    box: std(0x9a8d7e, 0.9),
-    hero: std(0xd6a648, 0.7), // la caja protagonista: único acento en la escena gris
-    container: std(0xffffff, 0.7), // se tiñe por instancia
-    person: std(0x8e8882, 0.8),
-    screen: new MeshBasicMaterial({ color: 0x34302d }),
-    poster: std(0x8d8780, 0.9),
-    emissive: new MeshBasicMaterial({ color: 0xf2ece4 }),
-    glow: new MeshBasicMaterial({ color: 0xfbae17 }),
+    ground: std(0xe9e3da, 0.95),
+    sand: std(0xd9cfc1, 0.55, 0.05), // piso pulido de la feria
+    ivory: std(0xe6dccd, 0.9),
+    concrete: std(0xf3efe9, 0.92),
+    dark: std(PALETTE.graphite, 0.6), // ruedas, marcos, pies: el único gris oscuro
+    mid: std(0xd9d2c8, 0.75),
+    light: std(PALETTE.white, 0.6),
+    metal: std(0xf6f3ee, 0.45, 0.15), // grúas y estructuras pintadas de blanco
+    gold: std(PALETTE.gold, 0.32, 1), // acentos metálicos
+    blue: std(PALETTE.blue, 0.55, 0.1),
+    wood: std(0xe3d2b6, 0.85),
+    box: std(0xd7bf98, 0.9), // cartón
+    hero: std(0xd4a64e, 0.45, 0.35), // la caja protagonista, con brillo dorado
+    container: std(0xffffff, 0.55, 0.1), // se tiñe por instancia
+    person: std(0xf1ece5, 0.7),
+    screen: new MeshBasicMaterial({ color: 0x14263b }),
+    poster: std(0xf2ede6, 0.9),
+    emissive: new MeshBasicMaterial({ color: 0xffffff }),
+    glow: new MeshBasicMaterial({ color: 0xd9ad4c }),
   };
 }
 
@@ -95,7 +110,8 @@ export function setInstance(mesh, i, x, y, z, ry = 0, s = 1) {
 
 // Contenedores: un cubo unitario escalado por instancia (40' = 12,19 × 2,59 × 2,44 m).
 export const CONTAINER_40 = { sx: 12.19, sy: 2.59, sz: 2.44 };
-export const CONTAINER_GREYS = [0x6d6864, 0x86807b, 0x5a5552, 0x9a948e, 0x77716c];
+// blanco, azul y dorado (algún rojo puntual), repartidos con un orden que no forma franjas
+export const CONTAINER_GREYS = [0xf4f1ec, 0x0e2a47, 0xf4f1ec, 0xc9a24a, 0xe8e2d8, 0x0e2a47, 0xf4f1ec, 0xb98f3a, 0x183a5e, 0xf4f1ec, 0xa00000, 0xe8e2d8, 0x0e2a47];
 export const unitBox = new BoxGeometry(1, 1, 1);
 
 // Pila de contenedores alineados con el eje X. Devuelve items para instanced().
@@ -149,7 +165,7 @@ export function createTruck(mats) {
   const wheels = [];
   for (const x of [0.2, -4.2, -11.2, -12.6]) for (const z of [-1.05, 1.05]) wheels.push(placed(new CylinderGeometry(0.5, 0.5, 0.4, 14), x, 0.5, z, 0, Math.PI / 2));
   const g = new Group();
-  g.add(new Mesh(mergeGeometries(body), mats.mid), new Mesh(mergeGeometries(wheels), mats.dark));
+  g.add(new Mesh(mergeGeometries(body), mats.light), new Mesh(mergeGeometries(wheels), mats.dark));
   g.name = 'camion';
   return g;
 }
@@ -198,9 +214,10 @@ export function buildCrane(b, x, key = 'metal') {
   for (const z of legZ) b.box(key, gauge + 1.2, 1.4, 1.4, x, top, z); // vigas portal
   for (const dx of [-gauge / 2, gauge / 2]) b.box(key, 1.2, 1.2, legZ[1] - legZ[0], x + dx, top, (legZ[0] + legZ[1]) / 2);
   for (const dx of [-3.2, 3.2]) b.box(key, 1.0, 1.6, boomFrom - boomTo, x + dx, boomY, (boomFrom + boomTo) / 2); // pluma
-  b.box('dark', 8, 4, 7, x, boomY + 2.2, 15); // sala de máquinas
+  b.box('blue', 8, 4, 7, x, boomY + 2.2, 15); // sala de máquinas
+  for (const dx of [-3.7, 3.7]) b.box('gold', 0.15, 0.3, boomFrom - boomTo, x + dx, boomY + 0.65, (boomFrom + boomTo) / 2); // filo dorado
   b.box(key, 1, 12, 1, x, top + 8, 9); // torre
-  b.box('dark', 2.6, 2.4, 2.6, x + 4.4, boomY - 2.4, -4); // cabina del operador
+  b.box('blue', 2.6, 2.4, 2.6, x + 4.4, boomY - 2.4, -4); // cabina del operador
   for (const dx of [-gauge / 2, gauge / 2]) b.box('dark', 2.6, 1.2, 4, x + dx, 0.6, legZ[0]);
   for (const dx of [-gauge / 2, gauge / 2]) b.box('dark', 2.6, 1.2, 4, x + dx, 0.6, legZ[1]);
 }
@@ -208,11 +225,11 @@ export function buildCrane(b, x, key = 'metal') {
 // Carro + cables + spreader. setLoad(z, y): z del carro sobre la pluma, y del spreader.
 export function createTrolley(mats) {
   const g = new Group();
-  const cart = new Mesh(new BoxGeometry(7, 1.4, 4), mats.dark);
+  const cart = new Mesh(new BoxGeometry(7, 1.4, 4), mats.blue);
   cart.position.y = CRANE.boomY - 1.2;
   const cable = new Mesh(new BoxGeometry(0.08, 1, 0.08).translate(0, -0.5, 0), mats.dark);
   const cable2 = cable.clone();
-  const spreader = new Mesh(new BoxGeometry(6.2, 0.5, 2.5), mats.mid);
+  const spreader = new Mesh(new BoxGeometry(6.2, 0.5, 2.5), mats.gold);
   g.add(cart, cable, cable2, spreader);
   g.setLoad = (z, y) => {
     cart.position.z = z;
@@ -252,7 +269,7 @@ export function createShip(mats, { seed = 3 } = {}) {
   const g = new Group();
   g.name = 'barco';
   const { L, W, deck } = SHIP;
-  g.add(new Mesh(shipHullGeometry(), mats.dark));
+  g.add(new Mesh(shipHullGeometry(), mats.blue));
   const bridge = mergeGeometries([
     placed(new BoxGeometry(12, 16, W - 4), -L / 2 + 14, deck + 8, 0),
     placed(new BoxGeometry(8, 3, W + 4), -L / 2 + 14, deck + 17.5, 0),

@@ -51,7 +51,7 @@ for (const vp of viewports) {
         const size = parseFloat(cs.fontSize);
         const bold = Number(cs.fontWeight) >= 700;
         const own = cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && !cs.backgroundColor.endsWith(', 0)');
-        return { label: (el.className || el.tagName).toString().split(' ')[0] + ': ' + el.textContent.trim().slice(0, 28), x: r.x, y: r.y, w: r.width, h: r.height, color: [cr, cg, cb], large: size >= 24 || (bold && size >= 18.66), solid: own && el.classList.contains('btn') };
+        return { label: (el.className || el.tagName).toString().split(' ')[0] + ': ' + el.textContent.trim().slice(0, 28), x: r.x, y: r.y, w: r.width, h: r.height, color: [cr, cg, cb], large: size >= 24 || (bold && size >= 18.66), solid: own && el.classList.contains('btn'), pill: el.classList.contains('btn') };
       });
     }, i);
     // texto transparente → queda solo el fondo
@@ -63,14 +63,19 @@ for (const vp of viewports) {
     for (const it of items) {
       if (it.w < 2 || it.h < 2 || it.solid) continue;
       const L = [];
-      for (let y = Math.floor(it.y * dpr); y < Math.min(png.height, (it.y + it.h) * dpr); y += 2)
-        for (let x = Math.floor(it.x * dpr); x < Math.min(png.width, (it.x + it.w) * dpr); x += 2) {
+      // botones (píldoras): solo la franja central, para no medir las esquinas redondeadas que quedan afuera
+      const x0 = it.pill ? it.x + it.w * 0.2 : it.x;
+      const x1 = it.pill ? it.x + it.w * 0.8 : it.x + it.w;
+      const y0 = it.pill ? it.y + it.h * 0.3 : it.y;
+      const y1 = it.pill ? it.y + it.h * 0.7 : it.y + it.h;
+      for (let y = Math.floor(y0 * dpr); y < Math.min(png.height, y1 * dpr); y += 2)
+        for (let x = Math.floor(x0 * dpr); x < Math.min(png.width, x1 * dpr); x += 2) {
           const k = (y * png.width + x) * 4;
           L.push(lum(png.data[k], png.data[k + 1], png.data[k + 2]));
         }
       if (!L.length) continue;
       L.sort((a, b) => a - b);
-      const bg = L[Math.floor(L.length * 0.95)];
+      const bg = L[Math.floor(L.length * (it.pill ? 0.5 : 0.95))];
       const r = ratio(lum(...it.color), bg);
       const min = it.large ? 3 : 4.5;
       if (!worst || r / min < worst.r / worst.min) worst = { ...it, r, min };

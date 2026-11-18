@@ -1,4 +1,5 @@
-import { ACESFilmicToneMapping, LoadingManager, PerspectiveCamera, Scene, SRGBColorSpace, WebGLRenderer } from 'three';
+import { LoadingManager, NeutralToneMapping, PerspectiveCamera, PMREMGenerator, Scene, SRGBColorSpace, WebGLRenderer } from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { buildWorld } from './world.js';
 import { CameraRig } from './cameraRig.js';
 
@@ -25,11 +26,17 @@ export class Stage {
     const r = new WebGLRenderer({ canvas: this.canvas, antialias: !this.lite, powerPreference: 'high-performance', stencil: false });
     r.setPixelRatio(Math.min(window.devicePixelRatio, this.lite ? 1 : 1.5));
     r.setSize(window.innerWidth, window.innerHeight, false);
-    r.toneMapping = ACESFilmicToneMapping;
+    r.toneMapping = NeutralToneMapping; // conserva blancos limpios (ACES los agrisa)
+    r.toneMappingExposure = 1.0;
     r.outputColorSpace = SRGBColorSpace;
     this.renderer = r;
 
     this.scene = new Scene();
+    // entorno generado por código (sin HDR que descargar): da reflejos al dorado metálico
+    const pmrem = new PMREMGenerator(r);
+    this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    this.scene.environmentIntensity = 0.55;
+    pmrem.dispose();
     this.camera = new PerspectiveCamera(45, 1, 0.1, 900);
     this.rig = new CameraRig();
     this.resize();
@@ -43,6 +50,9 @@ export class Stage {
     this.frame();
     this.onProgress(1);
     window.addEventListener('resize', this.resize);
+    // fotos de carteles, pantalla y recorte: después del primer fotograma (no suman a la carga inicial)
+    const idle = window.requestIdleCallback || ((f) => setTimeout(f, 700));
+    this.deferred = new Promise((resolve) => idle(() => import('./deferred.js').then(({ loadDeferred }) => loadDeferred(this)).then(resolve), { timeout: 2500 }));
   }
 
   resize = () => {

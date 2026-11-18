@@ -32,6 +32,7 @@ async function open(ctxOpts) {
   const page = await ctx.newPage();
   await page.goto(url);
   await page.waitForFunction(() => window.__journey && !document.querySelector('.loader'), null, { timeout: 60000 });
+  await page.evaluate(() => window.__stage.deferred); // carteles, pantalla y recorte
   await page.waitForTimeout(600);
   return { ctx, page };
 }
@@ -148,6 +149,11 @@ const result = { fecha: new Date().toISOString(), navegador: CHROME };
   });
   result.desktop = { scroll: await scrollLength(page), estaciones: await stations(page, 'desktop') };
   if (process.env.SOLO === 'capturas') {
+    // solo capturas: también mobile, sin medir fps
+    await ctx.close();
+    const m = await open({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    await stations(m.page, 'mobile');
+    await m.ctx.close();
     await browser.close();
     await server.close();
     console.log(result.desktop.estaciones.rows.map((r) => `${r.u} ${r.set} ${r.calls}`).join('\n'));

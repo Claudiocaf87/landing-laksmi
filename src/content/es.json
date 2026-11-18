@@ -17,22 +17,111 @@
   "marca": {
     "nombre": "Laksmi Latam Group",
     "bajada": "Tu agente de compras en China",
-    "logo": "/assets/logo/logo-blanco.webp",
-    "logoColor": "/assets/logo/logo-color.webp",
-    "cta": { "texto": "Cotiza tu importación", "href": "#cotizar" }
+    "logo": "/assets/logo/logo-color.webp",
+    "cta": {
+      "texto": "Cotiza tu importación",
+      "href": "#cotizar"
+    },
+    "logoBlanco": "/assets/logo/logo-blanco.webp"
   },
   "imagenes": {
-    "nota": "Imágenes de muestra (stock / posible IA). No muestran al equipo ni a clientes de Laksmi. Reemplazar por fotos propias antes de publicar.",
-    "og": { "archivo": "/assets/og/og-laksmi.jpg", "alt": "Buque portacontenedores cargado navegando en mar abierto al atardecer" },
+    "nota": "Imágenes de muestra: stock o generadas con IA. No muestran al equipo ni a clientes de Laksmi y van sin leyendas que afirmen nada. Reemplazar por fotos propias antes de publicar.",
+    "og": {
+      "archivo": "/assets/og/og-laksmi.jpg",
+      "alt": "Buque portacontenedores cargado navegando en mar abierto al atardecer"
+    },
     "carteles": [
-      { "id": "cartel-01", "base": "/assets/carteles/cartel-01", "alt": "Hombre de traje azul sonríe mientras estrecha la mano de otra persona" },
-      { "id": "cartel-02", "base": "/assets/carteles/cartel-02", "alt": "Grupo de profesionales en una oficina luminosa: dos se dan la mano y el resto aplaude" }
+      {
+        "id": "cartel-01",
+        "base": "/assets/carteles/cartel-01",
+        "origen": "stock",
+        "alt": "Hombre de traje azul sonríe mientras estrecha la mano de otra persona"
+      },
+      {
+        "id": "cartel-02",
+        "base": "/assets/carteles/cartel-02",
+        "origen": "stock",
+        "alt": "Grupo de profesionales en una oficina luminosa: dos se dan la mano y el resto aplaude"
+      },
+      {
+        "id": "feria-01",
+        "base": "/assets/carteles/feria-01",
+        "origen": "ia",
+        "alt": "Dos compradores con credencial recorren el pasillo de una feria comercial; él señala un exhibidor de productos"
+      },
+      {
+        "id": "feria-02",
+        "base": "/assets/carteles/feria-02",
+        "origen": "ia",
+        "alt": "Un comprador examina un teléfono de muestra en un stand mientras el expositor le explica"
+      },
+      {
+        "id": "negociacion-01",
+        "base": "/assets/carteles/negociacion-01",
+        "origen": "ia",
+        "alt": "Tres personas conversan en una mesa de reunión con muestras de producto, planos y una tablet"
+      },
+      {
+        "id": "calidad-01",
+        "base": "/assets/carteles/calidad-01",
+        "origen": "ia",
+        "alt": "En un depósito, un inspector revisa una caja abierta y completa una lista de control"
+      }
     ],
+    "asignacion": {
+      "stands": [
+        "negociacion-01",
+        "cartel-01",
+        "feria-02",
+        "cartel-02",
+        "feria-01"
+      ],
+      "banderolas": [
+        "feria-01",
+        "feria-02"
+      ],
+      "pantalla": "calidad-01"
+    },
+    "recorte": {
+      "base": "/assets/recortes/persona-caja",
+      "origen": "ia",
+      "alt": "Hombre de saco azul sonríe mientras abre una caja de cartón sobre una mesa blanca"
+    },
     "fallback": {
-      "proveedor": { "base": "/assets/fallback/etapa-02", "ancho": 512, "alto": 512, "alt": "Grupo de profesionales en una oficina luminosa: dos se dan la mano y el resto aplaude" },
-      "despacho": { "base": "/assets/fallback/etapa-04", "ancho": 512, "alto": 512, "alt": "Dos operarios con casco y chaleco reflectivo observan contenedores apilados junto a un montacargas en un patio portuario" },
-      "transito": { "base": "/assets/fallback/etapa-05", "ancho": 1200, "alto": 675, "alt": "Buque portacontenedores cargado navegando en mar abierto al atardecer" },
-      "aduana": { "base": "/assets/fallback/etapa-06", "ancho": 512, "alto": 512, "alt": "Vista aérea de un buque portacontenedores con la cubierta llena de contenedores de colores" }
+      "proveedor": {
+        "base": "/assets/fallback/ferias",
+        "ancho": 1200,
+        "alto": 675,
+        "alt": "Dos compradores con credencial recorren el pasillo de una feria comercial; él señala un exhibidor de productos"
+      },
+      "negociacion": {
+        "base": "/assets/fallback/negociacion",
+        "ancho": 1200,
+        "alto": 675,
+        "alt": "Tres personas conversan en una mesa de reunión con muestras de producto, planos y una tablet"
+      },
+      "calidad": {
+        "base": "/assets/fallback/calidad",
+        "ancho": 1200,
+        "alto": 675,
+        "alt": "En un depósito, un inspector revisa una caja abierta y completa una lista de control"
+      },
+      "despacho": {
+        "base": "/assets/fallback/despacho",
+        "ancho": 512,
+        "alto": 288,
+        "alt": "Dos operarios con casco y chaleco reflectivo observan contenedores apilados junto a un montacargas en un patio portuario"
+      },
+      "transito": {
+        "base": "/assets/fallback/transito",
+        "ancho": 1200,
+        "alto": 675,
+        "alt": "Buque portacontenedores cargado navegando en mar abierto al atardecer"
+      }
+    },
+    "fotosReales": {
+      "nota": "Fotos reales del equipo en la Feria de Cantón: pendientes. Leyenda: [FERIA, AÑO, QUIÉN ES]",
+      "items": []
     }
   },
   "contacto": {
@@ -41,34 +130,113 @@
     "email": "Info@laksmigroup.com",
     "rif": "J-50510379-2",
     "oficinas": [
-      { "lugar": "Margarita, Venezuela", "direccion": "Edif. Centro Profesional San Nicolás, piso 1, oficinas A09 y A10, Calle Las Flores c/c Calle El Colegio, Sector El Poblado, Porlamar, Nueva Esparta." },
-      { "lugar": "Caracas, Venezuela", "direccion": "[DIRECCIÓN EN CARACAS]" },
-      { "lugar": "Ningbo, China", "direccion": "23F Greenpark Building, 588 Canghai Road, Ningbo." }
+      {
+        "lugar": "Margarita, Venezuela",
+        "direccion": "Edif. Centro Profesional San Nicolás, piso 1, oficinas A09 y A10, Calle Las Flores c/c Calle El Colegio, Sector El Poblado, Porlamar, Nueva Esparta."
+      },
+      {
+        "lugar": "Caracas, Venezuela",
+        "direccion": "[DIRECCIÓN EN CARACAS]"
+      },
+      {
+        "lugar": "Ningbo, China",
+        "direccion": "23F Greenpark Building, 588 Canghai Road, Ningbo."
+      }
     ]
   },
   "redes": [
-    { "red": "instagram", "etiqueta": "Instagram", "url": "https://instagram.com/laksmigroup" },
-    { "red": "facebook", "etiqueta": "Facebook", "url": "#" },
-    { "red": "x", "etiqueta": "X", "url": "https://twitter.com/laksmigroup" }
+    {
+      "red": "instagram",
+      "etiqueta": "Instagram",
+      "url": "https://instagram.com/laksmigroup"
+    },
+    {
+      "red": "facebook",
+      "etiqueta": "Facebook",
+      "url": "#"
+    },
+    {
+      "red": "x",
+      "etiqueta": "X",
+      "url": "https://twitter.com/laksmigroup"
+    }
   ],
   "navegacion": [
-    { "texto": "El proceso", "href": "#plan" },
-    { "texto": "Testimonios", "href": "#testimonios" },
-    { "texto": "Preguntas", "href": "#preguntas" }
+    {
+      "texto": "El proceso",
+      "href": "#plan"
+    },
+    {
+      "texto": "Testimonios",
+      "href": "#testimonios"
+    },
+    {
+      "texto": "Preguntas",
+      "href": "#preguntas"
+    }
   ],
   "hud": {
     "titulo": "Seguimiento del envío",
     "codigo": "LK · CN → LATAM",
     "estados": [
-      { "texto": "Pedido creado", "desde": 0, "ir": "inicio" },
-      { "texto": "Plan aprobado", "desde": 1, "ir": "plan" },
-      { "texto": "Proveedor verificado", "desde": 2, "ir": "proveedor" },
-      { "texto": "Calidad verificada", "desde": 3, "ir": "calidad" },
-      { "texto": "Cargado y precintado", "desde": 4, "ir": "despacho" },
-      { "texto": "Embarcado", "desde": 4.62, "ir": "despacho", "u": 4.8 },
-      { "texto": "En tránsito", "desde": 5, "ir": "transito" },
-      { "texto": "Liberado en aduana", "desde": 6, "ir": "aduana" },
-      { "texto": "Entregado", "desde": 7, "ir": "entrega" }
+      {
+        "texto": "Pedido creado",
+        "desde": 0,
+        "ir": "inicio"
+      },
+      {
+        "texto": "Plan aprobado",
+        "desde": 1,
+        "ir": "plan"
+      },
+      {
+        "texto": "Productos seleccionados",
+        "desde": 2,
+        "ir": "proveedor"
+      },
+      {
+        "texto": "Condiciones negociadas",
+        "desde": 2.42,
+        "ir": "proveedor",
+        "u": 2.45
+      },
+      {
+        "texto": "Proveedor verificado",
+        "desde": 2.62,
+        "ir": "proveedor",
+        "u": 2.7
+      },
+      {
+        "texto": "Calidad verificada",
+        "desde": 3,
+        "ir": "calidad"
+      },
+      {
+        "texto": "Cargado y precintado",
+        "desde": 4,
+        "ir": "despacho"
+      },
+      {
+        "texto": "Embarcado",
+        "desde": 4.62,
+        "ir": "despacho",
+        "u": 4.8
+      },
+      {
+        "texto": "En tránsito",
+        "desde": 5,
+        "ir": "transito"
+      },
+      {
+        "texto": "Liberado en aduana",
+        "desde": 6,
+        "ir": "aduana"
+      },
+      {
+        "texto": "Entregado",
+        "desde": 7,
+        "ir": "entrega"
+      }
     ]
   },
   "etapas": [
@@ -77,37 +245,68 @@
       "menu": "Inicio",
       "numero": "00",
       "etiqueta": "Tu agente de compras en China",
-      "titulo": ["Tu equipo en China,", "de la fábrica a tu almacén."],
+      "titulo": [
+        "Tu equipo en origen,",
+        "de la fábrica a tu almacén."
+      ],
       "subtitulo": "Buscamos proveedores, negociamos en mandarín, inspeccionamos cada unidad y llevamos tu mercancía a Venezuela y a toda Latinoamérica.",
-      "chips": ["Yiwu", "Guangzhou", "Ningbo", "Shantou"],
-      "cta": { "texto": "Cotiza tu importación", "href": "#cotizar" },
-      "ctaWhatsapp": true
+      "chips": [
+        "Yiwu",
+        "Guangzhou",
+        "Ningbo",
+        "Shantou"
+      ],
+      "cta": {
+        "texto": "Cotiza tu importación",
+        "href": "#cotizar"
+      },
+      "ctaWhatsapp": true,
+      "chipsAlt": [
+        "México · Rusia · USA [A CONFIRMAR]"
+      ],
+      "leyenda": true
     },
     {
       "id": "plan",
       "menu": "Diagnóstico",
       "numero": "01",
       "etiqueta": "Diagnóstico y estrategia",
-      "titulo": ["Antes de comprar,", "un plan."],
+      "titulo": [
+        "Antes de comprar,",
+        "un plan."
+      ],
       "subtitulo": "Revisamos qué importas, a quién le compras, tus volúmenes y lo que salió mal antes. En 48 horas te decimos qué se puede mejorar. Tú apruebas el plan antes de avanzar.",
-      "puntos": ["Diagnóstico gratuito en 48 horas", "Acuerdo de confidencialidad antes de operar", "Comisión fija del 5 %, sin costos ocultos"]
+      "puntos": [
+        "Diagnóstico gratuito en 48 horas",
+        "Acuerdo de confidencialidad antes de operar",
+        "Comisión fija del 5 %, sin costos ocultos"
+      ]
     },
     {
       "id": "proveedor",
-      "menu": "Proveedores",
+      "menu": "Ferias",
       "numero": "02",
-      "etiqueta": "Búsqueda, auditoría y negociación",
-      "titulo": ["Estamos en la fábrica,", "no detrás de un correo."],
-      "subtitulo": "Contactamos fábricas, negociamos en mandarín, hacemos visitas presenciales y documentamos todo con reportes en tiempo real. Si ya tienes proveedores, los validamos.",
-      "puntos": ["Verificamos la capacidad real de producción antes del pago", "Feria de Cantón y Mercado de Yiwu", "Supervisión de la producción"],
-      "chips": ["Ferretería e insumos industriales", "Equipos médicos", "Automotriz", "Bisutería y accesorios", "Tecnología"]
+      "etiqueta": "Ferias y selección de productos",
+      "titulo": [
+        "Recorremos las ferias",
+        "por ti."
+      ],
+      "subtitulo": "Feria de Cantón y Mercado de Yiwu: vemos los productos en persona, comparamos muestras y preseleccionamos proveedores según tu plan.",
+      "puntos": [
+        "Muestras vistas y comparadas en el stand",
+        "Negociación en mandarín, directo con la fábrica",
+        "Verificamos la capacidad real de producción antes del pago"
+      ]
     },
     {
       "id": "calidad",
       "menu": "Calidad",
       "numero": "03",
       "etiqueta": "Inspección previa al embarque",
-      "titulo": ["Revisamos el 100 %", "antes de que salga."],
+      "titulo": [
+        "Revisamos el 100 %",
+        "antes de que salga."
+      ],
       "subtitulo": "Inspeccionamos todas las unidades antes del despacho. Si algo no cumple las especificaciones acordadas, el envío se detiene."
     },
     {
@@ -115,25 +314,43 @@
       "menu": "Despacho",
       "numero": "04",
       "etiqueta": "Despacho en origen",
-      "titulo": ["Cargado, precintado", "y a bordo."],
+      "titulo": [
+        "Cargado, precintado",
+        "y a bordo."
+      ],
       "subtitulo": "Coordinamos la carga, la documentación de exportación y el embarque desde los puertos de China.",
-      "chips": ["Flete marítimo", "Flete aéreo", "Transporte terrestre"]
+      "chips": [
+        "Flete marítimo",
+        "Flete aéreo",
+        "Transporte terrestre"
+      ]
     },
     {
       "id": "transito",
       "menu": "Tránsito",
       "numero": "05",
       "etiqueta": "Transporte internacional",
-      "titulo": ["Tu carga en camino,", "y tú al tanto."],
+      "titulo": [
+        "Tu carga en camino,",
+        "y tú al tanto."
+      ],
       "subtitulo": "Del proveedor a tu almacén: entre 60 y 90 días en promedio, según el producto y la fábrica.",
-      "mapa": { "origen": "Puertos de China", "destino": "[PUERTO DE DESTINO]", "dias": "[DÍAS DE TRÁNSITO]", "etiquetaDias": "días de navegación" }
+      "mapa": {
+        "origen": "Puertos de China",
+        "destino": "[PUERTO DE DESTINO]",
+        "dias": "[DÍAS DE TRÁNSITO]",
+        "etiquetaDias": "días de navegación"
+      }
     },
     {
       "id": "aduana",
       "menu": "Aduana",
       "numero": "06",
       "etiqueta": "Llegada y aduana",
-      "titulo": ["Lo que se declara", "es lo que llega."],
+      "titulo": [
+        "Lo que se declara",
+        "es lo que llega."
+      ],
       "subtitulo": "Coordinamos la documentación y el proceso aduanero en destino. [ALCANCE DEL SERVICIO ADUANERO: A CONFIRMAR]"
     },
     {
@@ -141,7 +358,10 @@
       "menu": "Entrega",
       "numero": "07",
       "etiqueta": "Entrega",
-      "titulo": ["Hasta la puerta", "de tu almacén."],
+      "titulo": [
+        "Hasta la puerta",
+        "de tu almacén."
+      ],
       "subtitulo": "Despacho en origen, transporte internacional, coordinación aduanera y entrega. Un solo equipo responsable de punta a punta."
     },
     {
@@ -149,16 +369,39 @@
       "menu": "Resultados",
       "numero": "08",
       "etiqueta": "Resultados",
-      "titulo": ["Así llegamos a", "toda Latinoamérica."],
+      "titulo": [
+        "Así llegamos a",
+        "toda Latinoamérica."
+      ],
       "subtitulo": "Venezuela, Colombia, Chile, Perú, México y más.",
       "stats": [
-        { "valor": "7", "prefijo": "+", "etiqueta": "años de experiencia" },
-        { "valor": "127", "prefijo": "+", "etiqueta": "importadores activos" },
-        { "valor": "1682", "prefijo": "+", "etiqueta": "envíos completados" },
-        { "valor": "4", "prefijo": "", "etiqueta": "oficinas propias en China" }
+        {
+          "valor": "7",
+          "prefijo": "+",
+          "etiqueta": "años de experiencia"
+        },
+        {
+          "valor": "127",
+          "prefijo": "+",
+          "etiqueta": "importadores activos"
+        },
+        {
+          "valor": "1682",
+          "prefijo": "+",
+          "etiqueta": "envíos completados"
+        },
+        {
+          "valor": "4",
+          "prefijo": "",
+          "etiqueta": "oficinas propias en China"
+        }
       ],
       "nota": "[Cifras publicadas en laksmigroup.com: a confirmar antes de publicar]",
-      "cta": { "texto": "Cotiza tu importación", "href": "#cotizar" }
+      "cta": {
+        "texto": "Cotiza tu importación",
+        "href": "#cotizar"
+      },
+      "leyenda": true
     }
   ],
   "testimonios": {
@@ -167,10 +410,26 @@
     "titulo": "Lo que dicen los importadores",
     "nota": "[Textos y permiso de uso a confirmar]",
     "items": [
-      { "nombre": "Sofía Rivas", "cargo": "Emprendedora, sector comercial", "cita": "[CITA TEXTUAL DEL TESTIMONIO]" },
-      { "nombre": "Carlos Mendoza", "cargo": "Gerente de operaciones", "cita": "[CITA TEXTUAL DEL TESTIMONIO]" },
-      { "nombre": "Alejandro Torres", "cargo": "Director comercial", "cita": "[CITA TEXTUAL DEL TESTIMONIO]" },
-      { "nombre": "Daniela González", "cargo": "Coordinadora de cadena de suministro", "cita": "[CITA TEXTUAL DEL TESTIMONIO]" }
+      {
+        "nombre": "Sofía Rivas",
+        "cargo": "Emprendedora, sector comercial",
+        "cita": "[CITA TEXTUAL DEL TESTIMONIO]"
+      },
+      {
+        "nombre": "Carlos Mendoza",
+        "cargo": "Gerente de operaciones",
+        "cita": "[CITA TEXTUAL DEL TESTIMONIO]"
+      },
+      {
+        "nombre": "Alejandro Torres",
+        "cargo": "Director comercial",
+        "cita": "[CITA TEXTUAL DEL TESTIMONIO]"
+      },
+      {
+        "nombre": "Daniela González",
+        "cargo": "Coordinadora de cadena de suministro",
+        "cita": "[CITA TEXTUAL DEL TESTIMONIO]"
+      }
     ]
   },
   "faq": {
@@ -178,14 +437,38 @@
     "etiqueta": "Preguntas frecuentes",
     "titulo": "Lo que nos preguntan antes de empezar",
     "items": [
-      { "p": "¿Qué hace un agente de compras en China?", "r": "Te representa en origen: busca proveedores, negocia en mandarín, audita fábricas, supervisa la producción y coordina el envío." },
-      { "p": "Ya tengo proveedores, ¿por qué cambiar?", "r": "No tienes que cambiarlos. Validamos a tus proveedores actuales en lugar de reemplazarlos, y la auditoría inicial es gratuita." },
-      { "p": "¿Cuánto cobran?", "r": "Una comisión fija del 5 % sobre el valor de la mercancía, acordada antes de empezar. Sin costos ocultos." },
-      { "p": "¿Van a contactar a mi proveedor directamente?", "r": "No sin tu autorización: firmamos un acuerdo de confidencialidad antes de cualquier operación." },
-      { "p": "¿Solo trabajan con Venezuela?", "r": "No. Atendemos empresas de toda Latinoamérica, incluyendo Colombia, Chile, Perú y México." },
-      { "p": "¿Cuánto demora una importación?", "r": "Entre 60 y 90 días en promedio, desde la búsqueda del proveedor hasta la entrega en tu almacén, según el producto y la fábrica." },
-      { "p": "¿Y si la mercancía llega defectuosa?", "r": "Inspeccionamos antes del despacho. Si la mercancía no cumple las especificaciones, el envío se detiene antes de salir de China." },
-      { "p": "¿Tienen experiencia en mi rubro?", "r": "Trabajamos con ferretería e insumos industriales, equipos médicos, automotriz, bisutería y accesorios, y tecnología. Si tu rubro es otro, cuéntanos en el diagnóstico." }
+      {
+        "p": "¿Qué hace un agente de compras en China?",
+        "r": "Te representa en origen: busca proveedores, negocia en mandarín, audita fábricas, supervisa la producción y coordina el envío."
+      },
+      {
+        "p": "Ya tengo proveedores, ¿por qué cambiar?",
+        "r": "No tienes que cambiarlos. Validamos a tus proveedores actuales en lugar de reemplazarlos, y la auditoría inicial es gratuita."
+      },
+      {
+        "p": "¿Cuánto cobran?",
+        "r": "Una comisión fija del 5 % sobre el valor de la mercancía, acordada antes de empezar. Sin costos ocultos."
+      },
+      {
+        "p": "¿Van a contactar a mi proveedor directamente?",
+        "r": "No sin tu autorización: firmamos un acuerdo de confidencialidad antes de cualquier operación."
+      },
+      {
+        "p": "¿Solo trabajan con Venezuela?",
+        "r": "No. Atendemos empresas de toda Latinoamérica, incluyendo Colombia, Chile, Perú y México."
+      },
+      {
+        "p": "¿Cuánto demora una importación?",
+        "r": "Entre 60 y 90 días en promedio, desde la búsqueda del proveedor hasta la entrega en tu almacén, según el producto y la fábrica."
+      },
+      {
+        "p": "¿Y si la mercancía llega defectuosa?",
+        "r": "Inspeccionamos antes del despacho. Si la mercancía no cumple las especificaciones, el envío se detiene antes de salir de China."
+      },
+      {
+        "p": "¿Tienen experiencia en mi rubro?",
+        "r": "Trabajamos con ferretería e insumos industriales, equipos médicos, automotriz, bisutería y accesorios, y tecnología. Si tu rubro es otro, cuéntanos en el diagnóstico."
+      }
     ]
   },
   "perfiles": {
@@ -194,9 +477,24 @@
     "titulo": "¿Cuál se parece más a ti?",
     "subtitulo": "Elige una opción y adaptamos el diagnóstico a tu situación.",
     "items": [
-      { "id": "importador-consolidado", "titulo": "Ya importo volumen", "texto": "Tengo proveedores y quiero mejores precios y más control sobre la calidad.", "problema": "Precios altos" },
-      { "id": "emprendedor-quemado", "titulo": "Me fue mal antes", "texto": "Recibí mercancía defectuosa, tuve retrasos o un proveedor que no cumplió.", "problema": "Calidad" },
-      { "id": "veterano-cauteloso", "titulo": "Conozco China y voy con cuidado", "texto": "Quiero validar a mis proveedores y dejar de depender de una sola fuente.", "problema": "Dependencia" }
+      {
+        "id": "importador-consolidado",
+        "titulo": "Ya importo volumen",
+        "texto": "Tengo proveedores y quiero mejores precios y más control sobre la calidad.",
+        "problema": "Precios altos"
+      },
+      {
+        "id": "emprendedor-quemado",
+        "titulo": "Me fue mal antes",
+        "texto": "Recibí mercancía defectuosa, tuve retrasos o un proveedor que no cumplió.",
+        "problema": "Calidad"
+      },
+      {
+        "id": "veterano-cauteloso",
+        "titulo": "Conozco China y voy con cuidado",
+        "texto": "Quiero validar a mis proveedores y dejar de depender de una sola fuente.",
+        "problema": "Dependencia"
+      }
     ]
   },
   "cotizacion": {
@@ -204,7 +502,10 @@
     "menu": "Cotizar",
     "numero": "09",
     "etiqueta": "Cotización",
-    "titulo": ["Cotiza tu", "importación."],
+    "titulo": [
+      "Cotiza tu",
+      "importación."
+    ],
     "subtitulo": "Cuéntanos qué quieres importar. Te respondemos con un diagnóstico gratuito en 48 horas.",
     "campos": {
       "nombre": "Nombre",
@@ -223,12 +524,45 @@
       "elegir": "Elige una opción"
     },
     "opciones": {
-      "pais": ["Venezuela", "Colombia", "Chile", "Perú", "México", "Otro país de Latinoamérica"],
-      "volumen": ["USD 100K – 200K", "USD 200K – 400K", "USD 400K – 600K", "USD 600K – 1M", "Más de USD 1M"],
-      "comercializa": ["Minorista (mín. USD 5.000)", "Mayorista", "Ambas"],
-      "tamano": ["1 a 10 empleados", "10 a 50 empleados", "50 a 200 empleados"],
-      "servicio": ["Agente de compras (todo el proceso)", "Búsqueda y negociación con fábricas", "Auditoría de proveedores", "Control de calidad e inspección", "Logística internacional"],
-      "problema": ["Precios altos", "Calidad", "Retrasos", "Dependencia", "Todos"]
+      "pais": [
+        "Venezuela",
+        "Colombia",
+        "Chile",
+        "Perú",
+        "México",
+        "Otro país de Latinoamérica"
+      ],
+      "volumen": [
+        "USD 100K – 200K",
+        "USD 200K – 400K",
+        "USD 400K – 600K",
+        "USD 600K – 1M",
+        "Más de USD 1M"
+      ],
+      "comercializa": [
+        "Minorista (mín. USD 5.000)",
+        "Mayorista",
+        "Ambas"
+      ],
+      "tamano": [
+        "1 a 10 empleados",
+        "10 a 50 empleados",
+        "50 a 200 empleados"
+      ],
+      "servicio": [
+        "Agente de compras (todo el proceso)",
+        "Búsqueda y negociación con fábricas",
+        "Auditoría de proveedores",
+        "Control de calidad e inspección",
+        "Logística internacional"
+      ],
+      "problema": [
+        "Precios altos",
+        "Calidad",
+        "Retrasos",
+        "Dependencia",
+        "Todos"
+      ]
     },
     "boton": "Solicitar diagnóstico gratuito",
     "privacidad": "Tus datos se usan solo para responder tu solicitud. [ENLACE A POLÍTICA DE PRIVACIDAD]",
@@ -251,5 +585,164 @@
   },
   "pie": {
     "texto": "Laksmi Group · RIF J-50510379-2"
+  },
+  "globo": {
+    "leyenda": {
+      "oficina": "Oficinas propias en China",
+      "origen": "Otros orígenes",
+      "destino": "Destinos"
+    },
+    "nota": "[ALCANCE EN MÉXICO, RUSIA Y USA: A CONFIRMAR]",
+    "destinoPrincipal": "Caracas",
+    "origenes": [
+      {
+        "nombre": "Yiwu",
+        "lat": 29.31,
+        "lon": 120.08,
+        "tipo": "oficina"
+      },
+      {
+        "nombre": "Guangzhou",
+        "lat": 23.13,
+        "lon": 113.26,
+        "tipo": "oficina"
+      },
+      {
+        "nombre": "Ningbo",
+        "lat": 29.87,
+        "lon": 121.54,
+        "tipo": "oficina"
+      },
+      {
+        "nombre": "Shantou",
+        "lat": 23.35,
+        "lon": 116.68,
+        "tipo": "oficina"
+      },
+      {
+        "nombre": "México",
+        "lat": 19.2,
+        "lon": -96.13,
+        "tipo": "origen",
+        "ruta": [
+          [
+            19.2,
+            -96.13
+          ],
+          [
+            21.6,
+            -88
+          ],
+          [
+            16.5,
+            -77
+          ],
+          [
+            10.9,
+            -67
+          ]
+        ]
+      },
+      {
+        "nombre": "Rusia",
+        "lat": 59.93,
+        "lon": 30.36,
+        "tipo": "origen",
+        "ruta": [
+          [
+            59.93,
+            30.36
+          ],
+          [
+            56,
+            15
+          ],
+          [
+            54,
+            3
+          ],
+          [
+            49.6,
+            -5
+          ],
+          [
+            40,
+            -25
+          ],
+          [
+            25,
+            -45
+          ],
+          [
+            14.5,
+            -58
+          ],
+          [
+            10.9,
+            -67
+          ]
+        ]
+      },
+      {
+        "nombre": "USA",
+        "lat": 29.76,
+        "lon": -95.37,
+        "tipo": "origen",
+        "ruta": [
+          [
+            29.76,
+            -95.37
+          ],
+          [
+            25.5,
+            -89
+          ],
+          [
+            21.8,
+            -85.2
+          ],
+          [
+            15,
+            -75
+          ],
+          [
+            10.9,
+            -67
+          ]
+        ]
+      }
+    ],
+    "destinos": [
+      {
+        "nombre": "Caracas",
+        "lat": 10.48,
+        "lon": -66.9
+      },
+      {
+        "nombre": "Margarita",
+        "lat": 10.96,
+        "lon": -63.85
+      },
+      {
+        "nombre": "Bogotá",
+        "lat": 4.71,
+        "lon": -74.07
+      },
+      {
+        "nombre": "Lima",
+        "lat": -12.05,
+        "lon": -77.04
+      },
+      {
+        "nombre": "Santiago",
+        "lat": -33.45,
+        "lon": -70.67
+      },
+      {
+        "nombre": "México",
+        "lat": 19.43,
+        "lon": -99.13
+      }
+    ]
   }
 }

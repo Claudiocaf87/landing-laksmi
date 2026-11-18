@@ -14,19 +14,31 @@ originales (`assets-fuente/`, fuera de git): `python scripts/optimizar-imagenes.
 
 ## Estado actual
 
-| Archivo | Uso | Medida | Peso máx. | Estado |
+Origen: **stock** = banco de imágenes; **IA** = generada. Ninguna muestra al equipo ni a clientes de Laksmi:
+van sin leyendas que afirmen nada (ver `es.json → imagenes.nota`).
+
+| Archivo | Uso | Medida | Peso máx. | Origen |
 |---|---|---|---|---|
-| `logo/logo-blanco.webp/png` | Header, loader, footer | 410×234 | 40 KB | ✅ |
-| `logo/logo-color.webp/png` | Fondos claros | 410×234 | 60 KB | ✅ (falta versión SVG) |
-| `logo/favicon.png` | Pestaña | 64×64 | 10 KB | ✅ |
-| `og/og-laksmi.jpg` | Vista previa al compartir (redes, WhatsApp) | 1200×630 | 200 KB | ✅ muestra |
-| `data/globo-puntos.bin` | Tierra del globo (Natural Earth, dominio público; `npm run globo`) | — | 40 KB | ✅ |
-| `carteles/cartel-01-{desktop,mobile}.webp` | Cartel de stand en el showroom (etapa 02) | 512×288 / 384×216 | 60 KB | ✅ muestra (ideal 1024×576) |
-| `carteles/cartel-02-{desktop,mobile}.webp` | Cartel de stand en el showroom (etapa 02) | 512×288 / 384×216 | 60 KB | ✅ muestra (ideal 1024×576) |
-| `fallback/etapa-02-*.{avif,webp}` | Versión sin 3D, etapa 02 | 512² / 384² | 120 KB | ✅ muestra (ideal 1200×675) |
-| `fallback/etapa-04-*.{avif,webp}` | Versión sin 3D, etapa 04 | 512² / 384² | 120 KB | ✅ muestra (ideal 1200×675) |
-| `fallback/etapa-05-*.{avif,webp}` | Versión sin 3D, etapa 05 | 1200×675 / 640×360 | 120 KB | ✅ muestra |
-| `fallback/etapa-06-*.{avif,webp}` | Versión sin 3D, etapa 06 | 512² / 384² | 120 KB | ✅ muestra (ideal 1200×675) |
+| `logo/logo-color.webp/png` | Header, loader (fondos claros) | 410×234 | 60 KB | marca |
+| `logo/logo-blanco.webp/png` | Footer azul | 410×234 | 40 KB | marca |
+| `logo/favicon.png` | Pestaña | 64×64 | 10 KB | marca |
+| `og/og-laksmi.jpg` | Vista previa al compartir | 1200×630 | 200 KB | IA probable |
+| `data/globo-puntos.bin` | Tierra del globo (Natural Earth) | — | 40 KB | dominio público |
+| `carteles/feria-01-*.webp` | Banderola y stands de la feria | 1024×576 / 512×288 | 120 KB | IA |
+| `carteles/feria-02-*.webp` | Banderola y stands de la feria | 1024×576 / 512×288 | 120 KB | IA |
+| `carteles/negociacion-01-*.webp` | Stands / etapa de negociación | 1024×576 / 512×288 | 120 KB | IA |
+| `carteles/calidad-01-*.webp` | Pantalla de la planta (hasta que llegue el video) | 1024×576 / 512×288 | 120 KB | IA |
+| `carteles/cartel-01-*.webp` | Stand de la feria | 512×288 | 60 KB | stock |
+| `carteles/cartel-02-*.webp` | Stand de la feria | 512×288 | 60 KB | stock |
+| `recortes/persona-caja-*.webp` | Foto recortada en la entrega (trae mesa y caja) | 707×1024 / 354×512 | 250 KB | IA |
+| `fallback/ferias-*.{avif,webp}` | Versión sin 3D | 1200×675 / 640×360 | 120 KB | IA |
+| `fallback/negociacion-*` · `calidad-*` | Versión sin 3D | 1200×675 / 640×360 | 120 KB | IA |
+| `fallback/despacho-*` | Versión sin 3D | 512×288 | 120 KB | stock |
+| `fallback/transito-*` | Versión sin 3D | 1200×675 / 640×360 | 120 KB | IA probable |
+
+**No se publican:** mercado mayorista (artefacto de IA: una manija pegada al portapapeles),
+auto de lujo (muestra el logo de una marca registrada), mapamundi, hombre con tablet y reunión con banderas
+(IA con texto y banderas erróneas), buque cenital (baja resolución).
 
 ## Lo que falta (con medidas)
 
@@ -39,5 +51,7 @@ originales (`assets-fuente/`, fuera de git): `python scripts/optimizar-imagenes.
 | `productos/<rubro>-{desktop,mobile}.webp` | Un producto por rubro: ferretería, médico, automotriz, bisutería, tecnología. Fondo neutro. | 800×800 / 480×480 | 90 KB |
 | `fotos/equipo-*.webp`, `fotos/oficina-*.webp` | Equipo y oficinas reales (Caracas, Margarita, Yiwu, Guangzhou, Ningbo, Shantou) | 1600×1067 (3:2) / 800×533 | 220 KB |
 | `fotos/testimonio-<nombre>.webp` | Retrato de cada testimonio (solo con permiso) | 400×400 | 40 KB |
-| `fallback/etapa-00, 01, 03, 07, 08` | Imagen fija por etapa para la versión sin 3D. Se pueden generar como capturas de la propia escena 3D en la fase 4. | 1200×675 / 640×360 | 120 KB |
+| `fotos/feria-canton-*.webp` | **Fotos reales del equipo en la Feria de Cantón** (etapas de ferias y negociación), con leyenda [FERIA, AÑO, QUIÉN ES] | 1600×1067 / 800×533 | 220 KB |
+| `productos/automotriz-*.webp` | Producto del rubro automotriz sin marcas visibles (repuesto, herramienta) | 800×800 / 480×480 | 90 KB |
+| `fallback/<id>-*` restantes | Imagen fija por etapa para la versión sin 3D: se generan como capturas de la escena en la fase 4 | 1200×675 / 640×360 | 120 KB |
 | `logo/logo.svg` | Logo vectorial (versión color y blanca) | SVG | 30 KB |

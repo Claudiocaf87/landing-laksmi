@@ -32,7 +32,7 @@ export function buildPort({ group, mats }) {
 
   const truck = createTruck(mats);
   group.add(truck);
-  const box = heroContainer(mats, mats.mid);
+  const box = heroContainer(mats, mats.hero);
   group.add(box);
 
   // pallet con cajas que entra al contenedor; la caja protagonista va arriba

@@ -15,7 +15,7 @@ export function buildHarbor(b, group, mats, { yardSeed = 5, cranesX = [0, -40, 4
   b.box('concrete', 420, 2.2, 1.2, 0, -1.1, 0.6); // borde del muelle
   for (let x = -200; x <= 200; x += 12) b.box('dark', 0.5, 0.5, 0.5, x, 0.25, 1.2); // bitas
   for (const x of cranesX) buildCrane(b, x);
-  const water = new Mesh(new PlaneGeometry(900, 500).rotateX(-Math.PI / 2), new MeshStandardMaterial({ color: 0x3c4245, roughness: 0.35 }));
+  const water = new Mesh(new PlaneGeometry(900, 500).rotateX(-Math.PI / 2), new MeshStandardMaterial({ color: 0x86a7c0, roughness: 0.3, metalness: 0.1 }));
   water.position.set(0, -2, -250);
   water.name = 'agua';
   group.add(water);

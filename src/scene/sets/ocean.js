@@ -2,12 +2,12 @@ import { Color, Mesh, PlaneGeometry, ShaderMaterial, Vector3 } from 'three';
 import { createShip, lerp, smooth } from '../common.js';
 
 // SET E · Océano (etapa 05). El barco casi no se mueve: lo que avanza es el agua, el cielo
-// (día → noche) y el minimapa del HTML. Shader liviano: 3 ondas sumadas, normal analítica,
+// (atardecer dorado → cielo claro) y el minimapa del HTML. Shader liviano: 3 ondas sumadas, normal analítica,
 // sombreado lambert y fundido al color del cielo en el horizonte. En modo liviano, menos malla.
-const DAY = new Color(0x8c8986);
-const NIGHT = new Color(0x14161c);
-const SEA_DAY = new Color(0x4a5054);
-const SEA_NIGHT = new Color(0x15191f);
+const DAY = new Color(0xf1dcae); // atardecer dorado
+const CLEAR = new Color(0xdce9f4); // cielo claro
+const SEA_DAY = new Color(0xa9967a);
+const SEA_CLEAR = new Color(0x5d86a8);
 
 const vertex = /* glsl */ `
   uniform float uTime;
@@ -70,10 +70,10 @@ export function buildOcean({ group, mats, lite }) {
     background: sky,
     update(u, time) {
       mat.uniforms.uTime.value = time;
-      const night = smooth(5.15, 5.85, u);
-      sky.copy(DAY).lerp(NIGHT, night);
+      const clear = smooth(5.15, 5.85, u);
+      sky.copy(DAY).lerp(CLEAR, clear);
       mat.uniforms.uSky.value.copy(sky);
-      mat.uniforms.uColor.value.copy(SEA_DAY).lerp(SEA_NIGHT, night);
+      mat.uniforms.uColor.value.copy(SEA_DAY).lerp(SEA_CLEAR, clear);
       ship.position.set(lerp(-30, 20, smooth(5, 6, u)), Math.sin(time * 0.7) * 0.35 - 0.4, 0);
       ship.rotation.set(Math.sin(time * 0.5) * 0.012, 0, Math.sin(time * 0.62) * 0.02);
     },

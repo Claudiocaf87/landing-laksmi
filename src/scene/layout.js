@@ -9,12 +9,12 @@ export const SET_OFFSETS = {
   dest: [5000, 0, 0],
 };
 
-// Color de fondo de cada set (escena gris; en la fase 3 se reemplaza por cielo/ambiente).
+// Fondo de cada set: clave alta (crema en interiores, cielo claro en exteriores).
 export const SET_BACKGROUND = {
-  globe: 0x15110f,
-  plan: 0x2b2725,
-  china: 0x2b2725,
-  port: 0x8c8986,
-  ocean: 0x8c8986,
-  dest: 0x8c8986,
+  globe: 0xf7f3ee,
+  plan: 0xf7f3ee,
+  china: 0xf3eee7,
+  port: 0xdfe8f0,
+  ocean: 0xf1dcae,
+  dest: 0xdfe8f0,
 };

@@ -118,7 +118,14 @@ function minimap(m) {
 function extras(e, c) {
   let out = '';
   if (e.puntos?.length) out += `<ul class="points">${e.puntos.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`;
-  if (e.chips?.length) out += `<ul class="chips">${e.chips.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`;
+  if (e.chips?.length || e.chipsAlt?.length)
+    out += `<ul class="chips">${(e.chips || []).map((t) => `<li>${esc(t)}</li>`).join('')}${(e.chipsAlt || [])
+      .map((t) => `<li class="chips__alt">${esc(t)}</li>`)
+      .join('')}</ul>`;
+  if (e.leyenda && c.globo) {
+    const l = c.globo.leyenda;
+    out += `<ul class="legend"><li><i class="is-office" aria-hidden="true"></i>${esc(l.oficina)}</li><li><i class="is-origin" aria-hidden="true"></i>${esc(l.origen)}</li><li><i class="is-dest" aria-hidden="true"></i>${esc(l.destino)}</li></ul>`;
+  }
   if (e.mapa) out += minimap(e.mapa);
   if (e.stats?.length) {
     out += `<dl class="stats">${e.stats
@@ -269,7 +276,7 @@ function footer(c) {
   return `
 <footer class="footer">
   <div class="footer__wrap">
-    <img src="${esc(c.marca.logo)}" alt="${esc(c.marca.nombre)}" width="410" height="234" loading="lazy">
+    <img src="${esc(c.marca.logoBlanco)}" alt="${esc(c.marca.nombre)}" width="410" height="234" loading="lazy">
     <ul class="footer__offices">${offices}</ul>
     <div class="footer__contact">
       <a class="mono" href="tel:+${esc(c.contacto.whatsapp)}">${esc(c.contacto.telefono)}</a>

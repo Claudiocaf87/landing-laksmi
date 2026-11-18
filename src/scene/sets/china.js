@@ -15,7 +15,7 @@ export function buildChina({ group, mats, lite }) {
   const b = new Batch();
 
   // ---------- showroom ----------
-  room(b, { hw: 14, zNear: 6, zFar: -30, h: 8, floor: 'ground', walls: 'concrete', ceiling: 'dark' });
+  room(b, { hw: 14, zNear: 6, zFar: -30, h: 8, floor: 'sand', walls: 'ivory', ceiling: 'concrete' });
   wall(b, 'concrete', 6, 14, 8, 0, 0); // pared de entrada (detrás de la cámara)
   wall(b, 'concrete', -30, 14, 8, 6, 5); // paso a la planta
   for (let z = 2; z > -30; z -= 6) b.box('emissive', 10, 0.08, 0.5, 0, 7.9, z); // luminarias
@@ -29,11 +29,13 @@ export function buildChina({ group, mats, lite }) {
       const zc = -1 - k * 5.6;
       const x = side * 7.2;
       // stand: fondo, piso elevado, dos estanterías y cartel
-      b.box('mid', 0.15, 3.2, 5, side * 9.6, 1.6, zc);
-      b.box('dark', 5, 0.08, 5, side * 7.3, 0.04, zc);
+      b.box('light', 0.15, 3.2, 5, side * 9.6, 1.6, zc);
+      b.box('gold', 0.06, 2.06, 3.56, side * 9.53, 4.3, zc); // marco del cartel
+      b.box('gold', 0.04, 0.05, 5, side * 9.5, 3.18, zc);
+      b.box('wood', 5, 0.08, 5, side * 7.3, 0.04, zc);
       for (const dz of [-1.3, 1.3]) {
         for (const lvl of [0.4, 1.05, 1.7]) b.box('light', 1.2, 0.04, 2, x + side * 1.2, lvl, zc + dz);
-        b.box('dark', 1.2, 2, 0.05, x + side * 1.2, 1, zc + dz - 1);
+        b.box('gold', 1.2, 2, 0.05, x + side * 1.2, 1, zc + dz - 1);
         for (const lvl of [0.4, 1.05, 1.7]) {
           for (let i = 0; i < 4; i++) {
             const item = { x: x + side * (1.0 + rnd() * 0.4), y: lvl + 0.02, z: zc + dz - 0.75 + i * 0.5 };
@@ -48,7 +50,8 @@ export function buildChina({ group, mats, lite }) {
         }
       }
       // mostrador
-      b.box('mid', 0.6, 1, 1.8, side * 5.2, 0.5, zc);
+      b.box('light', 0.6, 1, 1.8, side * 5.2, 0.5, zc);
+      b.box('gold', 0.62, 0.04, 1.82, side * 5.2, 1.02, zc);
       // cartel del stand (hueco para foto)
       const poster = new Mesh(new PlaneGeometry(3.4, 1.9), mats.poster);
       poster.position.set(side * 9.5, 4.3, zc);
@@ -66,7 +69,7 @@ export function buildChina({ group, mats, lite }) {
   }
 
   // ---------- planta ----------
-  room(b, { hw: 18, zNear: -30, zFar: -86, h: 11, floor: 'ground', walls: 'concrete', ceiling: 'dark' });
+  room(b, { hw: 18, zNear: -30, zFar: -86, h: 11, floor: 'ground', walls: 'concrete', ceiling: 'concrete' });
   wall(b, 'concrete', -86, 18, 11, 0, 0);
   for (let z = -34; z > -86; z -= 7) b.box('metal', 36, 0.5, 0.4, 0, 10.4, z); // cerchas
   for (let z = -36; z > -66; z -= 6) b.box('emissive', 0.5, 0.08, 4, 3, 10, z);
@@ -136,7 +139,7 @@ export function buildChina({ group, mats, lite }) {
 
   // productos del showroom (2 draw calls)
   group.add(instanced(unitBox, mats.light, products, { name: 'productos' }));
-  group.add(instanced(new CylinderGeometry(0.1, 0.1, 0.3, 10), mats.mid, productsRound, { name: 'productos-redondos' }));
+  group.add(instanced(new CylinderGeometry(0.1, 0.1, 0.3, 10), mats.gold, productsRound, { name: 'productos-redondos' }));
 
   // caja protagonista sobre la mesa de inspección, con tapas abiertas
   const hero = new Mesh(crateGeo, mats.hero);

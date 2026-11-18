@@ -54,7 +54,7 @@ async function page(opts, q = '?medir=1') {
   await p.waitForTimeout(3500);
   const u = await p.evaluate(() => window.__stage.u);
   ok(Math.abs(u - 3.5) < 0.08, `desktop: el HUD "Calidad verificada" lleva a la estación 03 (u=${u.toFixed(2)})`);
-  await p.click('.hud a[data-u]');
+  await p.click('.hud a[data-u="4.8"]');
   await p.waitForTimeout(2500);
   const u2 = await p.evaluate(() => window.__stage.u);
   ok(Math.abs(u2 - 4.8) < 0.08, `desktop: el HUD "Embarcado" lleva al sub-estado (u=${u2.toFixed(2)})`);
