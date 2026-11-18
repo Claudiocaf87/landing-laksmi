@@ -1,4 +1,5 @@
 // Pantalla de carga con porcentaje. set(p) recibe 0..1; el número sube suave hasta ese valor.
+// Al terminar se desvanece y, cuando ya no se ve, se quita .is-loading (eso hace entrar el hero).
 export function createLoader() {
   const el = document.querySelector('.loader');
   const num = el.querySelector('.loader__num span');
@@ -15,9 +16,14 @@ export function createLoader() {
     bar.style.transform = `scaleX(${shown})`;
     el.setAttribute('aria-valuenow', pct);
     if (shown >= 1 && finished) {
+      // en secuencia: primero se va el loader por completo y recién después entra el hero
       el.classList.add('is-done');
-      document.documentElement.classList.remove('is-loading');
-      setTimeout(() => el.remove(), 900);
+      const reveal = () => {
+        document.documentElement.classList.remove('is-loading');
+        el.remove();
+      };
+      el.addEventListener('transitionend', reveal, { once: true });
+      setTimeout(reveal, 900); // por si no hay transición (reduced motion, pestaña oculta)
       finished();
       return;
     }

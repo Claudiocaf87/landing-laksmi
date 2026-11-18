@@ -97,12 +97,13 @@ h3 {
 /* Descendentes en títulos con degradado: background-clip: text solo pinta dentro de la caja del
    elemento, y con un interlineado ajustado (1,04) la caja es más baja que el área de las letras,
    así que se cortaban la g, j, p, q, y (y los acentos de las mayúsculas). El padding agranda el
-   área pintada y el margen negativo igual lo compensa: el interlineado visual no cambia. */
+   área pintada y el margen negativo igual lo compensa: el interlineado visual no cambia.
+   Con interlineado 1,1 el área de las letras de Poppins (~1,4 em) sobresale 0,15 em por lado: 0,2 em alcanza. */
 .gold-metal,
 .etapa__title span + span,
 .block__title--xl span + span {
-  padding-block: 0.22em;
-  margin-block: -0.22em;
+  padding-block: 0.2em;
+  margin-block: -0.2em;
 }
 /* título con dorado metálico (ver --gold-metal) */
 .gold-metal {
@@ -169,6 +170,17 @@ h3 {
 }
 .is-loading body {
   overflow: hidden;
+}
+/* el hero entra recién cuando el loader terminó de irse (no se superponen) */
+.etapa[data-etapa='0'] .etapa__content {
+  transition: opacity 0.6s ease 0.05s, transform 0.6s ease 0.05s;
+}
+.is-loading .etapa[data-etapa='0'] .etapa__content {
+  opacity: 0;
+  transform: translateY(14px);
+}
+.loader {
+  transition-duration: 0.45s;
 }
 
 /* ---------- header ---------- */
@@ -715,7 +727,7 @@ button.btn:disabled {
 }
 .etapa__title {
   font-size: clamp(2.1rem, 4.4vw, 4.1rem);
-  line-height: 1.04;
+  line-height: 1.1;
   font-weight: 800;
   letter-spacing: -0.025em;
   text-wrap: balance;
@@ -925,6 +937,34 @@ button.btn:disabled {
 @media (max-height: 700px) and (min-width: 900px) {
   .etapa__title {
     font-size: clamp(1.9rem, 3.6vw, 3.2rem);
+  }
+}
+
+/* hero en mobile: el globo arriba (≈ 40–45 % del alto) y el texto compacto debajo */
+@media (max-width: 899px), (orientation: portrait) {
+  .is-journey .etapa[data-etapa='0'] .etapa__content {
+    padding-bottom: 76px;
+  }
+  .etapa[data-etapa='0'] .legend,
+  .etapa[data-etapa='0'] .chips__alt {
+    display: none; /* siguen visibles en el cierre */
+  }
+  .etapa[data-etapa='0'] .etapa__title {
+    font-size: clamp(1.6rem, 7.2vw, 2.1rem);
+  }
+  .etapa[data-etapa='0'] .etapa__sub {
+    font-size: 0.92rem;
+  }
+  .etapa[data-etapa='0'] .actions {
+    flex-wrap: nowrap;
+  }
+  /* WhatsApp solo con el ícono (el texto sigue disponible para lectores de pantalla) */
+  .etapa[data-etapa='0'] .actions .btn--ghost {
+    flex: none;
+    width: 50px;
+    padding: 0;
+    font-size: 0;
+    gap: 0;
   }
 }
 
@@ -1154,7 +1194,7 @@ button.btn:disabled {
 }
 .block__title {
   font-size: clamp(1.9rem, 3.6vw, 3rem);
-  line-height: 1.08;
+  line-height: 1.1;
   font-weight: 800;
   letter-spacing: -0.02em;
   text-wrap: balance;

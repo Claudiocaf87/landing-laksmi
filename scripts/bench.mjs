@@ -64,7 +64,7 @@ async function captures(page, tag) {
   await page.waitForTimeout(1500);
   for (let i = 0; i < N; i++) {
     const u = await page.evaluate((i) => window.__journey.station(i), i);
-    await page.evaluate((u) => window.__journey.seek(u), u === 0 ? 0.3 : u);
+    await page.evaluate((u) => window.__journey.seek(u), u === 0 ? 0.001 : u);
     await frames(page, 4);
     await page.screenshot({ path: file(`capturas/${tag}-etapa-${String(i).padStart(2, '0')}.jpg`), type: 'jpeg', quality: 74 });
   }

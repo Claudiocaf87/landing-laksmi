@@ -33,7 +33,7 @@ for (const [name, opts] of Object.entries(VP)) {
   const shots = [];
   for (let i = 0; i < N; i++) {
     const u = await page.evaluate((i) => window.__journey.station(i), i);
-    await page.evaluate((u) => window.__journey.seek(u), i === 0 ? 0.3 : u);
+    await page.evaluate((u) => window.__journey.seek(u), i === 0 ? 0.001 : u);
     await page.waitForTimeout(150);
     const t = page.locator(`.etapa[data-etapa="${i}"] .etapa__title`);
     if (/[gjpqy]/.test(await t.textContent())) {
@@ -66,20 +66,20 @@ for (const [name, opts] of Object.entries(VP)) {
   await ctx.close();
   writeFileSync(file(`capturas/titulos/${name}.txt`), shots.join('\n'));
 
-  // ---- video del hero: entrada + scroll hasta el final del giro ----
+  // ---- video del hero: 10 s sin scroll (animación de entrada) y después scroll hasta la etapa 01 ----
   const v = await browser.newContext({ ...opts, recordVideo: { dir: file('videos/'), size: opts.viewport } });
   const vp = await v.newPage();
   await vp.goto('http://localhost:4184/?medir=1');
   await vp.waitForFunction(() => window.__journey && !document.querySelector('.loader'));
-  await vp.waitForTimeout(2800);
+  await vp.waitForTimeout(10000);
   await vp.evaluate(
     () =>
       new Promise((resolve) => {
         const j = window.__journey;
-        const to = j.scrollForU(1.05);
+        const to = j.scrollForU(1.4);
         const t0 = performance.now();
         const f = (now) => {
-          const t = Math.min(1, (now - t0) / 4200);
+          const t = Math.min(1, (now - t0) / 5000);
           j.lenis.scrollTo(t * to, { immediate: true, force: true });
           if (t < 1) requestAnimationFrame(f);
           else resolve();

@@ -68,9 +68,20 @@ export class Stage {
     const h = window.innerHeight;
     const cam = this.camera;
     let ox = 0;
-    let oy = h * 0.16;
+    let oy = 0;
     let fit = 1;
-    if (w / h >= 1) {
+    const fitFor = (rpx) => {
+      const tanA = (rpx * Math.tan((cam.fov * Math.PI) / 360)) / (h / 2);
+      return Math.min(1.1, Math.max(0.3, (41 * Math.sin(Math.atan(tanA))) / 10));
+    };
+    if (w / h < 1) {
+      // vertical: el globo arriba y visible (≈ 40–45 % del alto), el texto debajo
+      const header = document.querySelector('.header')?.offsetHeight || 64;
+      const rpx = Math.min(w * 0.44, h * 0.19);
+      const cy = header + 6 + rpx;
+      oy = h / 2 - cy;
+      fit = fitFor(rpx);
+    } else {
       oy = 0;
       const inner = document.querySelector('.etapa__inner');
       const textRight = Math.max(inner ? inner.getBoundingClientRect().right : 0, w * 0.3);
@@ -78,8 +89,7 @@ export class Stage {
       const right = w - Math.max(28, w * 0.04);
       const rpx = Math.min((right - left) / 2, h * 0.36);
       ox = -((left + right) / 2 - w / 2);
-      const tanA = (rpx * Math.tan((cam.fov * Math.PI) / 360)) / (h / 2);
-      fit = Math.min(1.1, Math.max(0.45, (41 * Math.sin(Math.atan(tanA))) / 10));
+      fit = fitFor(rpx);
     }
     this.globe.setFit(fit);
     cam.setViewOffset(w, h, ox, oy, w, h);

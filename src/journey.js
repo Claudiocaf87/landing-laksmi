@@ -100,6 +100,7 @@ export function createJourney({ stage = null, content, reduced = false }) {
   const scrollable = () => journey.offsetHeight - window.innerHeight;
   const scrollForU = (u) => journey.offsetTop + (u / N) * scrollable();
   let navigating = false;
+  let measuring = false; // seek() (pruebas y capturas) apaga el imán del hero
   let active = -1;
   const station = (i) => (i === 0 ? 0 : i === N - 1 ? i + 0.7 : i + 0.4);
   const goTo = (target, { immediate = false, u = null } = {}) => {
@@ -125,6 +126,21 @@ export function createJourney({ stage = null, content, reduced = false }) {
       },
     });
   };
+
+  // hero: si el scroll se detiene a mitad del giro del globo, termina de llevarlo al extremo más
+  // cercano (China o América). Así nunca queda en reposo mirando solo océano.
+  if (stage && !reduced) {
+    const end = stage.globe.heroEnd;
+    let idle;
+    lenis.on('scroll', () => {
+      clearTimeout(idle);
+      idle = setTimeout(() => {
+        const u = proxy.u;
+        if (navigating || measuring || u <= 0.015 || u >= end - 0.015) return;
+        goTo(null, { u: u < end * 0.4 ? 0 : end });
+      }, 220);
+    });
+  }
 
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a[href^="#"]');
@@ -274,6 +290,7 @@ export function createJourney({ stage = null, content, reduced = false }) {
 
   // para medir/probar: lleva el recorrido a un u exacto y dibuja ese fotograma
   const seek = (u) => {
+    measuring = true;
     lenis.scrollTo(scrollForU(u), { immediate: true, force: true });
     ScrollTrigger.update();
     tl.scrollTrigger.scroll(scrollForU(u));
