@@ -113,6 +113,17 @@ function tracker(c) {
 </aside>`;
 }
 
+// Línea dorada del viaje (decorativa: el avance accesible está en el HUD). Un punto por etapa 01 … 09.
+function viaje(c) {
+  const n = c.etapas.length - 1;
+  const dots = c.etapas
+    .slice(1)
+    .map((e, k) => `<i class="viaje__dot" data-etapa="${k + 1}" style="left:${((k / (n - 1)) * 100).toFixed(3)}%"><b class="mono">${String(k + 1).padStart(2, '0')}</b></i>`)
+    .join('');
+  return `
+<div class="viaje" aria-hidden="true"><span class="viaje__line"><span class="viaje__done"></span>${dots}<span class="viaje__now"></span></span></div>`;
+}
+
 // <picture> con AVIF/WebP y versión vertical para mobile. Las fuentes van en data-*: journey.js
 // carga solo la foto actual y la siguiente. <noscript> deja la imagen para quien no tiene JS.
 export function picture(base, { alt = '', w = 1920, h = 1071, focal = '50% 50%', cls = '' } = {}) {
@@ -131,8 +142,11 @@ function fotos(e, i, c) {
   let out = (e.fotos || [])
     .map(
       (f, k) => `
-  <figure class="foto" data-etapa="${i}" data-k="${k}" data-transicion="${esc(k === 0 ? e.transicion || 'fundido' : 'fundido')}">
-    ${picture(base + f.id, { alt: f.alt, focal: f.focal })}
+  <figure class="foto${f.clip ? ' foto--clip' : ''}" data-etapa="${i}" data-k="${k}" data-peso="${f.peso || 1}"${f.clip ? ` data-clip="${esc(f.clip)}"` : ''}>
+    ${picture(base + (f.clip ? `video-${f.clip}` : f.id), { alt: f.alt, focal: f.focal })}${
+      f.clip ? '\n    <video class="foto__video" muted playsinline disablepictureinpicture preload="none" aria-hidden="true" tabindex="-1"></video>' : ''
+    }
+    <span class="foto__filo" aria-hidden="true"></span>
     ${f.frase ? `<figcaption class="foto__frase">${esc(f.frase)}</figcaption>` : ''}
   </figure>`,
     )
@@ -362,7 +376,7 @@ export function renderPage(html, c, lang) {
     .replace('%LOGO%', esc(c.marca.logo))
     .replace('%BRAND%', esc(c.marca.nombre))
     .replace('<!--HEADER-->', header(c) + menu(c))
-    .replace('<!--HUD-->', tracker(c))
+    .replace('<!--HUD-->', tracker(c) + viaje(c))
     .replace('<!--ETAPAS-->', c.etapas.map((e, i) => etapa(e, i, c)).join(''))
     .replace('<!--BLOQUES-->', rubros(c.rubros, c) + testimonios(c.testimonios) + faq(c.faq) + perfiles(c.perfiles) + cotizacion(c))
     .replace('<!--FOOTER-->', footer(c));

@@ -58,16 +58,33 @@ Si cambia el globo: `npm run build && npm run globo-imagen && npm run imagenes`.
 | `assets-fuente/precinto.jpg` (+ `precinto-vertical.jpg`) | Precinto de seguridad (sello numerado tipo perno o cable, no un candado) en las puertas de un contenedor | ≥ 2000×1116 · vertical ≥ 1116×2000 |
 | `assets-fuente/rubro-ferreteria.jpg` · `-medico` · `-bisuteria` · `-tecnologia` | Un producto por rubro, fondo claro, sin marcas | ≥ 1200×1200 |
 | Fotos reales del equipo en la Feria de Cantón | Para las etapas de ferias y negociación, con leyenda [FERIA, AÑO, QUIÉN ES] | ≥ 2000 px de ancho |
-| `video/feria.mp4` + `feria.webm` | Si llega un video de la feria: 1280×720, 8–15 s en loop, sin audio | ≤ 2,5 MB / ≤ 2 MB |
+| `assets-fuente/videos/<archivo>_vertical.mp4` | Versiones verticales de feria, puerto y tránsito (reemplazan el recorte de la horizontal) | 720×1280 o más, 24 fps |
 | `logo/logo.svg` | Logo vectorial (color y blanco) | SVG |
 
 ## Prototipos de avance (rama `prototipo-avance`, no publicados)
 
 | Archivo | Uso | Cómo se genera | Peso |
 |---|---|---|---|
-| `video/puerto-desktop-{24,12}fps.{mp4,webm}` | Versión C (desktop y pantallas horizontales) | `npm run video` desde `assets-fuente/puerto-video.mp4` (1280×720) | ≤ 2,5 MB |
-| `video/puerto-mobile-{24,12}fps.{mp4,webm}` | Versión C (mobile y pantallas verticales) | `npm run video` desde `assets-fuente/puerto-video-vertical.mp4` (720×1280) | ≤ 1,5 MB |
+| `video/puerto-{desktop,mobile}.{mp4,webm}` | Versión C: usa el clip del puerto del modo video (v2) | `npm run videos` | ver abajo |
 | `profundidad/<id>-{desktop,mobile}.webp` | Versión B (mapa de profundidad por foto, blanco = cerca) | `npm run profundidad` (Depth Anything V2 Small en ONNX, en CPU; modelo en `.cache/`) | 1,5–2,7 KB c/u |
 
 Videos sin audio, con un keyframe cada ½ s para que el avance con el scroll sea fluido en ambos sentidos.
 El punto de fuga de cada foto de la versión B está en `es.json` (`fotos[].fuga`).
+
+## Modo video (rama `fase3-video`)
+
+Clips generados con IA, sin audio: no muestran al equipo, a clientes ni a lugares reales de Laksmi.
+
+| Archivo | Etapa | Origen | Peso (MP4 / WebM) |
+|---|---|---|---|
+| `video/feria-{desktop,mobile}.{mp4,webm}` | 02 Ferias (10 s completos) | `assets-fuente/videos/feria_video_horizontal.mp4` | 1,30 / 1,29 MB · 0,75 / 0,74 MB |
+| `video/feria-5s-{desktop,mobile}.{mp4,webm}` | 02 Ferias (variante: 0,5 a 5,5 s) | ídem | 1,19 / 1,12 MB · 0,70 / 0,65 MB |
+| `video/puerto-{desktop,mobile}.{mp4,webm}` | 05 Despacho (Embarcado) | `assets-fuente/videos/v2_puerto_video.mp4` | 1,29 / 1,31 MB · 0,74 / 0,73 MB |
+| `video/transito-{desktop,mobile}.{mp4,webm}` | 06 Tránsito | `assets-fuente/videos/transito_video.mp4` | 1,30 / 1,29 MB · 0,75 / 0,76 MB |
+| `fotos/video-<id>-{desktop,mobile}.{avif,webp}` | Póster de cada clip (su primer cuadro) | lo genera `npm run videos` | |
+
+Para sumar un clip: dejarlo en `assets-fuente/videos/`, agregarlo a `videos.clips` en `es.json` (con `focalMobile`
+y, si existe, `vertical`) y en la etapa como `{"clip": "<id>"}`, y correr `npm run videos`. Desktop 1280×720,
+mobile 540×960 recortado de la horizontal sobre el punto focal (o 720×1280 si llega la vertical), 24 fps,
+keyframe cada ½ s; si no entra en el presupuesto (≤ 1,4 MB desktop, ≤ 0,8 MB mobile) se espacian los keyframes
+y, si aun así pierde calidad (SSIM < 0,95), el script lo avisa en lugar de forzarlo.

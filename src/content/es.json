@@ -232,10 +232,10 @@
       "transicion": "diagonal",
       "fotos": [
         {
-          "id": "feria-01",
-          "focal": "40% 40%",
-          "alt": "Dos compradores con credencial recorren el pasillo de una feria comercial; él señala un exhibidor de productos",
-          "fuga": "54% 40%"
+          "clip": "feria",
+          "peso": 2,
+          "alt": "Dos compradores con credencial recorren los pasillos de una feria comercial mientras revisan una tableta.",
+          "focal": "50% 45%"
         },
         {
           "id": "feria-02",
@@ -338,9 +338,9 @@
           "alt": "Mano con guante cierra con candado las puertas de un contenedor"
         },
         {
-          "id": "puerto",
-          "focal": "55% 45%",
-          "alt": "Grúas portuarias cargan contenedores en un buque atracado en el muelle"
+          "clip": "puerto",
+          "alt": "Grúas portuarias cargan contenedores en un buque atracado en el muelle",
+          "focal": "50% 45%"
         }
       ]
     },
@@ -358,9 +358,9 @@
       "transicion": "fundido",
       "fotos": [
         {
-          "id": "transito",
-          "focal": "48% 55%",
-          "alt": "Buque portacontenedores cargado navegando en mar abierto"
+          "clip": "transito",
+          "alt": "Buque portacontenedores cargado navegando en mar abierto",
+          "focal": "50% 50%"
         }
       ]
     },
@@ -867,5 +867,87 @@
       "mobile": "/assets/video/puerto-mobile",
       "poster": "puerto"
     }
+  },
+  "videos": {
+    "nota": "Clips generados con IA (sin audio). No muestran al equipo, a clientes ni a lugares reales de Laksmi. Para sumar uno: dejarlo en assets-fuente/videos/, agregarlo acá y a su etapa con {\"clip\": \"<id>\"}, y correr npm run videos.",
+    "base": "/assets/video/",
+    "presupuestoKB": {
+      "desktop": 1400,
+      "mobile": 800
+    },
+    "esperaMaxima": 3,
+    "clips": [
+      {
+        "id": "feria",
+        "archivo": "feria_video_horizontal.mp4",
+        "vertical": "feria_video_vertical.mp4",
+        "focalMobile": [
+          [
+            0,
+            "57% 50%"
+          ],
+          [
+            2,
+            "53% 50%"
+          ],
+          [
+            4,
+            "49% 50%"
+          ],
+          [
+            10,
+            "46% 50%"
+          ]
+        ],
+        "nota": "10 s completos"
+      },
+      {
+        "id": "feria-5s",
+        "archivo": "feria_video_horizontal.mp4",
+        "vertical": "feria_video_vertical.mp4",
+        "desde": 0.5,
+        "duracion": 5,
+        "focalMobile": [
+          [
+            0,
+            "57% 50%"
+          ],
+          [
+            2,
+            "53% 50%"
+          ],
+          [
+            4,
+            "49% 50%"
+          ],
+          [
+            10,
+            "46% 50%"
+          ]
+        ],
+        "nota": "recorte de 0,5 a 5,5 s"
+      },
+      {
+        "id": "puerto",
+        "archivo": "v2_puerto_video.mp4",
+        "vertical": "v2_puerto_video_vertical.mp4",
+        "focalMobile": "52% 50%"
+      },
+      {
+        "id": "transito",
+        "archivo": "transito_video.mp4",
+        "vertical": "transito_video_vertical.mp4",
+        "focalMobile": [
+          [
+            0,
+            "47% 50%"
+          ],
+          [
+            10,
+            "51% 50%"
+          ]
+        ]
+      }
+    ]
   }
 }

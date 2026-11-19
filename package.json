@@ -16,9 +16,9 @@
     "globo-imagen": "node scripts/capturar-globo.mjs",
     "revision": "node scripts/revision.mjs",
     "dev:red": "vite --host",
-    "video": "python scripts/optimizar-video.py",
     "profundidad": "python scripts/profundidad.py",
-    "medir:prototipos": "node scripts/prototipos.mjs"
+    "medir:prototipos": "node scripts/prototipos.mjs",
+    "videos": "python scripts/videos.py"
   },
   "dependencies": {
     "gsap": "^3.15.1",

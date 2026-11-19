@@ -66,6 +66,8 @@ def emit(im, name, kb):
 # fotos de etapa
 for etapa in CONTENT["etapas"]:
     for f in etapa.get("fotos", []):
+        if f.get("clip"):
+            continue  # el póster de un clip lo genera npm run videos (video-<id>-*)
         src = SRC / f"{f['id']}.jpg"
         im = clean(Image.open(src))
         fx, fy = focal(f["focal"])

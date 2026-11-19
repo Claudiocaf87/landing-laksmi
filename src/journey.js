@@ -2,26 +2,25 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import { createTracker } from './ui/tracker.js';
+import { createClips } from './ui/clips.js';
 
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.config({ ignoreMobileResize: true });
 
-// Recorte de entrada de la primera foto de cada etapa (todas atadas al scroll).
-const REVEAL = {
-  circulo: ['circle(0% at 50% 50%)', 'circle(75% at 50% 50%)'],
-  diagonal: ['polygon(0% 0%, 0% 0%, -40% 100%, -40% 100%)', 'polygon(0% 0%, 140% 0%, 100% 100%, -40% 100%)'],
-};
+// Cada foto (o clip) entra con un barrido de izquierda a derecha, en la dirección del viaje, con un
+// filo dorado; después se desplaza despacio hacia la derecha (la "cámara" sigue viajando).
 
 // Timeline maestra: el scroll de .journey avanza "u" de 0 a N (una unidad por etapa).
 // En la misma timeline entran las fotos (pin = capas fijas), los textos, los pasos y los contadores.
 // Un solo loop (ticker de GSAP) mueve Lenis, el globo, el mapita y el HUD.
-export function createJourney({ stage = null, content, reduced = false }) {
+export function createJourney({ stage = null, content, reduced = false, video = false }) {
   const root = document.documentElement;
   const journey = document.querySelector('.journey');
   const sections = [...journey.querySelectorAll('.etapa')];
   const N = sections.length;
   const estados = content.hud.estados;
   root.classList.add('is-journey');
+  root.classList.toggle('is-barrido', !reduced);
 
   const lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 0.9, touchMultiplier: 1.3 });
   lenis.on('scroll', ScrollTrigger.update);
@@ -36,26 +35,32 @@ export function createJourney({ stage = null, content, reduced = false }) {
   const desdeDe = (texto) => estados.find((s) => s.texto === texto)?.desde;
 
   sections.forEach((sec, i) => {
-    // ---------- fotos ----------
+    // ---------- fotos y clips ----------
     const figs = [...sec.querySelectorAll('.foto')];
-    const n = figs.length;
+    // cada foto ocupa una parte de la etapa según su "peso" (un clip largo puede ocupar más)
+    const pesos = figs.map((f) => Number(f.dataset.peso) || 1);
+    const W = pesos.reduce((a, b) => a + b, 0);
     // cierre: la foto final tiene su momento sola y después se funde para dejar ver el globo
     const closing = sec.hasAttribute('data-cierre');
+    let acc = 0;
     figs.forEach((fig, k) => {
-      const img = fig.querySelector('img');
-      const start = i + k / n; // momento en que esta foto ocupa la pantalla
-      const tin = k === 0 ? i - 0.14 : start - 0.08; // entra un poco antes: nunca hay pantalla vacía
+      const media = [...fig.querySelectorAll('img, video')];
+      const start = i + acc / W; // momento en que esta foto ocupa la pantalla
+      const len = pesos[k] / W;
+      acc += pesos[k];
+      const tin = k === 0 ? i - 0.14 : start - 0.1; // entra un poco antes: nunca hay pantalla vacía
       const end = closing ? i + 0.44 : i + 1.14; // la tapa la etapa siguiente (o el globo, en el cierre)
-      const type = fig.dataset.transicion;
+      fig.dataset.slot = `${start},${len},${tin},${end}`;
       tl.set(fig, { visibility: 'visible' }, tin);
       if (reduced) {
         tl.fromTo(fig, { opacity: 0 }, { opacity: 1, duration: 0.12 }, tin);
       } else {
-        if (REVEAL[type]) tl.fromTo(fig, { clipPath: REVEAL[type][0] }, { clipPath: REVEAL[type][1], duration: 0.2, ease: 'power2.inOut' }, tin);
-        else if (type === 'lateral') tl.fromTo(fig, { opacity: 0, xPercent: 7 }, { opacity: 1, xPercent: 0, duration: 0.2, ease: 'power2.out' }, tin);
-        else tl.fromTo(fig, { opacity: 0 }, { opacity: 1, duration: 0.16 }, tin);
-        // zoom lento tipo Ken Burns (con un leve desplazamiento lateral alternado)
-        tl.fromTo(img, { scale: 1.12, xPercent: k % 2 ? -1.5 : 1.5 }, { scale: 1, xPercent: 0, duration: end - tin }, tin);
+        tl.fromTo(fig, { '--w': 0, '--filo': 1 }, { '--w': 100, duration: 0.2, ease: 'power2.inOut' }, tin);
+        tl.to(fig, { '--filo': 0, duration: 0.03 }, tin + 0.19);
+        // desplazamiento lateral lento hacia la derecha (el contenido corre a la izquierda); los clips ya
+        // tienen su propio movimiento, así que el suyo es más suave
+        const dx = fig.dataset.clip ? 1.5 : 3;
+        tl.fromTo(media, { scale: 1.1, xPercent: dx }, { scale: 1.07, xPercent: -dx, duration: end - tin }, tin);
       }
       if (closing) tl.to(fig, { opacity: 0, duration: 0.12, ease: 'power1.inOut' }, i + 0.3);
       tl.set(fig, { visibility: 'hidden' }, end + 0.02);
@@ -102,6 +107,12 @@ export function createJourney({ stage = null, content, reduced = false }) {
   let navigating = false;
   let measuring = false; // seek() (pruebas y capturas) apaga el imán del hero
   let active = -1;
+  const clips = createClips({ content, enabled: video });
+  clips.items.forEach((it) => {
+    const [start, len, tin, end] = it.fig.dataset.slot.split(',').map(Number);
+    it.slot = [start, len];
+    it.window = [tin, end];
+  });
   const station = (i) => (i === 0 ? 0 : i === N - 1 ? i + 0.7 : i + 0.4);
   const goTo = (target, { immediate = false, u = null } = {}) => {
     const i = sections.findIndex((s) => s.id === target);
@@ -114,8 +125,17 @@ export function createJourney({ stage = null, content, reduced = false }) {
       to = el.getBoundingClientRect().top + window.scrollY;
     }
     const dist = Math.abs(to - window.scrollY) / window.innerHeight;
-    // durante el salto no se piden las fotos de las etapas que pasan de largo
+    // durante el salto no se piden las fotos ni los clips de las etapas que pasan de largo:
+    // solo el destino
     navigating = !(immediate || reduced);
+    if (navigating) {
+      const destU = u != null ? u : i >= 0 ? station(i) : null;
+      if (destU != null) {
+        const d = Math.min(N - 1, Math.floor(destU));
+        clips.want([d]);
+        loadStage(d);
+      }
+    }
     lenis.scrollTo(to, {
       duration: Math.min(3.2, Math.max(1, dist / 3)),
       immediate: immediate || reduced,
@@ -170,8 +190,12 @@ export function createJourney({ stage = null, content, reduced = false }) {
     });
   };
 
+  const photosReady = (i) =>
+    i >= N || [...sections[i].querySelectorAll('.foto img')].every((img) => !img.dataset.src || (img.complete && img.naturalWidth > 0 && img.currentSrc));
+
   // ---------- mapita + HUD compacto ----------
   const tracker = createTracker(content);
+  const rail = createRail(N);
 
   const navLinks = [...document.querySelectorAll('.menu__list a')];
   const hint = document.querySelector('.scroll-hint');
@@ -196,7 +220,13 @@ export function createJourney({ stage = null, content, reduced = false }) {
     if (!navigating) {
       loadStage(idx);
       loadStage(idx + 1);
+      // de a uno: primero el clip de la etapa actual, después el de la siguiente. Las fotos tienen
+      // prioridad: los clips se piden recién cuando las fotos de esas dos etapas ya están
+      if (photosReady(idx) && photosReady(idx + 1)) clips.want([idx, idx + 1]);
     }
+    clips.setU(u);
+    clips.update(performance.now());
+    rail.update(u);
     const past = u >= N - 0.001 && window.scrollY > journey.offsetTop + journey.offsetHeight - window.innerHeight * 0.98;
     const mapOff = u < 0.92 || u >= N - 1 - 0.02;
     const big = sections[idx]?.dataset.mapa === 'grande' && u - idx > 0.06 && u - idx < 0.86;
@@ -234,5 +264,33 @@ export function createJourney({ stage = null, content, reduced = false }) {
   };
   const loadAll = () => sections.forEach((_, k) => loadStage(k));
 
-  return { lenis, tl, proxy, goTo, N, scrollForU, seek, loadAll, station };
+  return { lenis, tl, proxy, goTo, N, scrollForU, seek, loadAll, station, clips };
+}
+
+// Línea dorada del viaje: corre abajo de todo el recorrido, avanza con el scroll y tiene un punto por
+// etapa (01 a 09). Se enciende cada punto al llegar a su etapa.
+function createRail(N) {
+  const el = document.querySelector('.viaje');
+  if (!el) return { update() {} };
+  const done = el.querySelector('.viaje__done');
+  const dots = [...el.querySelectorAll('.viaje__dot')];
+  // en mobile la línea va justo arriba del HUD: se ubica según su alto real (salvo con el mapa grande)
+  const tracker = document.querySelector('.tracker');
+  if (tracker && 'ResizeObserver' in window) {
+    new ResizeObserver(() => {
+      if (!document.documentElement.classList.contains('is-map-big')) document.documentElement.style.setProperty('--tracker-h', `${tracker.offsetHeight}px`);
+    }).observe(tracker);
+  }
+  let last = '';
+  return {
+    update(u) {
+      const f = Math.min(1, Math.max(0, (u - 1) / (N - 2)));
+      const key = f.toFixed(4);
+      if (key === last) return;
+      last = key;
+      done.style.transform = `scaleX(${key})`;
+      el.style.setProperty('--f', key);
+      dots.forEach((d) => d.classList.toggle('is-on', u >= Number(d.dataset.etapa) - 0.001));
+    },
+  };
 }

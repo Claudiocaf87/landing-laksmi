@@ -32,6 +32,9 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matc
 const lowEnd = modo === 'liviano' || (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4;
 const isStatic = modo === 'estatico';
 const want3D = !isStatic && !saveData && !lowEnd && hasWebGL2();
+// modo video: clips con scroll solo con buena conexión y equipo; si no, foto con desplazamiento lateral
+const slowNet = /(^|-)(2g|3g)$/.test(conn.effectiveType || '');
+const wantVideo = !isStatic && !saveData && !slowNet && !lowEnd && !reducedMotion && modo !== 'sin-video';
 root.classList.toggle('no-globe', !want3D);
 
 initForm(content);
@@ -83,7 +86,7 @@ async function boot() {
     }
     await document.fonts.ready;
     const { createJourney } = await jsP;
-    journey = createJourney({ stage, content, reduced: reducedMotion });
+    journey = createJourney({ stage, content, reduced: reducedMotion, video: wantVideo });
     if (import.meta.env.DEV || measure) Object.assign(window, { __stage: stage, __journey: journey });
     await loader.done();
   } catch (err) {

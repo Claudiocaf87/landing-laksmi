@@ -213,6 +213,65 @@ for (const [w, h] of [
     return { t: getComputedStyle(fig.querySelector('img')).transform, clip: getComputedStyle(fig).clipPath, op: getComputedStyle(fig).opacity };
   });
   ok(r.t === 'none' && r.clip === 'none' && r.op === '1', `reduced motion: solo fundidos, sin zoom ni recortes (transform=${r.t}, clip=${r.clip})`);
+  await p.evaluate(() => window.__journey.seek(6.4));
+  await p.waitForTimeout(1500);
+  const v = await p.evaluate(() => ({ activo: window.__clips.activo, pedidos: window.__clips.clips.filter((c) => c.state !== 'idle').length, conVideo: document.querySelectorAll('.has-video').length }));
+  ok(!v.activo && v.pedidos === 0 && v.conVideo === 0, 'reduced motion: sin clips, queda la foto (póster)');
+  await ctx.close();
+}
+
+// ---------- modo video ----------
+{
+  const { ctx, p } = await page(DESKTOP);
+  const videos = [];
+  p.on('request', (r) => /\/video\//.test(r.url()) && videos.push(r.url().split('/').pop()));
+  ok(videos.length === 0, `video: en el hero no se pide ningún clip (${videos.join(', ') || 'ninguno'})`);
+  await p.evaluate(() => window.__journey.seek(1.5));
+  await p.waitForFunction(() => window.__clips.clips.find((c) => c.id === 'feria').state === 'ready', null, { timeout: 15000 });
+  ok(videos.length === 1 && videos[0] === 'feria-desktop.webm', `video: en la etapa 01 se precarga solo el clip de la siguiente (${videos.join(', ')})`);
+  await p.evaluate(() => window.__journey.seek(2.25));
+  await p.waitForTimeout(900);
+  const r = await p.evaluate(() => {
+    const c = window.__clips.clips.find((x) => x.id === 'feria');
+    return { on: c.fig.classList.contains('has-video'), diff: Math.abs(c.video.currentTime - c.p * c.video.duration) * 24, p: c.p };
+  });
+  ok(r.on && r.diff <= 1, `video: el clip reemplaza al póster en el cuadro que marca el scroll (p=${r.p.toFixed(2)}, desfase ${r.diff.toFixed(2)} cuadros)`);
+  const rail = await p.evaluate(() => document.querySelectorAll('.viaje__dot.is-on').length);
+  ok(rail === 2, `línea del viaje: puntos encendidos hasta la etapa actual (${rail} de 9)`);
+  const before = videos.length;
+  await p.click('.menu-btn');
+  await p.waitForTimeout(300);
+  await p.click('#menu a[href="#transito"]');
+  await p.waitForTimeout(3800);
+  const nuevos = videos.slice(before);
+  ok(nuevos.length >= 1 && nuevos.every((n) => n.startsWith('transito')), `video: al saltar por el menú se pide solo el destino (${nuevos.join(', ')})`);
+  await p.screenshot({ path: shot('video-transito'), type: 'jpeg', quality: 75 });
+  await ctx.close();
+}
+{
+  const { ctx, p } = await page(MOBILE);
+  await p.evaluate(() => window.__journey.seek(5.4));
+  await p.waitForFunction(() => window.__clips.clips.find((c) => c.id === 'puerto').state === 'ready', null, { timeout: 15000 });
+  const u = await p.evaluate(() => window.__clips.clips.find((c) => c.id === 'puerto').url);
+  ok(/puerto-mobile\.webm$/.test(u), `video mobile: usa la versión vertical (${u})`);
+  await p.evaluate(() => window.__journey.seek(5.9));
+  await p.waitForTimeout(900);
+  await p.screenshot({ path: shot('video-puerto-mobile'), type: 'jpeg', quality: 75 });
+  const rail = await p.evaluate(() => {
+    const a = document.querySelector('.viaje').getBoundingClientRect();
+    const b = document.querySelector('.tracker').getBoundingClientRect();
+    const t = document.querySelector('#despacho .etapa__inner').getBoundingClientRect();
+    return { arriba: b.top - a.bottom, texto: a.top - t.bottom };
+  });
+  ok(rail.arriba >= 0 && rail.texto >= 0, `línea del viaje mobile: entre el texto y el HUD sin taparlos (${rail.texto.toFixed(0)} px / ${rail.arriba.toFixed(0)} px)`);
+  await ctx.close();
+}
+{
+  const { ctx, p } = await page(DESKTOP, '?medir=1&modo=sin-video');
+  await p.evaluate(() => window.__journey.seek(2.3));
+  await p.waitForTimeout(1500);
+  const r = await p.evaluate(() => ({ pedidos: window.__clips.clips.filter((c) => c.state !== 'idle').length, img: document.querySelector('.foto--clip img').complete }));
+  ok(r.pedidos === 0 && r.img, 'sin video (ahorro de datos, 2g/3g, gama baja): queda la foto con su desplazamiento');
   await ctx.close();
 }
 
