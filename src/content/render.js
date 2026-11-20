@@ -182,10 +182,15 @@ function fotos(e, i, c) {
   return out;
 }
 
+// texto largo (desktop) y versión corta para mobile (es.json → bajadaMobile / pasos[].textoMobile);
+// el CSS muestra una u otra según el ancho, así los lectores de pantalla leen solo la visible
+const dual = (largo, corto) =>
+  corto ? `<span class="txt-largo">${esc(largo)}</span><span class="txt-corto">${esc(corto)}</span>` : esc(largo);
+
 function extras(e, c) {
   let out = '';
   if (e.pasos?.length)
-    out += `<ol class="pasos">${e.pasos.map((p, k) => `<li data-paso="${k}"><strong>${esc(p.estado)}</strong><span>${esc(p.texto)}</span></li>`).join('')}</ol>`;
+    out += `<ol class="pasos">${e.pasos.map((p, k) => `<li data-paso="${k}"><strong>${esc(p.estado)}</strong><span>${dual(p.texto, p.textoMobile)}</span></li>`).join('')}</ol>`;
   if (e.puntos?.length) out += `<ul class="points">${e.puntos.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>`;
   if (e.chips?.length || e.chipsAlt?.length)
     out += `<ul class="chips">${(e.chips || []).map((t) => `<li>${esc(t)}</li>`).join('')}${(e.chipsAlt || [])
@@ -213,7 +218,7 @@ export function etapaInner(e, i, c, { panel = i !== 0 && i !== c.etapas.length -
   return `<div class="etapa__inner${panel ? ' etapa__inner--panel' : ''}">
       <p class="kicker"><span class="mono">${esc(e.numero)}</span>${esc(e.etiqueta)}</p>
       <${h} class="etapa__title" id="${esc(e.id)}-t">${lines(e.titulo)}</${h}>
-      ${e.subtitulo ? `<p class="etapa__sub">${esc(e.subtitulo)}</p>` : ''}
+      ${e.subtitulo ? `<p class="etapa__sub">${dual(e.subtitulo, e.bajadaMobile)}</p>` : ''}
       ${extras(e, c)}
     </div>`;
 }

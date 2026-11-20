@@ -1837,3 +1837,83 @@ button.btn:disabled {
 .is-reduced .viaje__now {
   display: none;
 }
+
+/* ---------- textos: versión larga (desktop) y corta (mobile) ---------- */
+.txt-corto {
+  display: none;
+}
+@media (max-width: 899px), (orientation: portrait) {
+  .txt-largo {
+    display: none;
+  }
+  .txt-corto {
+    display: inline;
+  }
+  /* el contenido de cada etapa ocupa exactamente el alto visible (con las barras del navegador):
+     sin min-height en vh, que en Chrome Android es el alto sin barras y empujaba el panel abajo */
+  .is-journey .etapa__content {
+    min-height: 0;
+  }
+  /* panel compacto */
+  .etapa__inner--panel {
+    padding: 14px 16px 15px;
+  }
+  .etapa__inner--panel .kicker {
+    margin-bottom: 10px;
+  }
+  .etapa__inner--panel .etapa__title {
+    font-size: clamp(1.65rem, 8vw, 1.9rem);
+    line-height: 1.1;
+  }
+  .etapa__inner--panel .etapa__sub,
+  .etapa__inner--panel .pasos span {
+    margin-top: 8px;
+    font-size: 15.5px;
+    line-height: 1.45;
+  }
+  .etapa__inner--panel .pasos {
+    margin-top: 10px;
+  }
+  .etapa__inner--panel .pasos li {
+    gap: 3px;
+  }
+  .etapa__inner--panel .pasos strong {
+    font-size: 12px;
+  }
+  .etapa__inner--panel .pasos span {
+    margin-top: 0;
+  }
+  .etapa__inner--panel .points {
+    margin-top: 10px;
+    gap: 4px;
+    font-size: 15px;
+    line-height: 1.35;
+  }
+  .etapa__inner--panel .chips {
+    margin-top: 10px;
+  }
+  /* si en algún alto igual no entra, la tipografía baja un escalón (y otro más si hace falta);
+     lo decide journey.js midiendo el espacio real. Nunca se corta texto */
+  .etapa__inner.is-compacto .etapa__title {
+    font-size: clamp(1.5rem, 7.2vw, 1.7rem);
+  }
+  .etapa__inner.is-compacto .etapa__sub,
+  .etapa__inner.is-compacto .pasos span {
+    font-size: 14.5px;
+    line-height: 1.4;
+  }
+  .etapa__inner.is-compacto .points {
+    font-size: 14px;
+  }
+  .etapa__inner.is-mini .etapa__title {
+    font-size: 1.38rem;
+  }
+  .etapa__inner.is-mini .etapa__sub,
+  .etapa__inner.is-mini .pasos span,
+  .etapa__inner.is-mini .points {
+    font-size: 13.5px;
+  }
+  .etapa__inner.is-mini .kicker {
+    margin-bottom: 6px;
+  }
+}

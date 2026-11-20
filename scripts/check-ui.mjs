@@ -194,8 +194,11 @@ for (const [w, h] of [
     pos: getComputedStyle(document.querySelector('.foto')).position,
     imgs: [...document.querySelectorAll('.foto img')].filter((i) => i.getAttribute('src')).length,
     globe: getComputedStyle(document.querySelector('.globo-img')).display,
+    figuras: document.querySelectorAll('.foto').length,
+    ferias: document.querySelectorAll('#ferias .foto').length,
   }));
-  ok(st.static && st.pos === 'static' && st.imgs >= 13 && st.globe === 'block', `estático: fotos y textos apilados, sin pin (${st.imgs} fotos, globo como imagen)`);
+  ok(st.static && st.pos === 'static' && st.imgs === st.figuras && st.globe === 'block', `estático: fotos y textos apilados, sin pin (${st.imgs} de ${st.figuras} fotos, globo como imagen)`);
+  ok(st.ferias === 1, `estático: la etapa 02 tiene solo el video (${st.ferias} imagen: su póster)`);
   await p.screenshot({ path: shot('estatico'), type: 'jpeg', quality: 75, fullPage: false });
   await ctx.close();
 }
@@ -220,6 +223,8 @@ for (const [w, h] of [
   const v = await p.evaluate(() => ({ activo: window.__clips.activo, pedidos: window.__clips.clips.filter((c) => c.state !== 'idle').length, conVideo: document.querySelectorAll('.has-video').length }));
   ok(!v.activo && v.pedidos === 0 && v.conVideo === 0, 'reduced motion: sin clips, queda la foto (póster)');
   ok(!(await p.evaluate(() => document.querySelector('.grano'))), 'reduced motion: sin grano');
+  const fer = await p.evaluate(() => document.querySelectorAll('#ferias .foto').length);
+  ok(fer === 1, `reduced motion: la etapa 02 tiene solo el video (${fer} figura)`);
   await ctx.close();
 }
 
@@ -324,9 +329,14 @@ for (const [vista, opts] of [
 }
 
 // ---------- mobile: ningún elemento fijo tapa el panel de texto (en cada etapa, sub-estado y transición) ----------
+// (incluye altos chicos: el alto visible real con las barras del navegador ronda 640–760 px)
 for (const [nombre, vp] of [
   ['390×844', MOBILE],
   ['360×740', { ...MOBILE, viewport: { width: 360, height: 740 } }],
+  ['390×760', { ...MOBILE, viewport: { width: 390, height: 760 } }],
+  ['360×690', { ...MOBILE, viewport: { width: 360, height: 690 } }],
+  ['375×667', { ...MOBILE, viewport: { width: 375, height: 667 } }],
+  ['360×640', { ...MOBILE, viewport: { width: 360, height: 640 } }],
 ]) {
   const { ctx, p } = await page(vp);
   const us = await p.evaluate(() => {
@@ -363,10 +373,12 @@ for (const [nombre, vp] of [
         const a = box(pan);
         for (const [n, el] of fijos) {
           const b = box(el);
-          // la línea dorada incluye sus puntos (7 px)
-          const bb = n === 'línea' ? { left: b.left, right: b.right, top: b.top - 4, bottom: b.bottom + 4 } : b;
+          // la línea dorada incluye sus puntos y el panel tiene que terminar al menos 12 px por encima
+          const bb = n === 'línea' ? { left: b.left, right: b.right, top: b.top - 4 - 12, bottom: b.bottom + 4 } : b;
           if (cruza(a, bb)) out.push(`${pan.closest('.etapa').id} × ${n}`);
         }
+        // nunca fuera de la pantalla visible
+        if (a.top < 0 || a.bottom > innerHeight) out.push(`${pan.closest('.etapa').id} fuera de pantalla`);
       }
       return out;
     });

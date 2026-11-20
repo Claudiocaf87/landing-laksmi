@@ -119,6 +119,12 @@ export function createJourney({ stage = null, content, reduced = false, video = 
   let measuring = false; // seek() (pruebas y capturas) apaga el imán del hero
   let active = -1;
   const clips = createClips({ content, enabled: video });
+  fitPanels(sections, DY);
+  let fitT;
+  window.addEventListener('resize', () => {
+    clearTimeout(fitT);
+    fitT = setTimeout(() => fitPanels(sections, DY), 120);
+  });
   // grano fino sobre fotos y clips (capa fija, debajo de los textos)
   const grano = new URLSearchParams(location.search).get('grano');
   if (!reduced && (grano === '1' || (grano !== '0' && content.videos?.grano))) {
@@ -330,4 +336,25 @@ function noiseTile() {
   }
   ctx.putImageData(img, 0, 0);
   return c.toDataURL('image/png');
+}
+
+// Mobile: cada panel tiene que entrar entre el header y la línea dorada (también mientras entra o sale,
+// que se desplaza DY px). Si no entra con la tipografía compacta, baja un escalón (is-compacto) y, si
+// hace falta, otro (is-mini). Se mide con el alto visible real (el contenido fijo ocupa la pantalla).
+function fitPanels(sections, DY) {
+  const mobile = window.matchMedia('(max-width: 899px), (orientation: portrait)').matches;
+  const header = document.querySelector('.header');
+  const headerBottom = header ? header.getBoundingClientRect().bottom : 0;
+  sections.forEach((sec, i) => {
+    if (i === 0) return; // el hero tiene su propio diseño con el globo
+    const inner = sec.querySelector('.etapa__inner');
+    const box = sec.querySelector('.etapa__content');
+    if (!inner || !box) return;
+    inner.classList.remove('is-compacto', 'is-mini');
+    if (!mobile) return;
+    const pb = parseFloat(getComputedStyle(box).paddingBottom) || 0;
+    const room = box.clientHeight - pb - headerBottom - DY - 6;
+    if (inner.offsetHeight > room) inner.classList.add('is-compacto');
+    if (inner.offsetHeight > room) inner.classList.add('is-mini');
+  });
 }

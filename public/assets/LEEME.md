@@ -26,9 +26,6 @@ Si cambia el globo: `npm run build && npm run globo-imagen && npm run imagenes`.
 | Archivo (`<id>-desktop|mobile.avif|webp`) | Etapa | Punto focal | Desktop | Mobile |
 |---|---|---|---|---|
 | `plan` | 01 Plan | 40% 35% | 1920×1071 | 900×1600 |
-| `feria-01` | 02 Ferias (1/3) | 40% 40% | 1920×1071 | 900×1600 |
-| `feria-02` | 02 Ferias (2/3) | 60% 40% | 1920×1071 | 900×1600 |
-| `feria-detalle` | 02 Ferias (3/3), frase "Anotamos cada muestra." | 62% 50% | 1920×1071 | 900×1600 |
 | `negociacion` | 03 Negociación (los dos estados) | 52% 40% | 1920×1071 | 900×1600 |
 | `calidad` | 04 Calidad | 55% 42% | 1920×1071 | 900×1600 |
 | `carga` | 05 Despacho (1/3) | 70% 50% | 1920×1071 | 900×1600 |

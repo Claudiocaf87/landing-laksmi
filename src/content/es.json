@@ -174,6 +174,7 @@
         "de la fábrica a tu almacén."
       ],
       "subtitulo": "Buscamos proveedores, negociamos en mandarín, inspeccionamos cada unidad y llevamos tu mercancía a Venezuela y a toda Latinoamérica.",
+      "bajadaMobile": "Buscamos proveedores, negociamos en mandarín e inspeccionamos cada unidad.",
       "chips": [
         "Yiwu",
         "Guangzhou",
@@ -201,6 +202,7 @@
         "un plan."
       ],
       "subtitulo": "Revisamos qué importas, a quién le compras, tus volúmenes y lo que salió mal antes. En 48 horas te decimos qué se puede mejorar. Tú apruebas el plan antes de avanzar.",
+      "bajadaMobile": "En 48 horas revisamos tu caso y te decimos qué mejorar. Tú apruebas el plan.",
       "puntos": [
         "Diagnóstico gratuito en 48 horas",
         "Acuerdo de confidencialidad antes de operar",
@@ -225,6 +227,7 @@
         "por ti."
       ],
       "subtitulo": "Feria de Cantón y Mercado de Yiwu: vemos los productos en persona, comparamos muestras y preseleccionamos proveedores según tu plan.",
+      "bajadaMobile": "En la Feria de Cantón y en Yiwu vemos los productos y preseleccionamos proveedores.",
       "puntos": [
         "Muestras vistas y comparadas en el stand",
         "Preselección según tu plan y tus volúmenes"
@@ -233,22 +236,8 @@
       "fotos": [
         {
           "clip": "feria",
-          "peso": 2,
           "alt": "Dos compradores con credencial recorren los pasillos de una feria comercial mientras revisan una tableta.",
           "focal": "50% 45%"
-        },
-        {
-          "id": "feria-02",
-          "focal": "60% 40%",
-          "alt": "Un comprador examina un teléfono de muestra en un stand mientras el expositor le explica",
-          "fuga": "30% 40%"
-        },
-        {
-          "id": "feria-detalle",
-          "focal": "62% 50%",
-          "alt": "Primer plano de una mano que anota en una libreta junto a un disco de freno de muestra",
-          "frase": "Anotamos cada muestra.",
-          "fuga": "42% 32%"
         }
       ]
     },
@@ -264,11 +253,13 @@
       "pasos": [
         {
           "estado": "Condiciones negociadas",
-          "texto": "Precio, plazos, especificaciones y forma de pago, acordados directo con la fábrica y documentados."
+          "texto": "Precio, plazos, especificaciones y forma de pago, acordados directo con la fábrica y documentados.",
+          "textoMobile": "Precio, plazos y forma de pago, acordados con la fábrica y documentados."
         },
         {
           "estado": "Proveedor verificado",
-          "texto": "Antes de cualquier pago visitamos la fábrica y verificamos su capacidad real de producción y su calidad."
+          "texto": "Antes de cualquier pago visitamos la fábrica y verificamos su capacidad real de producción y su calidad.",
+          "textoMobile": "Antes de pagar, visitamos la fábrica y verificamos su capacidad real."
         }
       ],
       "transicion": "lateral",
@@ -290,6 +281,7 @@
         "antes de que salga."
       ],
       "subtitulo": "Inspeccionamos todas las unidades antes del despacho. Si algo no cumple las especificaciones acordadas, el envío se detiene.",
+      "bajadaMobile": "Inspeccionamos el 100 % de las unidades. Si algo no cumple, el envío se detiene.",
       "transicion": "circulo",
       "fotos": [
         {
@@ -316,11 +308,13 @@
       "pasos": [
         {
           "estado": "Cargado y precintado",
-          "texto": "Supervisamos la carga y el cierre del contenedor en origen."
+          "texto": "Supervisamos la carga y el cierre del contenedor en origen.",
+          "textoMobile": "Supervisamos la carga y el cierre del contenedor."
         },
         {
           "estado": "Embarcado",
-          "texto": "Documentación de exportación y embarque desde los puertos de China."
+          "texto": "Documentación de exportación y embarque desde los puertos de China.",
+          "textoMobile": "Documentación de exportación y embarque en China."
         }
       ],
       "transicion": "diagonal",
@@ -352,6 +346,7 @@
         "y tú al tanto."
       ],
       "subtitulo": "Del proveedor a tu almacén: entre 60 y 90 días en promedio, según el producto y la fábrica.",
+      "bajadaMobile": "De 60 a 90 días en promedio, según el producto y la fábrica.",
       "mapaGrande": true,
       "transicion": "fundido",
       "fotos": [
@@ -372,6 +367,7 @@
         "es lo que llega."
       ],
       "subtitulo": "Coordinamos la documentación y el proceso aduanero en destino. [ALCANCE DEL SERVICIO ADUANERO: A CONFIRMAR]",
+      "bajadaMobile": "Coordinamos la documentación y la aduana en destino. [ALCANCE DEL SERVICIO ADUANERO: A CONFIRMAR]",
       "transicion": "lateral",
       "fotos": [
         {
@@ -391,6 +387,7 @@
         "de tu almacén."
       ],
       "subtitulo": "Despacho en origen, transporte internacional, coordinación aduanera y entrega. Un solo equipo responsable de punta a punta.",
+      "bajadaMobile": "Origen, transporte, aduana y entrega: un solo equipo de punta a punta.",
       "transicion": "circulo",
       "fotos": [
         {
@@ -410,6 +407,7 @@
         "toda Latinoamérica."
       ],
       "subtitulo": "Venezuela, Colombia, Chile, Perú, México y más.",
+      "bajadaMobile": "Venezuela, Colombia, Chile, Perú, México y más.",
       "stats": [
         {
           "valor": "7",
