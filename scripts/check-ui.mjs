@@ -302,6 +302,41 @@ for (const [vista, opts] of [
   await ctx.close();
 }
 
+// ---------- regresión: el imán del hero interrumpido no traba la carga de fotos ni videos ----------
+{
+  const { ctx, p } = await page(DESKTOP);
+  await p.waitForTimeout(1200);
+  const r = await p.evaluate(async () => {
+    const j = window.__journey;
+    const run = (u0, u1, ms) =>
+      new Promise((res) => {
+        const a = j.scrollForU(u0), z = j.scrollForU(u1);
+        let s = null;
+        const f = (now) => {
+          s ??= now;
+          const t = Math.min(1, (now - s) / ms);
+          j.lenis.scrollTo(a + (z - a) * t, { immediate: true, force: true });
+          t < 1 ? requestAnimationFrame(f) : res();
+        };
+        requestAnimationFrame(f);
+      });
+    await run(0, 0.3, 800); // se detiene a mitad del giro: actúa el imán
+    await new Promise((r) => setTimeout(r, 420));
+    window.dispatchEvent(new WheelEvent('wheel', { deltaY: 100 })); // y vuelve a scrollear durante el ajuste
+    await run(j.proxy.u, 2.3, 2500);
+    await new Promise((r) => setTimeout(r, 4000));
+    const c = window.__clips.clips;
+    return {
+      plan: c.find((x) => x.id === 'plan').state,
+      feria: c.find((x) => x.id === 'feria').state,
+      video: c.find((x) => x.id === 'feria').fig.classList.contains('has-video'),
+      fotos: [...document.querySelectorAll('#plan .foto img, #ferias .foto img, #negociacion .foto img')].every((i) => i.complete && i.naturalWidth > 0),
+    };
+  });
+  ok(r.plan === 'ready' && r.feria === 'ready' && r.video && r.fotos, `carga: tras interrumpir el imán del hero siguen cargando fotos y videos (${JSON.stringify(r)})`);
+  await ctx.close();
+}
+
 // ---------- modo video ----------
 {
   const { ctx, p } = await page(DESKTOP);
@@ -310,7 +345,7 @@ for (const [vista, opts] of [
   ok(videos.length === 0, `video: en el hero no se pide ningún clip (${videos.join(', ') || 'ninguno'})`);
   await p.evaluate(() => window.__journey.seek(0.5));
   await p.waitForFunction(() => window.__clips.clips.find((c) => c.id === 'plan').state === 'ready', null, { timeout: 15000 });
-  ok(videos[0] === 'plan-desktop.av1.mp4' && !videos.some((v) => /^(negociacion|calidad|carga|puerto)/.test(v)), `video: al empezar a scrollear se pide el clip de la etapa siguiente, en AV1 (${videos.join(', ')})`);
+  ok(/^plan-(desktop|ligero)\.av1\.mp4$/.test(videos[0]) && !videos.some((v) => /^(negociacion|calidad|carga|puerto)/.test(v)), `video: al empezar a scrollear se pide el clip de la etapa siguiente, en AV1 (${videos.join(', ')})`);
   // foto nítida en reposo: en la estación de la etapa 01 el clip está en su primer cuadro y se ve la foto
   await p.evaluate(() => window.__journey.seek(window.__journey.station(1)));
   await p.waitForTimeout(700);

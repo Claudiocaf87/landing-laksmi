@@ -158,7 +158,9 @@ def chains(clip, hd=True):
     else:
         x = focal_expr(clip.get("focalMobile", "50% 50%"), t0)
         mob = ([*cut(clip), "-i", str(src)], f"fps={FPS},crop=w=ih*9/16:h=ih:x='clip(({x})*iw-ow/2,0,iw-ow)':y=0,scale=540:960:flags=lanczos,setsar=1", (540, 960))
-    return {"desktop": desk, "mobile": mob}
+    # versión liviana para desktop con conexiones medianas: siempre 1280×720 con enfoque leve
+    ligero = ([*cut(clip), "-i", str(src)], f"fps={FPS},scale=1280:720:flags=lanczos,{UNSHARP},setsar=1", (1280, 720))
+    return {"desktop": desk, "mobile": mob, "ligero": ligero}
 
 
 # ---------- codificación ----------
@@ -296,8 +298,9 @@ if __name__ == "__main__":
             continue
         origen = posters(clip)
         ch = chains(clip)
-        # --mobile: solo la versión mobile (p. ej., al sumar verticales)
-        for view in ("mobile",) if "--mobile" in sys.argv else ("desktop", "mobile"):
+        # --mobile / --ligero: solo esa versión (p. ej., al sumar verticales)
+        views = [v for v in ("desktop", "ligero", "mobile") if f"--{v}" in sys.argv] or ["desktop", "ligero", "mobile"]
+        for view in views:
             inp, vf, size = ch[view]
             budget = V["presupuestoKB"][view] * 1024
             dur = float(clip.get("duracion") or probe(SRC / clip["archivo"])[2] - float(clip.get("desde", 0)))

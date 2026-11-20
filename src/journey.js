@@ -142,7 +142,17 @@ export function createJourney({ stage = null, content, reduced = false, video = 
   // estación de cada etapa (adonde llevan el menú y el HUD): con foto nítida, cuando el texto ya entró y
   // el clip todavía está en su primer cuadro
   const station = (i) => (i === 0 ? 0 : i === N - 1 ? i + 0.7 : holds[i] ? i + HOLD : i + 0.4);
-  const goTo = (target, { immediate = false, u = null } = {}) => {
+  // fin de un salto: se reanuda la carga de la etapa actual y la siguiente
+  let navTimer;
+  const endNav = () => {
+    clearTimeout(navTimer);
+    if (!navigating) return;
+    navigating = false;
+    active = -1; // fuerza la carga de la etapa de destino y la siguiente
+  };
+  // si el visitante scrollea durante un salto, Lenis lo interrumpe y no avisa que terminó: se libera igual
+  ['wheel', 'touchstart', 'keydown'].forEach((ev) => window.addEventListener(ev, endNav, { passive: true }));
+  const goTo = (target, { immediate = false, u = null, snap = false } = {}) => {
     const i = sections.findIndex((s) => s.id === target);
     let to;
     if (u != null) to = scrollForU(u);
@@ -153,10 +163,14 @@ export function createJourney({ stage = null, content, reduced = false, video = 
       to = el.getBoundingClientRect().top + window.scrollY;
     }
     const dist = Math.abs(to - window.scrollY) / window.innerHeight;
-    // durante el salto no se piden las fotos ni los clips de las etapas que pasan de largo:
-    // solo el destino
-    navigating = !(immediate || reduced);
+    // durante el salto (menú, HUD) no se piden las fotos ni los clips de las etapas que pasan de largo:
+    // solo el destino. El imán del hero (snap) es un ajuste corto: no frena la carga.
+    navigating = !(immediate || reduced || snap);
+    const duration = Math.min(3.2, Math.max(1, dist / 3));
     if (navigating) {
+      // red de seguridad: aunque el aviso de Lenis no llegue, la carga se reanuda al terminar el salto
+      clearTimeout(navTimer);
+      navTimer = setTimeout(endNav, duration * 1000 + 400);
       const destU = u != null ? u : i >= 0 ? station(i) : null;
       if (destU != null) {
         const d = Math.min(N - 1, Math.floor(destU));
@@ -165,13 +179,10 @@ export function createJourney({ stage = null, content, reduced = false, video = 
       }
     }
     lenis.scrollTo(to, {
-      duration: Math.min(3.2, Math.max(1, dist / 3)),
+      duration,
       immediate: immediate || reduced,
       force: true,
-      onComplete: () => {
-        navigating = false;
-        active = -1; // fuerza la carga de la etapa de destino y la siguiente
-      },
+      onComplete: endNav,
     });
   };
 
@@ -185,7 +196,7 @@ export function createJourney({ stage = null, content, reduced = false, video = 
       idle = setTimeout(() => {
         const u = proxy.u;
         if (navigating || measuring || u <= 0.015 || u >= end - 0.015) return;
-        goTo(null, { u: u < end * 0.4 ? 0 : end });
+        goTo(null, { u: u < end * 0.4 ? 0 : end, snap: true });
       }, 220);
     });
   }
@@ -219,7 +230,8 @@ export function createJourney({ stage = null, content, reduced = false, video = 
   };
 
   const photosReady = (i) =>
-    i >= N || [...sections[i].querySelectorAll('.foto img')].every((img) => !img.dataset.src || (img.complete && img.naturalWidth > 0 && img.currentSrc));
+    // lista = cargada o con error (una foto que falla no puede trabar la carga de los clips)
+    i >= N || [...sections[i].querySelectorAll('.foto img')].every((img) => !img.dataset.src || (img.complete && img.currentSrc));
 
   // ---------- mapita + HUD compacto ----------
   const tracker = createTracker(content);

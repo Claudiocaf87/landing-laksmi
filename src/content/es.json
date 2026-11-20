@@ -843,6 +843,7 @@
     "base": "/assets/video/",
     "presupuestoKB": {
       "desktop": 2500,
+      "ligero": 1000,
       "mobile": 800
     },
     "esperaMaxima": 3,

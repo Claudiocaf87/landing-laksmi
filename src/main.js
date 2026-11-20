@@ -33,7 +33,9 @@ const lowEnd = modo === 'liviano' || (navigator.hardwareConcurrency || 8) <= 4 |
 const isStatic = modo === 'estatico';
 const want3D = !isStatic && !saveData && !lowEnd && hasWebGL2();
 // modo video: clips con scroll solo con buena conexión y equipo; si no, foto con desplazamiento lateral
-const slowNet = /(^|-)(2g|3g)$/.test(conn.effectiveType || '');
+// solo 2g: el "3g" que informa Chrome es una estimación poco confiable (en la misma red puede decir 4g en
+// desktop y 3g en el celular) y apagaba los videos con conexiones buenas; la velocidad real la mide clips.js
+const slowNet = /(^|-)2g$/.test(conn.effectiveType || '');
 const wantVideo = !isStatic && !saveData && !slowNet && !lowEnd && !reducedMotion && modo !== 'sin-video';
 root.classList.toggle('no-globe', !want3D);
 

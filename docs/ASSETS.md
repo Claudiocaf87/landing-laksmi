@@ -74,6 +74,9 @@ Cada clip: `video/<id>-{desktop,mobile}.av1.mp4` (AV1, primera opción) y `.mp4`
 | entrega | 1920×1080 | 2,20 / 2,32 MB | 0,71 / 0,74 MB | completo (5 s) |
 | tienda | 1920×1080 (nativo) | 2,34 / 2,37 MB | 0,71 / 0,74 MB | 0 a 4 s |
 
+Versión liviana para desktop (`<id>-ligero.{av1.mp4,mp4}`, 1280×720, ≤ 1 MB): el sitio la usa si la
+velocidad medida de descarga no alcanza para la de 1080p (se genera con `npm run videos -- --ligero`).
+
 Desktop: los clips 720p pasan a 1080p con lanczos y un enfoque leve si entran en 2,5 MB con buena calidad
 (AV1 con CRF ≤ 36); si no (tránsito: el agua necesitaría CRF 46), quedan en 720p con enfoque. `--escalar` usa
 Real-ESRGAN (realesrgan-x4plus) en la GPU; en esta máquina (Radeon integrada) tarda unos 85 s por cuadro y en
