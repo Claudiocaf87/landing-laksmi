@@ -816,23 +816,27 @@
       },
       {
         "nombre": "Ferretería e insumos industriales",
-        "foto": null,
-        "placeholder": "[FOTO FERRETERÍA]"
+        "foto": "rubro-ferreteria",
+        "focal": "50% 50%",
+        "alt": "Taladros, rotomartillos y amoladoras eléctricas colgados en una pared perforada de exhibición"
       },
       {
         "nombre": "Equipos médicos",
-        "foto": null,
-        "placeholder": "[FOTO EQUIPOS MÉDICOS]"
+        "foto": "rubro-medico",
+        "focal": "36% 50%",
+        "alt": "Consultorio odontológico con lámpara articulada, sillón y un monitor que muestra una radiografía dental panorámica"
       },
       {
         "nombre": "Bisutería y accesorios",
-        "foto": null,
-        "placeholder": "[FOTO BISUTERÍA]"
+        "foto": "rubro-bisuteria",
+        "focal": "50% 50%",
+        "alt": "Primer plano de cristales dorados y transparentes engarzados sobre una superficie clara"
       },
       {
         "nombre": "Tecnología",
-        "foto": null,
-        "placeholder": "[FOTO TECNOLOGÍA]"
+        "foto": "rubro-tecnologia",
+        "focal": "45% 55%",
+        "alt": "Teléfonos inteligentes en exhibición sobre soportes transparentes"
       }
     ]
   },

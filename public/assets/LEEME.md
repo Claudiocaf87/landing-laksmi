@@ -40,6 +40,10 @@ Si cambia el globo: `npm run build && npm run globo-imagen && npm run imagenes`.
 | `tienda` | 09 Resultados · "Opción B en su tienda" (horizontal) + "vertical" para mobile, con dirección de arte | 38% 40% (vertical: 60% 45%) | 1920×1071 | 900×1600 (de su original vertical, sin agrandar) |
 | `globo-hero` · `globo-cierre` | 00 y 09, solo sin WebGL / ahorro de datos / gama baja (capturas del globo 3D) | — | 900×900 | 600×600 |
 | `rubro-automotriz` | Bloque Rubros (cuadrada) | 47% 50% | 800×800 | 480×480 |
+| `rubro-ferreteria` | Bloque Rubros (cuadrada, foto de stock del cliente) | 50% 50% | 800×800 | 480×480 |
+| `rubro-medico` | Bloque Rubros (cuadrada, foto de stock del cliente) | 36% 50% | 800×800 | 480×480 |
+| `rubro-bisuteria` | Bloque Rubros (cuadrada, foto de stock del cliente) | 50% 50% | 800×800 | 480×480 |
+| `rubro-tecnologia` | Bloque Rubros (cuadrada, foto de stock del cliente) | 45% 55% | 800×800 | 480×480 |
 
 `og/og-laksmi.jpg` (1200×630): vista previa al compartir, recortada de `transito`.
 `data/globo-puntos.bin`: tierra del globo (Natural Earth, dominio público; `npm run globo`).
@@ -56,7 +60,6 @@ Si cambia el globo: `npm run build && npm run globo-imagen && npm run imagenes`.
 | Archivo | Qué tiene que mostrar | Medida y formato |
 |---|---|---|
 | `assets-fuente/precinto.jpg` (+ `precinto-vertical.jpg`) | Precinto de seguridad (sello numerado tipo perno o cable, no un candado) en las puertas de un contenedor | ≥ 2000×1116 · vertical ≥ 1116×2000 |
-| `assets-fuente/rubro-ferreteria.jpg` · `-medico` · `-bisuteria` · `-tecnologia` | Un producto por rubro, fondo claro, sin marcas | ≥ 1200×1200 |
 | Fotos reales del equipo en la Feria de Cantón | Para las etapas de ferias y negociación, con leyenda [FERIA, AÑO, QUIÉN ES] | ≥ 2000 px de ancho |
 | `assets-fuente/videos/<archivo>_vertical.mp4` | Versiones verticales de feria, puerto y tránsito (reemplazan el recorte de la horizontal) | 720×1280 o más, 24 fps |
 | `logo/logo.svg` | Logo vectorial (color y blanco) | SVG |
