@@ -56,13 +56,17 @@ const unwrap = (route) => {
 const MAIN_ROUTE = [
   [29.0, 123.5], [30, 140], [27, 162], [22, 188], [16, 215], [11, 245], [7.6, 279], [9.2, 280.3], [10.8, 283], [10.9, 293],
 ];
-// Ramales desde el Pacífico hacia otros destinos.
-const BRANCHES = [
-  [[16, 215], [17.6, 240], [19.05, 255.7]],
-  [[11, 245], [6.5, 268], [3.9, 282.9]],
-  [[11, 245], [-3, 266], [-12.05, 282.6]],
-  [[11, 245], [-14, 262], [-33.6, 288]],
-];
+// Ramales hacia los demás destinos: puntos de paso estilizados; el último punto de cada ramal (y de
+// las rutas doradas) se reemplaza por las coordenadas exactas de su marcador en es.json.
+const BRANCHES = {
+  México: [[16, 215], [17.6, 240], [19.05, 255.7]],
+  Bogotá: [[11, 245], [6.5, 268], [3.9, 282.9]],
+  Lima: [[11, 245], [-3, 266], [-11.9, 281.6]],
+  Santiago: [[11, 245], [-14, 262], [-33.6, 287.5]],
+  Margarita: [[10.48, 293.1], [11.35, 294.6]],
+};
+// la ruta termina exactamente en el marcador (mismas coordenadas, longitud continua con la anterior)
+const toMarker = (waypoints, d) => (d ? unwrap([...waypoints, [d.lat, d.lon]]) : unwrap(waypoints));
 
 function routeGeometry(waypoints, lift = 0.07, seg = 180, radius = 0.055) {
   const flat = new CatmullRomCurve3(waypoints.map(([la, lo]) => new Vector3(lo, la, 0)), false, 'centripetal');
@@ -75,13 +79,56 @@ function routeGeometry(waypoints, lift = 0.07, seg = 180, radius = 0.055) {
   const geo = new TubeGeometry(new CatmullRomCurve3(pts), seg, radius, 6, false);
   geo.userData.per = 6 * 6;
   geo.userData.seg = seg;
+  geo.userData.pts = pts; // eje de la ruta (para las pruebas)
   return geo;
 }
 const reveal = (mesh, p) => {
   const { per, seg } = mesh.geometry.userData;
-  mesh.geometry.setDrawRange(0, Math.floor(clamp01(p) * seg) * per);
-  mesh.visible = p > 0.001;
+  const k = clamp01(p);
+  mesh.geometry.setDrawRange(0, (k >= 0.999 ? seg : Math.floor(k * seg)) * per);
+  mesh.userData.reveal = k;
+  mesh.visible = k > 0.001;
 };
+
+// Material de las rutas: color plano y un fundido en la silueta del globo. Las rutas van un poco elevadas
+// sobre la superficie; donde pasan por detrás, lo que asoma fuera de la silueta se desvanece en lugar de
+// dibujarse en el aire (lo que queda dentro de la silueta y detrás lo tapa la esfera).
+const ROUTE_VS = `uniform vec3 uCenter; uniform float uRadius; varying float vA;
+void main(){
+  vec4 wp = modelMatrix * vec4(position, 1.0);
+  vec3 toC = uCenter - cameraPosition;
+  vec3 toP = wp.xyz - cameraPosition;
+  float sinLimb = clamp(uRadius / length(toC), 0.0, 0.999);
+  float cosA = dot(normalize(toC), normalize(toP));
+  float sinA = sqrt(max(0.0, 1.0 - cosA * cosA));
+  vA = 1.0 - smoothstep(0.975, 0.998, sinA / sinLimb);
+  gl_Position = projectionMatrix * viewMatrix * wp;
+}`;
+const ROUTE_FS = `uniform vec3 uColor; varying float vA;
+void main(){
+  if (vA < 0.01) discard;
+  gl_FragColor = vec4(uColor, vA);
+  #include <tonemapping_fragment>
+  #include <colorspace_fragment>
+}`;
+// el mismo cálculo en JS (pruebas): alfa de un punto del mundo según la silueta
+export function routeAlpha(p, center, radius, camPos) {
+  const toC = center.clone().sub(camPos);
+  const toP = p.clone().sub(camPos);
+  const sinLimb = Math.min(0.999, radius / toC.length());
+  const cosA = toC.normalize().dot(toP.normalize());
+  const s = Math.sqrt(Math.max(0, 1 - cosA * cosA)) / sinLimb;
+  const x = clamp01((s - 0.975) / (0.998 - 0.975));
+  return 1 - x * x * (3 - 2 * x);
+}
+const routeUniforms = { uCenter: { value: new Vector3() }, uRadius: { value: R } };
+const routeMaterial = (hex) =>
+  new ShaderMaterial({
+    transparent: true,
+    uniforms: { ...routeUniforms, uColor: { value: new Color(hex) } },
+    vertexShader: ROUTE_VS,
+    fragmentShader: ROUTE_FS,
+  });
 
 // retícula fina (meridianos y paralelos) en una sola LineSegments
 function graticule() {
@@ -162,13 +209,32 @@ export async function buildGlobe({ group, manager, lite = false, fast = false })
   place(new InstancedMesh(pinGeo, new MeshBasicMaterial({ color: PALETTE.blue }), G.destinos.length), G.destinos, Y);
   if (others.length) place(new InstancedMesh(new TorusGeometry(0.26, 0.05, 6, 24), new MeshStandardMaterial({ color: PALETTE.gold, metalness: 1, roughness: 0.3 }), others.length), others, Z, R * 1.01);
 
-  // rutas: China → Latinoamérica (dorado), otros orígenes (dorado fino), ramales a destinos (azul)
-  const main = new Mesh(routeGeometry(MAIN_ROUTE, 0.07, 220), new MeshBasicMaterial({ color: 0xc9a24a }));
-  const otherMat = new MeshBasicMaterial({ color: 0xd8b25a });
-  const otherRoutes = others.filter((o) => o.ruta?.length > 1).map((o) => new Mesh(routeGeometry(unwrap(o.ruta), 0.04, 140, 0.042), otherMat));
-  const branchMat = new MeshBasicMaterial({ color: PALETTE.blue });
-  const branches = BRANCHES.map((w) => new Mesh(routeGeometry(w, 0.03, 90, 0.035), branchMat));
+  // rutas: China → Latinoamérica (dorado), otros orígenes (dorado fino), ramales a destinos (azul).
+  // Cada una termina en las coordenadas exactas de su marcador.
+  const destino = (nombre) => G.destinos.find((d) => d.nombre === nombre);
+  const principal = destino(G.destinoPrincipal);
+  const main = new Mesh(routeGeometry(toMarker(MAIN_ROUTE.slice(0, -1), principal), 0.07, 220), routeMaterial(0xc9a24a));
+  main.userData.destino = G.destinoPrincipal;
+  const otherMat = routeMaterial(0xd8b25a);
+  const otherRoutes = others
+    .filter((o) => o.ruta?.length > 1)
+    .map((o) => {
+      const r = new Mesh(routeGeometry(toMarker(o.ruta.slice(0, -1), principal), 0.04, 140, 0.042), otherMat);
+      r.userData.destino = G.destinoPrincipal;
+      return r;
+    });
+  const branchMat = routeMaterial(PALETTE.blue);
+  const branches = Object.entries(BRANCHES)
+    .filter(([nombre]) => destino(nombre))
+    .map(([nombre, w]) => {
+      const b = new Mesh(routeGeometry(toMarker(w, destino(nombre)), 0.03, 90, 0.035), branchMat);
+      b.userData.destino = nombre;
+      return b;
+    });
+  [main, ...otherRoutes, ...branches].forEach((r) => (r.renderOrder = 1)); // después de la esfera y los pines
   spin.add(main, ...otherRoutes, ...branches);
+  const routes = [main, ...otherRoutes, ...branches];
+  const markers = Object.fromEntries(G.destinos.map((d) => [d.nombre, d]));
   [main, ...otherRoutes, ...branches].forEach((r) => reveal(r, 0));
 
   let introStart = null;
@@ -176,7 +242,50 @@ export async function buildGlobe({ group, manager, lite = false, fast = false })
   const HERO_END = fast ? 0.55 : 0.75; // u en el que el giro hacia América termina con scroll
   const FIRST_LEG = 0.3; // tramo de la ruta principal que dibuja la entrada (sale de China hacia el este)
   let fit = 1; // escala para que el globo entre en el hueco libre de la pantalla (la calcula Stage)
+  const wp = new Vector3();
+  const ws = new Vector3();
   return {
+    routes,
+    // Para las pruebas: por ruta dibujada, si está completa, si su extremo mira a la cámara, la distancia en
+    // píxeles entre el extremo y su marcador (el eje del pin) y cuántos puntos visibles caen fuera de la silueta.
+    debugRoutes(camera, width, height) {
+      spin.updateWorldMatrix(true, true);
+      const center = spin.getWorldPosition(new Vector3());
+      const radius = R * spin.getWorldScale(new Vector3()).x;
+      const cam = camera.getWorldPosition(new Vector3());
+      const px = (v) => {
+        const q = v.clone().project(camera);
+        return [((q.x + 1) / 2) * width, ((1 - q.y) / 2) * height];
+      };
+      const segDist = ([x, y], [ax, ay], [bx, by]) => {
+        const dx = bx - ax;
+        const dy = by - ay;
+        const l = dx * dx + dy * dy || 1;
+        const k = clamp01(((x - ax) * dx + (y - ay) * dy) / l);
+        return Math.hypot(x - (ax + k * dx), y - (ay + k * dy));
+      };
+      const sinLimb = Math.min(0.999, radius / center.distanceTo(cam));
+      return routes
+        .filter((r) => r.visible)
+        .map((r) => {
+          const pts = r.geometry.userData.pts;
+          const n = Math.round(r.userData.reveal * (pts.length - 1));
+          const drawn = pts.slice(0, n + 1).map((q) => q.clone().applyMatrix4(r.matrixWorld));
+          const end = drawn[drawn.length - 1];
+          const d = markers[r.userData.destino];
+          const base = latLon(d.lat, d.lon, R).applyMatrix4(spin.matrixWorld);
+          const top = latLon(d.lat, d.lon, R + 0.55).applyMatrix4(spin.matrixWorld);
+          const frente = end.clone().sub(center).normalize().dot(cam.clone().sub(end).normalize()) > 0;
+          const fuera = drawn.filter((q) => {
+            const toC = center.clone().sub(cam).normalize();
+            const cosA = toC.dot(q.clone().sub(cam).normalize());
+            return Math.sqrt(Math.max(0, 1 - cosA * cosA)) / sinLimb > 1 && routeAlpha(q, center, radius, cam) > 0.02;
+          }).length;
+          return { destino: r.userData.destino, completa: r.userData.reveal >= 0.999, frente, distPx: +segDist(px(end), px(base), px(top)).toFixed(2), fuera };
+        });
+    },
+    spin,
+    markers,
     setFit(f) {
       fit = f;
     },
@@ -199,10 +308,15 @@ export async function buildGlobe({ group, manager, lite = false, fast = false })
       const lat = lat0 + (AMERICA.lat - lat0) * p;
       const lon = lon0 + (AMERICA.lon - lon0) * p;
       spin.rotation.set(lat * D2R, -lon * D2R, 0, 'XYZ');
+      // centro y radio del globo en el mundo, para el fundido de las rutas en la silueta
+      spin.updateWorldMatrix(true, false);
+      routeUniforms.uCenter.value.copy(spin.getWorldPosition(wp));
+      routeUniforms.uRadius.value = R * spin.getWorldScale(ws).x;
       // rutas: la entrada dibuja el primer tramo; el resto se dibuja mientras gira con el scroll
       reveal(main, Math.max(FIRST_LEG * k, FIRST_LEG + (1 - FIRST_LEG) * (p / 0.8)));
       otherRoutes.forEach((r) => reveal(r, (p - 0.55) / 0.4));
-      branches.forEach((b, i) => reveal(b, (p - 0.68 - i * 0.04) / 0.25));
+      // los ramales empiezan escalonados y todos terminan antes del final del giro (en reposo, al 100 %)
+      branches.forEach((b, i) => reveal(b, (p - 0.6 - i * 0.04) / 0.2));
     },
   };
 }

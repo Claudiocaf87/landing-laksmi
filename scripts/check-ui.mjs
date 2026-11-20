@@ -228,6 +228,36 @@ for (const [w, h] of [
   await ctx.close();
 }
 
+// ---------- globo: cada ruta llega a su marcador y nada se dibuja fuera de la silueta ----------
+for (const [vista, opts] of [
+  ['desktop', DESKTOP],
+  ['mobile', MOBILE],
+]) {
+  const { ctx, p } = await page(opts);
+  await p.waitForTimeout(3500); // termina la animación de entrada
+  for (const [estado, u] of [
+    ['hero (fin del giro)', await p.evaluate(() => window.__stage.globe.heroEnd)],
+    ['cierre', 9.7],
+  ]) {
+    await p.evaluate((u) => window.__journey.seek(u), u);
+    await p.waitForTimeout(500);
+    const r = await p.evaluate(() => {
+      const s = window.__stage;
+      const c = s.renderer.domElement;
+      return s.globe.debugRoutes(s.camera, c.clientWidth, c.clientHeight);
+    });
+    const incompletas = r.filter((x) => !x.completa).map((x) => x.destino);
+    const lejos = r.filter((x) => x.frente && x.distPx >= 3).map((x) => `${x.destino} ${x.distPx} px`);
+    const fuera = r.filter((x) => x.fuera > 0).map((x) => `${x.destino} (${x.fuera})`);
+    const destinos = [...new Set(r.filter((x) => x.frente).map((x) => x.destino))];
+    ok(
+      r.length === 9 && !incompletas.length && !lejos.length && !fuera.length,
+      `globo ${vista}, ${estado}: ${r.length} rutas al 100 %, extremos a < 3 px de su marcador (máx. ${Math.max(...r.filter((x) => x.frente).map((x) => x.distPx))} px; ${destinos.join(', ')}), nada fuera de la silueta${incompletas.length ? ' — incompletas: ' + incompletas.join(', ') : ''}${lejos.length ? ' — lejos: ' + lejos.join(', ') : ''}${fuera.length ? ' — fuera: ' + fuera.join(', ') : ''}`,
+    );
+  }
+  await ctx.close();
+}
+
 // ---------- numeración: texto de la etapa = HUD = punto activo de la línea dorada ----------
 for (const [vista, opts] of [
   ['desktop', DESKTOP],
