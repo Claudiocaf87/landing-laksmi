@@ -21,20 +21,13 @@ Si cambia el globo: `npm run build && npm run globo-imagen && npm run imagenes`.
 - Sin original vertical, el corte de mobile sale de la horizontal: con originales de 1116 px de alto
   se agranda 1,43× hasta 900 px y puede verse algo blando (hoy se nota en `precinto`).
 
-## Fotos (en `fotos/`)
+## Fotos (en `public/assets/fotos/`)
+
+Todas las etapas usan clips de video: su póster (`video-<id>-desktop|mobile`) lo genera `npm run videos`
+a partir de la foto original (`assets-fuente/<foto>.jpg`) o del primer cuadro. Las fotos sueltas que quedan son:
 
 | Archivo (`<id>-desktop|mobile.avif|webp`) | Etapa | Punto focal | Desktop | Mobile |
 |---|---|---|---|---|
-| `plan` | 01 Plan | 40% 35% | 1920×1071 | 900×1600 |
-| `negociacion` | 03 Negociación (los dos estados) | 52% 40% | 1920×1071 | 900×1600 |
-| `calidad` | 04 Calidad | 55% 42% | 1920×1071 | 900×1600 |
-| `carga` | 05 Despacho (1/3) | 70% 50% | 1920×1071 | 900×1600 |
-| `precinto` | 05 Despacho (2/3) · v2 · **provisional**: sigue mostrando un candado; reemplazar por un precinto de seguridad con el mismo nombre (ideal: también `precinto-vertical.jpg`) | 60% 58% | 1920×1071 | 900×1600 (agrandada 1,43×) |
-| `puerto` | 05 Despacho (3/3) | 55% 45% | 1920×1071 | 900×1600 |
-| `transito` | 06 Tránsito (+ mapa grande) | 48% 55% | 1920×1071 | 900×1600 |
-| `aduana` | 07 Aduana | 39% 45% | 1920×1071 | 900×1600 |
-| `entrega` | 08 Entrega | 62% 55% | 1920×1071 | 900×1600 |
-| `tienda` | 09 Resultados · "Opción B en su tienda" (horizontal) + "vertical" para mobile, con dirección de arte | 38% 40% (vertical: 60% 45%) | 1920×1071 | 900×1600 (de su original vertical, sin agrandar) |
 | `globo-hero` · `globo-cierre` | 00 y 09, solo sin WebGL / ahorro de datos / gama baja (capturas del globo 3D) | — | 900×900 | 600×600 |
 | `rubro-automotriz` | Bloque Rubros (cuadrada) | 47% 50% | 800×800 | 480×480 |
 | `rubro-ferreteria` | Bloque Rubros (cuadrada, foto de stock del cliente) | 50% 50% | 800×800 | 480×480 |
@@ -61,17 +54,7 @@ Si cambia el globo: `npm run build && npm run globo-imagen && npm run imagenes`.
 | `assets-fuente/videos/<archivo>_vertical.mp4` | Versiones verticales de feria, puerto y tránsito (reemplazan el recorte de la horizontal) | 720×1280 o más, 24 fps |
 | `logo/logo.svg` | Logo vectorial (color y blanco) | SVG |
 
-## Prototipos de avance (rama `prototipo-avance`, no publicados)
-
-| Archivo | Uso | Cómo se genera | Peso |
-|---|---|---|---|
-| `video/puerto-{desktop,mobile}.{mp4,webm}` | Versión C: usa el clip del puerto del modo video (v2) | `npm run videos` | ver abajo |
-| `profundidad/<id>-{desktop,mobile}.webp` | Versión B (mapa de profundidad por foto, blanco = cerca) | `npm run profundidad` (Depth Anything V2 Small en ONNX, en CPU; modelo en `.cache/`) | 1,5–2,7 KB c/u |
-
-Videos sin audio, con un keyframe cada ½ s para que el avance con el scroll sea fluido en ambos sentidos.
-El punto de fuga de cada foto de la versión B está en `es.json` (`fotos[].fuga`).
-
-## Modo video (rama `fase3-video`)
+## Modo video
 
 Clips generados con IA, sin audio: no muestran al equipo, a clientes ni a lugares reales de Laksmi.
 Cada clip: `video/<id>-{desktop,mobile}.av1.mp4` (AV1, primera opción) y `.mp4` (H.264, respaldo); póster en

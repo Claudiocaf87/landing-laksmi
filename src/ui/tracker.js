@@ -1,4 +1,4 @@
-// Mapita fijo + HUD compacto. Lo usan el recorrido principal y los prototipos.
+// Mapita fijo + HUD compacto del recorrido.
 // update(u, N) recibe el u "global" del recorrido (0 … N): el estado del HUD sale de estados[].desde.
 const STOP_F = [0, 0.05, 0.1, 0.15, 0.2, 0.55, 0.84, 1]; // fracción del mapita en la que cae cada etapa 01 … 08
 

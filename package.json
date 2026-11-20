@@ -16,8 +16,6 @@
     "globo-imagen": "node scripts/capturar-globo.mjs",
     "revision": "node scripts/revision.mjs",
     "dev:red": "vite --host",
-    "profundidad": "python scripts/profundidad.py",
-    "medir:prototipos": "node scripts/prototipos.mjs",
     "videos": "python scripts/videos.py"
   },
   "dependencies": {

@@ -838,34 +838,6 @@
       }
     ]
   },
-  "prototipos": {
-    "titulo": "Prototipo de avance",
-    "versiones": [
-      {
-        "id": "lateral",
-        "nombre": "A · Viaje lateral",
-        "href": "/prototipo-lateral.html"
-      },
-      {
-        "id": "zoom",
-        "nombre": "B · Zoom con profundidad",
-        "href": "/prototipo-zoom.html"
-      },
-      {
-        "id": "video",
-        "nombre": "C · Video con scroll",
-        "href": "/prototipo-video.html"
-      }
-    ],
-    "fin": "Fin del tramo de prueba",
-    "volver": "Volver al recorrido completo",
-    "intro": "Desliza para recorrer el tramo",
-    "video": {
-      "desktop": "/assets/video/puerto-desktop",
-      "mobile": "/assets/video/puerto-mobile",
-      "poster": "puerto"
-    }
-  },
   "videos": {
     "nota": "Clips generados con IA (sin audio). No muestran al equipo, a clientes ni a lugares reales de Laksmi. Para sumar uno: dejarlo en assets-fuente/videos/, agregarlo acá y a su etapa con {\"clip\": \"<id>\"}, y correr npm run videos.",
     "base": "/assets/video/",

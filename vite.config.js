@@ -27,24 +27,38 @@ function contentPlugin(lang) {
   };
 }
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, root, 'VITE_');
-  const lang = env.VITE_LANG || 'es';
+// Indexación: mientras PUBLICAR_INDEXABLE no sea "true" (versión de muestra, con placeholders e imágenes
+// de IA), cada página lleva <meta name="robots" content="noindex, nofollow"> y robots.txt bloquea todo.
+function robotsPlugin(indexable) {
+  const robots = indexable ? 'User-agent: *\nAllow: /\n' : 'User-agent: *\nDisallow: /\n';
   return {
-    plugins: [contentPlugin(lang)],
+    name: 'robots',
+    transformIndexHtml(html) {
+      if (indexable) return html;
+      return html.replace('<meta charset="UTF-8" />', '<meta charset="UTF-8" />\n    <meta name="robots" content="noindex, nofollow" />');
+    },
+    configureServer(server) {
+      server.middlewares.use('/robots.txt', (_req, res) => {
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.end(robots);
+      });
+    },
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'robots.txt', source: robots });
+    },
+  };
+}
+
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, root, '');
+  const lang = env.VITE_LANG || 'es';
+  const indexable = String(env.PUBLICAR_INDEXABLE ?? process.env.PUBLICAR_INDEXABLE ?? 'false').toLowerCase() === 'true';
+  return {
+    plugins: [contentPlugin(lang), robotsPlugin(indexable)],
     server: { port: 5174, strictPort: true },
     build: {
       target: 'es2020',
       chunkSizeWarningLimit: 900,
-      // prototipos de comparación (rama prototipo-avance): páginas separadas, no tocan el recorrido principal
-      rollupOptions: {
-        input: {
-          main: resolve(root, 'index.html'),
-          lateral: resolve(root, 'prototipo-lateral.html'),
-          zoom: resolve(root, 'prototipo-zoom.html'),
-          video: resolve(root, 'prototipo-video.html'),
-        },
-      },
     },
   };
 });

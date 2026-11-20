@@ -1,10 +1,22 @@
-node_modules
-dist
-.env
-docs/medicion-*.json
-docs/capturas/
+# dependencias y build
+node_modules/
+dist/
 
-# originales (traen metadatos de Canva con datos personales)
+# variables de entorno (el ejemplo sí se versiona)
+.env
+.env.*
+!.env.example
+
+# originales (traen metadatos de Canva con datos personales) y herramientas locales
+# (modelos, Real-ESRGAN, cuadros escalados, cachés de codificación)
 assets-fuente/
-docs/videos/
 .cache/
+
+# capturas, videos de revisión y mediciones
+docs/capturas/
+docs/videos/
+docs/medicion-*.json
+docs/diagnostico-*.json
+
+# Vercel
+.vercel/

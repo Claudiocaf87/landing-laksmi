@@ -213,7 +213,7 @@ function extras(e, c) {
   return out;
 }
 
-// bloque de texto de una etapa (también lo usan los prototipos)
+// bloque de texto de una etapa
 export function etapaInner(e, i, c, { panel = i !== 0 && i !== c.etapas.length - 1, h = i === 0 ? 'h1' : 'h2' } = {}) {
   return `<div class="etapa__inner${panel ? ' etapa__inner--panel' : ''}">
       <p class="kicker"><span class="mono">${esc(e.numero)}</span>${esc(e.etiqueta)}</p>
