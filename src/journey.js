@@ -36,6 +36,8 @@ export function createJourney({ stage = null, content, reduced = false, video = 
 
   const desdeDe = (texto) => estados.find((s) => s.texto === texto)?.desde;
 
+  // desplazamiento de los textos al entrar/salir: en mobile es corto, así el panel nunca baja hasta la línea dorada
+  const DY = window.matchMedia('(max-width: 899px), (orientation: portrait)').matches ? 14 : 50;
   const holds = [];
   sections.forEach((sec, i) => {
     // ---------- fotos y clips ----------
@@ -80,8 +82,8 @@ export function createJourney({ stage = null, content, reduced = false, video = 
     const last = i === N - 1;
     // en el cierre, la foto tiene su momento sola: el texto entra con el globo
     const textIn = closing ? i + 0.32 : i + 0.05;
-    if (i > 0) tl.fromTo(inner, { autoAlpha: 0, y: reduced ? 0 : 50 }, { autoAlpha: 1, y: 0, duration: 0.12, ease: 'power2.out' }, textIn);
-    if (!last) tl.to(inner, { autoAlpha: 0, y: reduced ? 0 : -50, duration: 0.12, ease: 'power2.in' }, i + 0.84);
+    if (i > 0) tl.fromTo(inner, { autoAlpha: 0, y: reduced ? 0 : DY }, { autoAlpha: 1, y: 0, duration: 0.12, ease: 'power2.out' }, textIn);
+    if (!last) tl.to(inner, { autoAlpha: 0, y: reduced ? 0 : -DY, duration: 0.12, ease: 'power2.in' }, i + 0.84);
 
     // pasos: el texto cambia junto con el estado del HUD
     const pasos = [...sec.querySelectorAll('.pasos li')];
@@ -295,13 +297,6 @@ function createRail(N) {
   if (!el) return { update() {} };
   const done = el.querySelector('.viaje__done');
   const dots = [...el.querySelectorAll('.viaje__dot')];
-  // en mobile la línea va justo arriba del HUD: se ubica según su alto real (salvo con el mapa grande)
-  const tracker = document.querySelector('.tracker');
-  if (tracker && 'ResizeObserver' in window) {
-    new ResizeObserver(() => {
-      if (!document.documentElement.classList.contains('is-map-big')) document.documentElement.style.setProperty('--tracker-h', `${tracker.offsetHeight}px`);
-    }).observe(tracker);
-  }
   let last = '';
   return {
     update(u) {

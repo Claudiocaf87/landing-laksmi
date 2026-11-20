@@ -152,7 +152,9 @@ def chains(clip, hd=True):
         vw, vh, _ = probe(vert)
         size = (720, 1280) if vh >= 1280 else (540, 960)
         fx, fy = pct(clip.get("focalVertical", "50% 50%"))
-        mob = (["-i", str(vert)], f"fps={FPS},crop=w='min(iw,ih*9/16)':h='min(ih,iw*16/9)':x='clip({fx}*iw-ow/2,0,iw-ow)':y='clip({fy}*ih-oh/2,0,ih-oh)',scale={size[0]}:{size[1]}:flags=lanczos,setsar=1", size)
+        # el vertical tiene su propio tramo ("desdeVertical", "duracionVertical"); por defecto, completo
+        cv = ["-ss", str(clip.get("desdeVertical", 0))] + (["-t", str(clip["duracionVertical"])] if clip.get("duracionVertical") else [])
+        mob = ([*cv, "-i", str(vert)], f"fps={FPS},crop=w='min(iw,ih*9/16)':h='min(ih,iw*16/9)':x='clip({fx}*iw-ow/2,0,iw-ow)':y='clip({fy}*ih-oh/2,0,ih-oh)',scale={size[0]}:{size[1]}:flags=lanczos,setsar=1", size)
     else:
         x = focal_expr(clip.get("focalMobile", "50% 50%"), t0)
         mob = ([*cut(clip), "-i", str(src)], f"fps={FPS},crop=w=ih*9/16:h=ih:x='clip(({x})*iw-ow/2,0,iw-ow)':y=0,scale=540:960:flags=lanczos,setsar=1", (540, 960))
@@ -257,6 +259,19 @@ def posters(clip):
         run(["ffmpeg", "-y", "-v", "error", *src, "-vf", vf, "-frames:v", "1", str(mpng)])
         mob = Image.open(mpng).convert("RGB")
         origen = "primer cuadro"
+    vert = SRC / clip["vertical"] if clip.get("vertical") else None
+    if vert and vert.exists():
+        # con versión vertical, el póster de mobile sale de ella (si no, saltaría al pasar al video):
+        # la foto vertical original alineada (<foto>-vertical.jpg) si existe, o su primer cuadro
+        src, vf, _ = chains_mobile_only(clip)
+        mpng = CACHE / f"{clip['id']}-f0v.png"
+        run(["ffmpeg", "-y", "-v", "error", *src, "-vf", vf, "-frames:v", "1", str(mpng)])
+        mob = Image.open(mpng).convert("RGB")
+        vfoto = FOTOS_SRC / f"{clip.get('foto')}-vertical.jpg"
+        if clip.get("foto") and not clip.get("desdeVertical") and vfoto.exists():
+            fv = Image.open(vfoto).convert("RGB")
+            box, _ = alinear(fv, mob)
+            mob = fv.crop(box).resize(mob.size, Image.LANCZOS)
     save_img(desk, f"video-{clip['id']}-desktop", 250)
     save_img(mob, f"video-{clip['id']}-mobile", 120)
     return origen

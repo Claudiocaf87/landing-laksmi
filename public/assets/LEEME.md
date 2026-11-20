@@ -101,5 +101,7 @@ caras da un aspecto plástico, así que no se usa por defecto (`"escalar": false
 
 Para sumar un clip: dejarlo en `assets-fuente/videos/`, agregarlo a `videos.clips` en `es.json` (con `focalMobile`,
 `foto` si salió de una foto, y `vertical` cuando exista) y en la etapa como `{"clip": "<id>"}`, y correr `npm run videos`.
-Las versiones verticales (`<archivo>_vertical.mp4`, nombre en es.json) reemplazan al recorte de la horizontal.
+Las versiones verticales (nombre en `videos.clips[].vertical` de es.json) reemplazan al recorte de la horizontal:
+1080×1920 o 720×1280, 24 fps, se publican a 720×1280. Se usan completas; para recortarlas, `desdeVertical` y
+`duracionVertical`. El póster de mobile sale del vertical (o de `<foto>-vertical.jpg` alineada, si existe).
 

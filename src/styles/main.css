@@ -1773,17 +1773,63 @@ button.btn:disabled {
   background: var(--blue);
   box-shadow: 0 0 0 4px rgba(201, 162, 74, 0.45);
 }
+/* ---------- mobile (pantallas angostas o verticales): nada fijo tapa el texto ---------- */
 @media (max-width: 899px), (orientation: portrait) {
-  .viaje {
-    left: 18px;
-    right: 18px;
-    bottom: calc(max(12px, env(safe-area-inset-bottom)) + var(--tracker-h, 64px) + 4px);
+  /* el tracker (mapita + HUD) solo se ve en la etapa 06 (tránsito), arriba y ampliado; entra y sale con un
+     fundido. En el resto de las etapas el número sigue en el panel de texto */
+  .is-journey .tracker {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.45s ease, visibility 0s linear 0.45s;
+    /* siempre arriba y con el mapa grande: así entra y sale solo con el fundido, sin moverse */
+    top: calc(var(--header-h) + 8px);
+    bottom: auto;
+    transform: none;
   }
+  .is-journey .tracker__map {
+    max-height: 200px;
+  }
+  .is-journey.is-map-big:not(.is-past):not(.is-loading) .tracker:not(.is-off) {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.45s ease, visibility 0s linear 0s;
+  }
+  /* línea dorada: fina y pegada al borde inferior (respeta la zona segura) */
+  .viaje,
   .is-map-big .viaje {
-    bottom: max(14px, env(safe-area-inset-bottom));
+    left: 16px;
+    right: 16px;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    height: 12px;
+  }
+  .viaje__line {
+    left: 4px;
+    right: 4px;
+    top: 5px;
+    height: 1.5px;
+  }
+  .viaje__dot {
+    top: -3px;
+    width: 7px;
+    height: 7px;
+    margin-left: -3.5px;
+    border-width: 1.5px;
+  }
+  .viaje__dot.is-on {
+    transform: none;
+  }
+  .viaje__dot.is-now {
+    transform: scale(1.45);
+    box-shadow: 0 0 0 2px rgba(201, 162, 74, 0.55);
   }
   .viaje__dot b {
     display: none;
+  }
+  /* los paneles de texto terminan siempre arriba de la línea, también mientras entran (suben 14 px) */
+  .is-journey .etapa__content {
+    padding-bottom: calc(max(8px, env(safe-area-inset-bottom)) + 44px);
   }
 }
 .is-static .viaje,

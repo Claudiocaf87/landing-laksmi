@@ -259,8 +259,9 @@ for (const [vista, opts] of [
   await p.evaluate(() => window.__journey.seek(9.7));
   await p.waitForTimeout(600);
   const fin = await p.evaluate(() => getComputedStyle(document.querySelector('.tracker')).visibility);
-  await p.evaluate(() => window.__journey.seek(8.4));
-  await p.waitForTimeout(600);
+  // en mobile el tracker solo se ve en la 06 (tránsito): se comprueba que vuelve subiendo hasta ahí
+  await p.evaluate((u) => window.__journey.seek(u), vista === 'mobile' ? 6.45 : 8.4);
+  await p.waitForTimeout(700);
   const vuelve = await p.evaluate(() => getComputedStyle(document.querySelector('.tracker')).visibility);
   ok(fin === 'hidden' && vuelve === 'visible', `HUD ${vista}: se oculta en la etapa 09 y vuelve al subir (${fin} → ${vuelve})`);
   await ctx.close();
@@ -319,13 +320,67 @@ for (const [vista, opts] of [
   await p.evaluate(() => window.__journey.seek(5.9));
   await p.waitForTimeout(900);
   await p.screenshot({ path: shot('video-puerto-mobile'), type: 'jpeg', quality: 75 });
-  const rail = await p.evaluate(() => {
-    const a = document.querySelector('.viaje').getBoundingClientRect();
-    const b = document.querySelector('.tracker').getBoundingClientRect();
-    const t = document.querySelector('#despacho .etapa__inner').getBoundingClientRect();
-    return { arriba: b.top - a.bottom, texto: a.top - t.bottom };
+  await ctx.close();
+}
+
+// ---------- mobile: ningún elemento fijo tapa el panel de texto (en cada etapa, sub-estado y transición) ----------
+for (const [nombre, vp] of [
+  ['390×844', MOBILE],
+  ['360×740', { ...MOBILE, viewport: { width: 360, height: 740 } }],
+]) {
+  const { ctx, p } = await page(vp);
+  const us = await p.evaluate(() => {
+    const j = window.__journey;
+    const list = [];
+    for (let u = 0.95; u < j.N; u += 0.05) list.push(+u.toFixed(2)); // incluye las entradas y salidas de cada texto
+    for (let i = 1; i < j.N; i++) list.push(j.station(i));
+    document.querySelectorAll('#tracker-list a[data-u]').forEach((a) => list.push(Number(a.dataset.u)));
+    return [...new Set(list)].sort((a, b) => a - b);
   });
-  ok(rail.arriba >= 0 && rail.texto >= 0, `línea del viaje mobile: entre el texto y el HUD sin taparlos (${rail.texto.toFixed(0)} px / ${rail.arriba.toFixed(0)} px)`);
+  const choques = [];
+  for (const u of us) {
+    await p.evaluate((u) => window.__journey.seek(u), u);
+    await p.waitForTimeout(80);
+    const r = await p.evaluate(() => {
+      const visible = (el) => {
+        if (!el) return false;
+        for (let e = el; e && e !== document.documentElement; e = e.parentElement) {
+          const cs = getComputedStyle(e);
+          if (cs.display === 'none' || cs.visibility === 'hidden' || Number(cs.opacity) < 0.05) return false;
+        }
+        return true;
+      };
+      const box = (el) => el.getBoundingClientRect();
+      const cruza = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+      const paneles = [...document.querySelectorAll('.etapa .etapa__inner')].filter(visible);
+      const fijos = [
+        ['tracker', document.querySelector('.tracker')],
+        ['línea', document.querySelector('.viaje__line')],
+        ['header', document.querySelector('.header')],
+      ].filter(([, el]) => visible(el));
+      const out = [];
+      for (const pan of paneles) {
+        const a = box(pan);
+        for (const [n, el] of fijos) {
+          const b = box(el);
+          // la línea dorada incluye sus puntos (7 px)
+          const bb = n === 'línea' ? { left: b.left, right: b.right, top: b.top - 4, bottom: b.bottom + 4 } : b;
+          if (cruza(a, bb)) out.push(`${pan.closest('.etapa').id} × ${n}`);
+        }
+      }
+      return out;
+    });
+    if (r.length) choques.push(`u=${u}: ${r.join(', ')}`);
+  }
+  ok(choques.length === 0, `mobile ${nombre}: tracker, línea dorada y header no tapan el texto en ${us.length} posiciones${choques.length ? ' — ' + choques.slice(0, 6).join(' | ') + (choques.length > 6 ? ` … (${choques.length})` : '') : ''}`);
+  await p.evaluate(() => window.__journey.seek(window.__journey.station(6)));
+  await p.waitForTimeout(800);
+  const tr = await p.evaluate(() => {
+    const b = document.querySelector('.tracker').getBoundingClientRect();
+    const cs = getComputedStyle(document.querySelector('.tracker'));
+    return { dentro: b.top >= 0 && b.left >= 0 && b.right <= innerWidth && b.bottom <= innerHeight, op: cs.opacity, vis: cs.visibility };
+  });
+  ok(tr.dentro && tr.op === '1' && tr.vis === 'visible', `mobile ${nombre}: en la 06 el tracker se ve completo (${JSON.stringify(tr)})`);
   await ctx.close();
 }
 {
