@@ -84,10 +84,12 @@ Cada clip: `video/<id>-{desktop,mobile}.av1.mp4` (AV1, primera opción) y `.mp4`
 | negociacion | 1920×1080 | 1,40 / 1,69 MB | 0,34 / 0,41 MB | 0 a 2,9 s |
 | calidad | 1920×1080 | 1,07 / 1,48 MB | 0,39 / 0,44 MB | 0 a 2,5 s |
 | carga | 1920×1080 | 2,31 / 2,32 MB | 0,73 / 0,73 MB | completo (5 s) |
+| precinto | 1920×1080 (nativo) | 2,39 / 2,39 MB | 0,73 / 0,76 MB | completo (5 s) |
 | puerto | 1920×1080 | 2,33 / 2,34 MB | 0,70 / 0,74 MB | completo (5 s) |
 | transito | 1280×720 | 2,42 / 2,33 MB | 0,75 / 0,76 MB | completo (10 s) |
 | aduana | 1920×1080 | 2,18 / 2,31 MB | 0,72 / 0,74 MB | completo (5 s) |
 | entrega | 1920×1080 | 2,20 / 2,32 MB | 0,71 / 0,74 MB | completo (5 s) |
+| tienda | 1920×1080 (nativo) | 2,34 / 2,37 MB | 0,71 / 0,74 MB | 0 a 4 s |
 
 Desktop: los clips 720p pasan a 1080p con lanczos y un enfoque leve si entran en 2,5 MB con buena calidad
 (AV1 con CRF ≤ 36); si no (tránsito: el agua necesitaría CRF 46), quedan en 720p con enfoque. `--escalar` usa

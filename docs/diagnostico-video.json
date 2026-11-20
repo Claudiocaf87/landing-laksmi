@@ -88,5 +88,41 @@
       "ssim_vs_A": 0.7703,
       "nitidez_vs_A": 0.725
     }
+  },
+  "precinto": {
+    "A · foto original": {
+      "ssim_vs_A": 1.0,
+      "nitidez_vs_A": 1.0
+    },
+    "B · clip de origen (1080p)": {
+      "ssim_vs_A": 0.8995,
+      "nitidez_vs_A": 0.971
+    },
+    "codificado ahora (precinto-desktop.av1.mp4, 2.39 MB)": {
+      "ssim_vs_A": 0.8933,
+      "nitidez_vs_A": 1.111
+    },
+    "codificado ahora (precinto-desktop.mp4, 2.39 MB)": {
+      "ssim_vs_A": 0.8904,
+      "nitidez_vs_A": 1.111
+    }
+  },
+  "tienda": {
+    "A · foto original": {
+      "ssim_vs_A": 1.0,
+      "nitidez_vs_A": 1.0
+    },
+    "B · clip de origen (1080p)": {
+      "ssim_vs_A": 0.9324,
+      "nitidez_vs_A": 1.204
+    },
+    "codificado ahora (tienda-desktop.av1.mp4, 2.34 MB)": {
+      "ssim_vs_A": 0.9227,
+      "nitidez_vs_A": 1.352
+    },
+    "codificado ahora (tienda-desktop.mp4, 2.37 MB)": {
+      "ssim_vs_A": 0.9179,
+      "nitidez_vs_A": 1.384
+    }
   }
 }

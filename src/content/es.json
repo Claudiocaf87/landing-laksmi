@@ -331,9 +331,9 @@
           "focal": "50% 50%"
         },
         {
-          "id": "precinto",
-          "focal": "60% 58%",
-          "alt": "Mano con guante cierra con candado las puertas de un contenedor"
+          "clip": "precinto",
+          "alt": "Mano con guante cierra con candado las puertas de un contenedor",
+          "focal": "50% 50%"
         },
         {
           "clip": "puerto",
@@ -441,11 +441,9 @@
       "transicion": "diagonal",
       "fotos": [
         {
-          "id": "tienda",
-          "focal": "38% 40%",
-          "vertical": true,
-          "focalVertical": "60% 45%",
-          "alt": "Hombre de saco azul sonríe mientras abre una caja de cartón sobre el mostrador de una tienda; al fondo, un repartidor sale por la puerta"
+          "clip": "tienda",
+          "alt": "Hombre de saco azul sonríe mientras abre una caja de cartón sobre el mostrador de una tienda; al fondo, un repartidor sale por la puerta",
+          "focal": "50% 50%"
         }
       ]
     }
@@ -947,6 +945,27 @@
         "nota": "completo (5 s)"
       },
       {
+        "id": "precinto",
+        "archivo": "precindo_video_horizontal.mp4",
+        "vertical": "precindo_video_vertical.mp4",
+        "foto": "precinto",
+        "focalMobile": [
+          [
+            0,
+            "62% 50%"
+          ],
+          [
+            2.5,
+            "56% 50%"
+          ],
+          [
+            5,
+            "55% 50%"
+          ]
+        ],
+        "nota": "completo (5 s), 1080p nativo"
+      },
+      {
         "id": "puerto",
         "archivo": "v2_puerto_video.mp4",
         "vertical": "v2_puerto_video_vertical.mp4",
@@ -1006,6 +1025,28 @@
           ]
         ],
         "nota": "completo (5 s)"
+      },
+      {
+        "id": "tienda",
+        "archivo": "entrega_en_tienda_video_horizontal.mp4",
+        "vertical": "entrega_en_tienda_video_vertical.mp4",
+        "foto": "tienda",
+        "duracion": 4,
+        "focalMobile": [
+          [
+            0,
+            "64% 50%"
+          ],
+          [
+            2.5,
+            "62% 50%"
+          ],
+          [
+            4,
+            "60% 50%"
+          ]
+        ],
+        "nota": "0 a 4 s, 1080p nativo: a los 4,25 s aparece un repartidor fantasma en la puerta"
       }
     ]
   }

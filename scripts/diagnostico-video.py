@@ -63,7 +63,7 @@ for cid in sys.argv[1:] or ["plan", "puerto", "transito"]:
     foto = Image.open(ROOT / "assets-fuente" / f"{clip['foto']}.jpg").convert("RGB")
     box, _ = alinear(foto, src)
     A = foto.crop(box).resize(FHD, Image.LANCZOS)
-    panels = {"A · foto original": A, "B · clip de origen (720p)": browser(src)}
+    panels = {"A · foto original": A, f"B · clip de origen ({src.height}p)": browser(src)}
     pub = sorted((ROOT / "public" / "assets" / "video").glob(f"{cid}-desktop.*"))
     viejo = CACHE / f"{cid}-publicado.png"
     if viejo.exists():

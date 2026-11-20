@@ -3,7 +3,8 @@
 const STOP_F = [0, 0.05, 0.1, 0.15, 0.2, 0.55, 0.84, 1]; // fracción del mapita en la que cae cada etapa 01 … 08
 
 export function createTracker(content) {
-  const estados = content.hud.estados;
+  // número de etapa de cada estado (el mismo que muestra el texto de la etapa: 00 … 09)
+  const estados = content.hud.estados.map((s) => ({ ...s, numero: content.etapas.find((e) => e.id === s.ir)?.numero ?? '' }));
   const tracker = document.querySelector('.tracker');
   const route = tracker.querySelector('.tracker__route');
   const done = tracker.querySelector('.tracker__done');
@@ -67,8 +68,10 @@ export function createTracker(content) {
           else a.removeAttribute('aria-current');
         });
         hudNow.textContent = estados[s].texto;
-        hudCount.textContent = `${s + 1}/${estados.length}`;
+        hudCount.textContent = estados[s].numero;
       }
+      // en la etapa final (resultados) la historia del envío terminó: el HUD se oculta
+      tracker.classList.toggle('is-off', u >= N - 1 - 0.02);
       hudBar.style.transform = `scaleX(${Math.min(1, u / (N - 1)).toFixed(4)})`;
       // el trazo dorado avanza y se encienden los puntos de etapa
       const f = routeFraction(u);

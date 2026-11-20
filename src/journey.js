@@ -55,9 +55,11 @@ export function createJourney({ stage = null, content, reduced = false, video = 
       const end = closing ? i + 0.44 : i + 1.14; // la tapa la etapa siguiente (o el globo, en el cierre)
       // clip con foto nítida al comienzo de la etapa: queda en su primer cuadro hasta la estación (se ve
       // la foto mientras se lee el texto) y avanza en el resto de su tramo
-      const hold = fig.hasAttribute('data-nitida') && k === 0 && content.videos?.fotoEnReposo !== false ? HOLD : 0;
+      const hold = fig.hasAttribute('data-nitida') && k === 0 && !closing && content.videos?.fotoEnReposo !== false ? HOLD : 0;
       if (hold) holds[i] = true;
-      fig.dataset.slot = `${start + hold},${len - hold},${tin},${end}`;
+      // en el cierre, el clip avanza entero en el momento de la foto sola, antes de fundirse al globo
+      const slotLen = closing ? 0.3 - (start - i) : len - hold;
+      fig.dataset.slot = `${start + hold},${slotLen},${tin},${end}`;
       tl.set(fig, { visibility: 'visible' }, tin);
       if (reduced) {
         tl.fromTo(fig, { opacity: 0 }, { opacity: 1, duration: 0.12 }, tin);
@@ -303,13 +305,19 @@ function createRail(N) {
   let last = '';
   return {
     update(u) {
-      const f = Math.min(1, Math.max(0, (u - 1) / (N - 2)));
+      // puntos 01 … 08 (etapas 1 … N-2): el viajero llega a cada punto al empezar su etapa
+      const f = Math.min(1, Math.max(0, (u - 1) / (N - 3)));
       const key = f.toFixed(4);
       if (key === last) return;
       last = key;
       done.style.transform = `scaleX(${key})`;
       el.style.setProperty('--f', key);
-      dots.forEach((d) => d.classList.toggle('is-on', u >= Number(d.dataset.etapa) - 0.001));
+      const now = Math.floor(u + 0.001);
+      dots.forEach((d) => {
+        const e = Number(d.dataset.etapa);
+        d.classList.toggle('is-on', u >= e - 0.001);
+        d.classList.toggle('is-now', e === now);
+      });
     },
   };
 }

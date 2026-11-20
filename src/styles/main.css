@@ -445,9 +445,25 @@ button.btn:disabled {
 .tracker__toggle[aria-expanded='true'] .tracker__line::after {
   transform: rotate(45deg);
 }
-.tracker__count {
+.tracker__count,
+.hud__num {
+  /* mismo número que el del texto de la etapa (.kicker .mono) */
+  flex: none;
   color: var(--gold-text);
   font-size: 12px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border: 1px solid var(--gold-line);
+  border-radius: 6px;
+  letter-spacing: 0;
+  background: var(--white);
+}
+.hud__num {
+  margin-right: -4px;
+}
+/* segundo estado de una misma etapa: sin número, indentado (el punto sigue sobre la línea) */
+.hud__sub {
+  margin-left: 34px;
 }
 .tracker__now {
   font-weight: 600;
@@ -546,9 +562,14 @@ button.btn:disabled {
 }
 .is-past .tracker,
 .is-static .tracker,
-.is-loading .tracker {
+.is-loading .tracker,
+.tracker.is-off {
   opacity: 0;
   pointer-events: none;
+}
+.tracker.is-off {
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0s linear 0.4s;
 }
 @media (max-width: 899px) {
   .tracker {
@@ -1726,6 +1747,20 @@ button.btn:disabled {
   background: var(--gold-bright);
   border-color: var(--gold-title);
   transform: scale(1.15);
+}
+/* el punto de la etapa visible (mismo número que el texto y el HUD) */
+.viaje__now {
+  display: none; /* el punto activo de la etapa visible ya marca dónde está el envío */
+}
+.viaje__dot.is-now {
+  background: var(--blue);
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(201, 162, 74, 0.55);
+  transform: scale(1.3);
+}
+.viaje__dot.is-now b {
+  color: var(--white);
+  background: var(--blue);
 }
 .viaje__now {
   position: absolute;

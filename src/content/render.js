@@ -79,8 +79,16 @@ const STOP_F = [0, 0.05, 0.1, 0.15, 0.2, 0.55, 0.84, 1]; // etapas 01 … 08
 function tracker(c) {
   const h = c.hud;
   const m = c.mapa;
+  // cada estado lleva el número de su etapa (el mismo que el texto de la etapa); el segundo estado de una
+  // misma etapa va sin número e indentado
+  const num = (s) => c.etapas.find((e) => e.id === s.ir)?.numero ?? '';
   const items = h.estados
-    .map((s, i) => `<li data-step="${i}"><a href="#${esc(s.ir)}"${s.u != null ? ` data-u="${s.u}"` : ''}><span class="hud__dot" aria-hidden="true"></span>${esc(s.texto)}</a></li>`)
+    .map((s, i) => {
+      const sub = i > 0 && h.estados[i - 1].ir === s.ir;
+      return `<li data-step="${i}"${sub ? ' class="is-sub"' : ''}><a href="#${esc(s.ir)}"${s.u != null ? ` data-u="${s.u}"` : ''}><span class="hud__dot" aria-hidden="true"></span>${
+        sub ? `<span class="hud__sub">${esc(s.texto)}</span>` : `<span class="hud__num mono">${esc(num(s))}</span>${esc(s.texto)}`
+      }</a></li>`;
+    })
     .join('');
   const labels = [
     [18, 30, 'start'],
@@ -104,7 +112,7 @@ function tracker(c) {
     <figcaption class="tracker__days"><strong class="mono">${esc(m.dias)}</strong> ${esc(m.etiquetaDias)} · <span>${esc(m.nota)}</span></figcaption>
   </figure>
   <button class="tracker__toggle" type="button" aria-expanded="false" aria-controls="tracker-list" aria-label="${esc(c.ui.seguimiento)}">
-    <span class="tracker__line"><span class="tracker__count mono">1/${h.estados.length}</span><span aria-hidden="true">·</span><span class="tracker__now">${esc(h.estados[0].texto)}</span></span>
+    <span class="tracker__line"><span class="tracker__count mono">${esc(num(h.estados[0]))}</span><span aria-hidden="true">·</span><span class="tracker__now">${esc(h.estados[0].texto)}</span></span>
     <span class="tracker__bar" aria-hidden="true"><span></span></span>
   </button>
   <nav class="tracker__panel" id="tracker-list" aria-label="${esc(h.titulo)}" hidden>
@@ -113,12 +121,13 @@ function tracker(c) {
 </aside>`;
 }
 
-// Línea dorada del viaje (decorativa: el avance accesible está en el HUD). Un punto por etapa 01 … 09.
+// Línea dorada del viaje (decorativa: el avance accesible está en el HUD). Un punto por etapa del envío,
+// 01 … 08, con el mismo número que el texto de la etapa (el hero y el cierre no tienen punto).
 function viaje(c) {
-  const n = c.etapas.length - 1;
-  const dots = c.etapas
-    .slice(1)
-    .map((e, k) => `<i class="viaje__dot" data-etapa="${k + 1}" style="left:${((k / (n - 1)) * 100).toFixed(3)}%"><b class="mono">${String(k + 1).padStart(2, '0')}</b></i>`)
+  const etapas = c.etapas.slice(1, -1);
+  const n = etapas.length;
+  const dots = etapas
+    .map((e, k) => `<i class="viaje__dot" data-etapa="${k + 1}" style="left:${((k / (n - 1)) * 100).toFixed(3)}%"><b class="mono">${esc(e.numero)}</b></i>`)
     .join('');
   return `
 <div class="viaje" aria-hidden="true"><span class="viaje__line"><span class="viaje__done"></span>${dots}<span class="viaje__now"></span></span></div>`;

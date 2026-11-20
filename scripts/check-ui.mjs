@@ -223,6 +223,49 @@ for (const [w, h] of [
   await ctx.close();
 }
 
+// ---------- numeración: texto de la etapa = HUD = punto activo de la línea dorada ----------
+for (const [vista, opts] of [
+  ['desktop', DESKTOP],
+  ['mobile', MOBILE],
+]) {
+  const { ctx, p } = await page(opts);
+  const puntos = await p.evaluate(() => {
+    const j = window.__journey;
+    const list = [[0.001, 'hero']];
+    for (let i = 1; i < j.N - 1; i++) list.push([j.station(i), `etapa ${i}`]);
+    // sub-estados (segundo estado de una etapa: Proveedor verificado, Embarcado)
+    document.querySelectorAll('#tracker-list li.is-sub a[data-u]').forEach((a) => list.push([Number(a.dataset.u), a.textContent.trim()]));
+    return list;
+  });
+  const mal = [];
+  for (const [u, nombre] of puntos) {
+    await p.evaluate((u) => window.__journey.seek(u), u);
+    await p.waitForTimeout(250);
+    const r = await p.evaluate(() => {
+      const vis = [...document.querySelectorAll('.etapa')].find((s) => {
+        const inner = s.querySelector('.etapa__inner');
+        const cs = getComputedStyle(inner);
+        return cs.visibility === 'visible' && Number(cs.opacity) > 0.5;
+      });
+      const dot = document.querySelector('.viaje__dot.is-now b');
+      const rail = getComputedStyle(document.querySelector('.viaje')).opacity !== '0';
+      return { texto: vis?.querySelector('.kicker .mono')?.textContent.trim(), hud: document.querySelector('.tracker__count').textContent.trim(), estado: document.querySelector('.tracker__now').textContent.trim(), punto: rail ? dot?.textContent.trim() ?? null : null };
+    });
+    const okHud = r.texto === r.hud;
+    const okPunto = nombre === 'hero' ? r.punto === null : r.punto === r.texto;
+    if (!okHud || !okPunto) mal.push(`${nombre} (u=${u.toFixed(2)}): texto ${r.texto} · HUD ${r.hud} · punto ${r.punto}`);
+  }
+  ok(mal.length === 0, `numeración ${vista}: texto, HUD y punto de la línea coinciden en ${puntos.length} posiciones${mal.length ? ' — ' + mal.join(' | ') : ''}`);
+  await p.evaluate(() => window.__journey.seek(9.7));
+  await p.waitForTimeout(600);
+  const fin = await p.evaluate(() => getComputedStyle(document.querySelector('.tracker')).visibility);
+  await p.evaluate(() => window.__journey.seek(8.4));
+  await p.waitForTimeout(600);
+  const vuelve = await p.evaluate(() => getComputedStyle(document.querySelector('.tracker')).visibility);
+  ok(fin === 'hidden' && vuelve === 'visible', `HUD ${vista}: se oculta en la etapa 09 y vuelve al subir (${fin} → ${vuelve})`);
+  await ctx.close();
+}
+
 // ---------- modo video ----------
 {
   const { ctx, p } = await page(DESKTOP);
