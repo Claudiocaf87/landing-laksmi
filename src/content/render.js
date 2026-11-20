@@ -152,12 +152,18 @@ const nitida = (f, c) => {
   return Boolean(clip && clip.foto && !clip.desde);
 };
 
+// encuadre horizontal en pantallas verticales (el celular es más angosto que 9:16 y recorta los costados)
+const posMobile = (f, c) => {
+  const pos = f.clip && (c.videos?.clips || []).find((x) => x.id === f.clip)?.posicionMobile;
+  return pos ? ` style="--focal-m:${esc(pos)}"` : '';
+};
+
 function fotos(e, i, c) {
   const base = c.imagenes.base;
   let out = (e.fotos || [])
     .map(
       (f, k) => `
-  <figure class="foto${f.clip ? ' foto--clip' : ''}" data-etapa="${i}" data-k="${k}" data-peso="${f.peso || 1}"${f.clip ? ` data-clip="${esc(f.clip)}"` : ''}${nitida(f, c) ? ' data-nitida' : ''}>
+  <figure class="foto${f.clip ? ' foto--clip' : ''}" data-etapa="${i}" data-k="${k}" data-peso="${f.peso || 1}"${f.clip ? ` data-clip="${esc(f.clip)}"` : ''}${nitida(f, c) ? ' data-nitida' : ''}${posMobile(f, c)}>
     ${picture(base + (f.clip ? `video-${f.clip}` : f.id), { alt: f.alt, focal: f.focal })}${
       f.clip ? '\n    <video class="foto__video" muted playsinline disablepictureinpicture preload="none" aria-hidden="true" tabindex="-1"></video>' : ''
     }

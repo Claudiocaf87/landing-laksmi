@@ -894,7 +894,9 @@
             "28% 50%"
           ]
         ],
-        "nota": "completo (5 s)"
+        "nota": "completo (5 s)",
+        "notaVertical": "completo (10 s)",
+        "posicionMobile": "25% 50%"
       },
       {
         "id": "feria",
@@ -920,7 +922,9 @@
             "46% 50%"
           ]
         ],
-        "nota": "3,3 a 8,3 s: deja afuera la mano blanda (2,5 a 3,2 s)"
+        "nota": "3,3 a 8,3 s: deja afuera la mano blanda (2,5 a 3,2 s)",
+        "notaVertical": "completo (5 s)",
+        "posicionMobile": "0% 50%"
       },
       {
         "id": "negociacion",
@@ -929,7 +933,9 @@
         "foto": "negociacion",
         "duracion": 2.9,
         "focalMobile": "47% 50%",
-        "nota": "0 a 2,9 s: después el comprador de la izquierda queda cortado"
+        "nota": "0 a 2,9 s: después el comprador de la izquierda queda cortado",
+        "duracionVertical": 4,
+        "notaVertical": "0 a 4 s: después el comprador de la izquierda se corta en el borde"
       },
       {
         "id": "calidad",
@@ -938,7 +944,9 @@
         "foto": "calidad",
         "duracion": 2.5,
         "focalMobile": "45% 50%",
-        "nota": "0 a 2,5 s: desde 2,6 s las estanterías se transforman"
+        "nota": "0 a 2,5 s: desde 2,6 s las estanterías se transforman",
+        "duracionVertical": 2.45,
+        "notaVertical": "0 a 2,45 s: a los 2,5 y 4,5 s la cámara salta y reencuadra"
       },
       {
         "id": "carga",
@@ -946,7 +954,9 @@
         "vertical": "Carga_video_vertical.mp4",
         "foto": "carga",
         "focalMobile": "68% 50%",
-        "nota": "completo (5 s)"
+        "nota": "completo (5 s)",
+        "desdeVertical": 2.55,
+        "notaVertical": "2,55 a 5 s: entre 1,5 y 2,5 s hay un salto (montacargas y operarios cambian de lugar)"
       },
       {
         "id": "precinto",
@@ -967,14 +977,18 @@
             "55% 50%"
           ]
         ],
-        "nota": "completo (5 s), 1080p nativo"
+        "nota": "completo (5 s), 1080p nativo",
+        "duracionVertical": 2.2,
+        "notaVertical": "0 a 2,2 s: entre 2,29 y 2,38 s el guante se va flotando sin brazo"
       },
       {
         "id": "puerto",
         "archivo": "v2_puerto_video.mp4",
         "vertical": "v2_puerto_video_vertical.mp4",
         "focalMobile": "52% 50%",
-        "foto": "puerto"
+        "foto": "puerto",
+        "notaVertical": "0 a 5 s (versión anterior de la escena, 8 s): a 8 s solo entraba con mucha compresión",
+        "duracionVertical": 5
       },
       {
         "id": "transito",
@@ -990,7 +1004,8 @@
             "51% 50%"
           ]
         ],
-        "foto": "transito"
+        "foto": "transito",
+        "notaVertical": "completo (5 s)"
       },
       {
         "id": "aduana",
@@ -1007,7 +1022,8 @@
             "37% 50%"
           ]
         ],
-        "nota": "completo (5 s)"
+        "nota": "completo (5 s)",
+        "notaVertical": "completo (5 s)"
       },
       {
         "id": "entrega",

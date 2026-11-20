@@ -150,7 +150,7 @@ def chains(clip, hd=True):
     vert = SRC / clip["vertical"] if clip.get("vertical") else None
     if vert and vert.exists():
         vw, vh, _ = probe(vert)
-        size = (720, 1280) if vh >= 1280 else (540, 960)
+        size = (720, 1280) if vh >= 1280 and hd else (540, 960)
         fx, fy = pct(clip.get("focalVertical", "50% 50%"))
         # el vertical tiene su propio tramo ("desdeVertical", "duracionVertical"); por defecto, completo
         cv = ["-ss", str(clip.get("desdeVertical", 0))] + (["-t", str(clip["duracionVertical"])] if clip.get("duracionVertical") else [])
@@ -296,11 +296,22 @@ if __name__ == "__main__":
             continue
         origen = posters(clip)
         ch = chains(clip)
-        for view in ("desktop", "mobile"):
+        # --mobile: solo la versión mobile (p. ej., al sumar verticales)
+        for view in ("mobile",) if "--mobile" in sys.argv else ("desktop", "mobile"):
             inp, vf, size = ch[view]
             budget = V["presupuestoKB"][view] * 1024
             dur = float(clip.get("duracion") or probe(SRC / clip["archivo"])[2] - float(clip.get("desde", 0)))
+            vert = SRC / clip["vertical"] if clip.get("vertical") else None
+            if view == "mobile" and vert and vert.exists():
+                dur = float(clip.get("duracionVertical") or probe(vert)[2] - float(clip.get("desdeVertical", 0)))
             first = None
+            if view == "mobile" and size == (720, 1280):
+                # vertical a 720×1280 solo si entra con buena calidad; si no, 540×960 (menos compresión)
+                first = best_av1(inp, vf, OUT / f"{clip['id']}-{view}.av1.mp4", budget, gops=(0.5,))
+                if not first["ok"] or first["crf"] > CRF_HD_MAX:
+                    print(f"  [{clip['id']}] 720×1280 necesita crf {first['crf']}: queda en 540×960", flush=True)
+                    inp, vf, size = chains(clip, hd=False)["mobile"]
+                    first = None
             if view == "desktop" and size == (1920, 1080) and probe(SRC / clip["archivo"])[1] < 1080 and not (ESCALAR and ESC.joinpath(clip["id"], "x4").exists()):
                 # 720p → 1080p con lanczos y enfoque: solo si entra con buena calidad; si no, 720p
                 first = best_av1(inp, vf, OUT / f"{clip['id']}-{view}.av1.mp4", budget, gops=(0.5,))

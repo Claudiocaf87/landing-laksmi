@@ -1081,10 +1081,11 @@ button.btn:disabled {
   will-change: transform;
 }
 @media (orientation: portrait) {
-  /* la versión vertical ya viene recortada sobre el punto focal */
+  /* la versión vertical ya viene recortada sobre el punto focal; --focal-m (es.json → posicionMobile)
+     elige qué costado se ve cuando la pantalla es más angosta que 9:16 */
   .foto img,
   .foto__video {
-    object-position: 50% 50%;
+    object-position: var(--focal-m, 50% 50%);
   }
 }
 .foto__frase {
