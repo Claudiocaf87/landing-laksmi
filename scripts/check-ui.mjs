@@ -52,7 +52,8 @@ const loadedStages = (p) =>
   await p.click('#menu a[href="#aduana"]');
   await p.waitForTimeout(3800);
   const u = await uNow(p);
-  ok(Math.abs(u - 7.4) < 0.06, `mobile: el ancla "Aduana" lleva a su etapa (u=${u.toFixed(2)})`);
+  const st7 = await p.evaluate(() => window.__journey.station(7));
+  ok(Math.abs(u - st7) < 0.06, `mobile: el ancla "Aduana" lleva a su estación (u=${u.toFixed(2)} de ${st7})`);
   const after = await loadedStages(p);
   ok(after.includes(7) && after.includes(8) && !after.includes(4), `fotos: cargadas la actual y la siguiente, no las intermedias (${after.join(', ')})`);
   await p.screenshot({ path: shot('ancla-aduana-mobile'), type: 'jpeg', quality: 75 });
@@ -72,7 +73,8 @@ const loadedStages = (p) =>
   await p.click('#tracker-list a[href="#calidad"]');
   await p.waitForTimeout(3500);
   let u = await uNow(p);
-  ok(Math.abs(u - 4.4) < 0.06, `HUD: "Calidad verificada" lleva a la etapa 04 (u=${u.toFixed(2)})`);
+  const st4 = await p.evaluate(() => window.__journey.station(4));
+  ok(Math.abs(u - st4) < 0.06, `HUD: "Calidad verificada" lleva a la etapa 04 (u=${u.toFixed(2)} de ${st4})`);
   ok(await p.isHidden('#tracker-list'), 'HUD: la lista se cierra al elegir un estado');
   await p.click('.tracker__toggle');
   await p.click('#tracker-list a[data-u="5.82"]');
@@ -217,6 +219,7 @@ for (const [w, h] of [
   await p.waitForTimeout(1500);
   const v = await p.evaluate(() => ({ activo: window.__clips.activo, pedidos: window.__clips.clips.filter((c) => c.state !== 'idle').length, conVideo: document.querySelectorAll('.has-video').length }));
   ok(!v.activo && v.pedidos === 0 && v.conVideo === 0, 'reduced motion: sin clips, queda la foto (póster)');
+  ok(!(await p.evaluate(() => document.querySelector('.grano'))), 'reduced motion: sin grano');
   await ctx.close();
 }
 
@@ -226,10 +229,26 @@ for (const [w, h] of [
   const videos = [];
   p.on('request', (r) => /\/video\//.test(r.url()) && videos.push(r.url().split('/').pop()));
   ok(videos.length === 0, `video: en el hero no se pide ningún clip (${videos.join(', ') || 'ninguno'})`);
-  await p.evaluate(() => window.__journey.seek(1.5));
-  await p.waitForFunction(() => window.__clips.clips.find((c) => c.id === 'feria').state === 'ready', null, { timeout: 15000 });
-  ok(videos.length === 1 && videos[0] === 'feria-desktop.webm', `video: en la etapa 01 se precarga solo el clip de la siguiente (${videos.join(', ')})`);
+  await p.evaluate(() => window.__journey.seek(0.5));
+  await p.waitForFunction(() => window.__clips.clips.find((c) => c.id === 'plan').state === 'ready', null, { timeout: 15000 });
+  ok(videos[0] === 'plan-desktop.av1.mp4' && !videos.some((v) => /^(negociacion|calidad|carga|puerto)/.test(v)), `video: al empezar a scrollear se pide el clip de la etapa siguiente, en AV1 (${videos.join(', ')})`);
+  // foto nítida en reposo: en la estación de la etapa 01 el clip está en su primer cuadro y se ve la foto
+  await p.evaluate(() => window.__journey.seek(window.__journey.station(1)));
+  await p.waitForTimeout(700);
+  const rep = await p.evaluate(() => {
+    const c = window.__clips.clips.find((x) => x.id === 'plan');
+    return { reposo: c.fig.classList.contains('en-reposo'), op: getComputedStyle(c.video).opacity };
+  });
+  await p.evaluate(() => window.__journey.seek(1.6));
+  await p.waitForTimeout(700);
+  const mov = await p.evaluate(() => {
+    const c = window.__clips.clips.find((x) => x.id === 'plan');
+    return { reposo: c.fig.classList.contains('en-reposo'), op: getComputedStyle(c.video).opacity, t: c.video.currentTime };
+  });
+  ok(rep.reposo && rep.op === '0' && !mov.reposo && mov.op === '1' && mov.t > 0.5, `foto nítida: en la estación se ve la foto y al avanzar el video (${JSON.stringify(rep)} → ${JSON.stringify(mov)})`);
+  ok(await p.evaluate(() => Boolean(document.querySelector('.journey .grano'))), 'grano: capa fina sobre fotos y clips');
   await p.evaluate(() => window.__journey.seek(2.25));
+  await p.waitForFunction(() => window.__clips.clips.find((c) => c.id === 'feria').state === 'ready', null, { timeout: 15000 });
   await p.waitForTimeout(900);
   const r = await p.evaluate(() => {
     const c = window.__clips.clips.find((x) => x.id === 'feria');
@@ -244,7 +263,7 @@ for (const [w, h] of [
   await p.click('#menu a[href="#transito"]');
   await p.waitForTimeout(3800);
   const nuevos = videos.slice(before);
-  ok(nuevos.length >= 1 && nuevos.every((n) => n.startsWith('transito')), `video: al saltar por el menú se pide solo el destino (${nuevos.join(', ')})`);
+  ok(nuevos[0]?.startsWith('transito') && !nuevos.some((n) => /^(negociacion|calidad|carga|puerto)/.test(n)), `video: al saltar por el menú se pide primero el destino y ninguna etapa intermedia (${nuevos.join(', ')})`);
   await p.screenshot({ path: shot('video-transito'), type: 'jpeg', quality: 75 });
   await ctx.close();
 }
@@ -253,7 +272,7 @@ for (const [w, h] of [
   await p.evaluate(() => window.__journey.seek(5.4));
   await p.waitForFunction(() => window.__clips.clips.find((c) => c.id === 'puerto').state === 'ready', null, { timeout: 15000 });
   const u = await p.evaluate(() => window.__clips.clips.find((c) => c.id === 'puerto').url);
-  ok(/puerto-mobile\.webm$/.test(u), `video mobile: usa la versión vertical (${u})`);
+  ok(/puerto-mobile\.(av1\.)?mp4$/.test(u), `video mobile: usa la versión vertical (${u})`);
   await p.evaluate(() => window.__journey.seek(5.9));
   await p.waitForTimeout(900);
   await p.screenshot({ path: shot('video-puerto-mobile'), type: 'jpeg', quality: 75 });
@@ -270,7 +289,7 @@ for (const [w, h] of [
   const { ctx, p } = await page(DESKTOP, '?medir=1&modo=sin-video');
   await p.evaluate(() => window.__journey.seek(2.3));
   await p.waitForTimeout(1500);
-  const r = await p.evaluate(() => ({ pedidos: window.__clips.clips.filter((c) => c.state !== 'idle').length, img: document.querySelector('.foto--clip img').complete }));
+  const r = await p.evaluate(() => ({ pedidos: window.__clips.clips.filter((c) => c.state !== 'idle').length, img: document.querySelector('#ferias .foto--clip img').complete }));
   ok(r.pedidos === 0 && r.img, 'sin video (ahorro de datos, 2g/3g, gama baja): queda la foto con su desplazamiento');
   await ctx.close();
 }

@@ -13,7 +13,7 @@ import { preview } from 'vite';
 const CHROME = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'].find((p) => existsSync(p));
 const file = (rel) => fileURLToPath(new URL(`../docs/${rel}`, import.meta.url));
 mkdirSync(file('videos/'), { recursive: true });
-const SOLO = (process.env.SOLO || 'recorrido,feria,4g').split(',');
+const SOLO = (process.env.SOLO || 'recorrido,4g,capturas').split(',');
 const VP = {
   desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 },
   mobile: { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true },
@@ -145,22 +145,31 @@ for (const name of ['desktop', 'mobile']) {
     await save(page, ctx, `${tag}-${name}`);
   }
 }
-if (SOLO.includes('feria')) {
-  for (const [tag, q] of [
-    ['10s', ''],
-    ['5s', '?clip-feria=feria-5s'],
-  ]) {
-    for (const name of ['desktop', 'mobile']) {
-      const { ctx, page } = await open(name, { record: true, query: q });
-      await page.evaluate(() => window.__journey.seek(1.85));
-      await page.waitForFunction(() => window.__clips.clips[0].state === 'ready', null, { timeout: 20000 }).catch(async () => console.log('  no listo', tag, name, await page.evaluate(() => JSON.stringify(window.__clips.clips.map((c) => [c.id, c.state, c.why])))));
-      await page.waitForTimeout(600);
-      const desde = Date.now();
-      await run(page, 1.85, 2.62, 6);
-      await page.waitForTimeout(700);
-      await save(page, ctx, `feria-${tag}-${name}`, desde);
+// capturas a pantalla completa (1920×1080): con y sin grano, y foto en reposo contra el primer cuadro del video
+if (SOLO.includes('capturas')) {
+  mkdirSync(file('capturas/1080/'), { recursive: true });
+  const FHD = { viewport: { width: 1920, height: 1080 }, deviceScaleFactor: 1 };
+  VP.fhd = FHD;
+  const shots = async (query, list) => {
+    const { ctx, page } = await open('fhd', { query });
+    for (const [name, u, id] of list) {
+      await page.evaluate((u) => window.__journey.seek(u), u - 0.3);
+      await page.waitForFunction((id) => window.__clips.clips.find((c) => c.id === id).state === 'ready', id, { timeout: 30000 });
+      await page.evaluate((u) => window.__journey.seek(u), u);
+      await page.waitForTimeout(1200);
+      // sin textos ni HUD: solo la imagen
+      await page.addStyleTag({ content: '.etapa__content,.tracker,.viaje,.header,.dev-panel,#dev{visibility:hidden!important}' });
+      await page.waitForTimeout(200);
+      await page.screenshot({ path: file(`capturas/1080/${name}.png`) });
     }
-  }
+    await ctx.close();
+  };
+  const st = { plan: 1.2, negociacion: 3.2, aduana: 7.2 };
+  await shots('?grano=1', [['plan-grano', 1.6, 'plan'], ['puerto-grano', 5.85, 'puerto'], ['transito-grano', 6.6, 'transito']]);
+  await shots('?grano=0', [['plan-sin-grano', 1.6, 'plan'], ['puerto-sin-grano', 5.85, 'puerto'], ['transito-sin-grano', 6.6, 'transito']]);
+  await shots('?grano=0', Object.entries(st).map(([id, u]) => [`reposo-${id}-foto`, u, id]));
+  await shots('?grano=0&reposo=0', Object.entries(st).map(([id, u]) => [`reposo-${id}-video`, u, id]));
+  console.log('capturas 1080 listas');
 }
 writeFileSync(file('medicion-video.json'), JSON.stringify(result, null, 2));
 await browser.close();

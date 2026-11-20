@@ -137,12 +137,18 @@ export function picture(base, { alt = '', w = 1920, h = 1071, focal = '50% 50%',
     </picture>`;
 }
 
+// el póster de un clip es la foto original nítida cuando el clip arranca en su primer cuadro
+const nitida = (f, c) => {
+  const clip = f.clip && (c.videos?.clips || []).find((x) => x.id === f.clip);
+  return Boolean(clip && clip.foto && !clip.desde);
+};
+
 function fotos(e, i, c) {
   const base = c.imagenes.base;
   let out = (e.fotos || [])
     .map(
       (f, k) => `
-  <figure class="foto${f.clip ? ' foto--clip' : ''}" data-etapa="${i}" data-k="${k}" data-peso="${f.peso || 1}"${f.clip ? ` data-clip="${esc(f.clip)}"` : ''}>
+  <figure class="foto${f.clip ? ' foto--clip' : ''}" data-etapa="${i}" data-k="${k}" data-peso="${f.peso || 1}"${f.clip ? ` data-clip="${esc(f.clip)}"` : ''}${nitida(f, c) ? ' data-nitida' : ''}>
     ${picture(base + (f.clip ? `video-${f.clip}` : f.id), { alt: f.alt, focal: f.focal })}${
       f.clip ? '\n    <video class="foto__video" muted playsinline disablepictureinpicture preload="none" aria-hidden="true" tabindex="-1"></video>' : ''
     }

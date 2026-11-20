@@ -208,9 +208,9 @@
       ],
       "fotos": [
         {
-          "id": "plan",
-          "focal": "40% 35%",
-          "alt": "Hombre de saco azul en un escritorio luminoso conversa por videollamada mientras señala unos planos"
+          "clip": "plan",
+          "alt": "Hombre de saco azul en un escritorio luminoso conversa por videollamada mientras señala unos planos",
+          "focal": "50% 50%"
         }
       ],
       "transicion": "circulo"
@@ -274,10 +274,9 @@
       "transicion": "lateral",
       "fotos": [
         {
-          "id": "negociacion",
-          "focal": "52% 40%",
+          "clip": "negociacion",
           "alt": "Tres personas conversan en una mesa de reunión con muestras de producto, planos y una tablet",
-          "fuga": "52% 42%"
+          "focal": "50% 50%"
         }
       ]
     },
@@ -294,10 +293,9 @@
       "transicion": "circulo",
       "fotos": [
         {
-          "id": "calidad",
-          "focal": "55% 42%",
+          "clip": "calidad",
           "alt": "En un depósito, un inspector revisa una caja abierta y completa una lista de control",
-          "fuga": "80% 44%"
+          "focal": "50% 50%"
         }
       ]
     },
@@ -328,9 +326,9 @@
       "transicion": "diagonal",
       "fotos": [
         {
-          "id": "carga",
-          "focal": "70% 50%",
-          "alt": "Operarios cargan cajas en un contenedor dentro de un depósito, junto a un montacargas"
+          "clip": "carga",
+          "alt": "Operarios cargan cajas en un contenedor dentro de un depósito, junto a un montacargas",
+          "focal": "50% 50%"
         },
         {
           "id": "precinto",
@@ -377,9 +375,9 @@
       "transicion": "lateral",
       "fotos": [
         {
-          "id": "aduana",
-          "focal": "39% 45%",
-          "alt": "Dos hombres revisan documentos frente a un contenedor abierto lleno de cajas en un puerto"
+          "clip": "aduana",
+          "alt": "Dos hombres revisan documentos frente a un contenedor abierto lleno de cajas en un puerto",
+          "focal": "50% 50%"
         }
       ]
     },
@@ -396,9 +394,9 @@
       "transicion": "circulo",
       "fotos": [
         {
-          "id": "entrega",
-          "focal": "62% 55%",
-          "alt": "Dos personas pasan una caja de una camioneta de reparto a la puerta de un depósito"
+          "clip": "entrega",
+          "alt": "Dos personas pasan una caja de una camioneta de reparto a la puerta de un depósito",
+          "focal": "50% 50%"
         }
       ]
     },
@@ -872,40 +870,35 @@
     "nota": "Clips generados con IA (sin audio). No muestran al equipo, a clientes ni a lugares reales de Laksmi. Para sumar uno: dejarlo en assets-fuente/videos/, agregarlo acá y a su etapa con {\"clip\": \"<id>\"}, y correr npm run videos.",
     "base": "/assets/video/",
     "presupuestoKB": {
-      "desktop": 1400,
+      "desktop": 2500,
       "mobile": 800
     },
     "esperaMaxima": 3,
+    "fotoEnReposo": true,
+    "grano": true,
     "clips": [
+      {
+        "id": "plan",
+        "archivo": "Plan_video_horizontal.mp4",
+        "vertical": "Plan_video_vertical.mp4",
+        "foto": "plan",
+        "focalMobile": [
+          [
+            0,
+            "35% 50%"
+          ],
+          [
+            5,
+            "28% 50%"
+          ]
+        ],
+        "nota": "completo (5 s)"
+      },
       {
         "id": "feria",
         "archivo": "feria_video_horizontal.mp4",
         "vertical": "feria_video_vertical.mp4",
-        "focalMobile": [
-          [
-            0,
-            "57% 50%"
-          ],
-          [
-            2,
-            "53% 50%"
-          ],
-          [
-            4,
-            "49% 50%"
-          ],
-          [
-            10,
-            "46% 50%"
-          ]
-        ],
-        "nota": "10 s completos"
-      },
-      {
-        "id": "feria-5s",
-        "archivo": "feria_video_horizontal.mp4",
-        "vertical": "feria_video_vertical.mp4",
-        "desde": 0.5,
+        "desde": 3.3,
         "duracion": 5,
         "focalMobile": [
           [
@@ -925,13 +918,40 @@
             "46% 50%"
           ]
         ],
-        "nota": "recorte de 0,5 a 5,5 s"
+        "nota": "3,3 a 8,3 s: deja afuera la mano blanda (2,5 a 3,2 s)"
+      },
+      {
+        "id": "negociacion",
+        "archivo": "Negociación_inicia_video_horizontal.mp4",
+        "vertical": "Negociación_inicia_video_vertical.mp4",
+        "foto": "negociacion",
+        "duracion": 2.9,
+        "focalMobile": "47% 50%",
+        "nota": "0 a 2,9 s: después el comprador de la izquierda queda cortado"
+      },
+      {
+        "id": "calidad",
+        "archivo": "Control_de_calidad_video_horizontal.mp4",
+        "vertical": "Control_de_calidad_video_vertical.mp4",
+        "foto": "calidad",
+        "duracion": 2.5,
+        "focalMobile": "45% 50%",
+        "nota": "0 a 2,5 s: desde 2,6 s las estanterías se transforman"
+      },
+      {
+        "id": "carga",
+        "archivo": "Carga_video_horizontal.mp4",
+        "vertical": "Carga_video_vertical.mp4",
+        "foto": "carga",
+        "focalMobile": "68% 50%",
+        "nota": "completo (5 s)"
       },
       {
         "id": "puerto",
         "archivo": "v2_puerto_video.mp4",
         "vertical": "v2_puerto_video_vertical.mp4",
-        "focalMobile": "52% 50%"
+        "focalMobile": "52% 50%",
+        "foto": "puerto"
       },
       {
         "id": "transito",
@@ -946,7 +966,46 @@
             10,
             "51% 50%"
           ]
-        ]
+        ],
+        "foto": "transito"
+      },
+      {
+        "id": "aduana",
+        "archivo": "aduana_video_horizontal.mp4",
+        "vertical": "aduana_video_vertical.mp4",
+        "foto": "aduana",
+        "focalMobile": [
+          [
+            0,
+            "40% 50%"
+          ],
+          [
+            5,
+            "37% 50%"
+          ]
+        ],
+        "nota": "completo (5 s)"
+      },
+      {
+        "id": "entrega",
+        "archivo": "entrega_video_horizontal.mp4",
+        "vertical": "entrega_video_vertical.mp4",
+        "foto": "entrega",
+        "focalMobile": [
+          [
+            0,
+            "62% 50%"
+          ],
+          [
+            2.5,
+            "58% 50%"
+          ],
+          [
+            5,
+            "62% 50%"
+          ]
+        ],
+        "nota": "completo (5 s)"
       }
     ]
   }

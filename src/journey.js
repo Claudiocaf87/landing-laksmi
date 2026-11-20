@@ -7,6 +7,8 @@ import { createClips } from './ui/clips.js';
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.config({ ignoreMobileResize: true });
 
+const HOLD = 0.2; // parte de la etapa en que un clip con foto nítida queda en su primer cuadro
+
 // Cada foto (o clip) entra con un barrido de izquierda a derecha, en la dirección del viaje, con un
 // filo dorado; después se desplaza despacio hacia la derecha (la "cámara" sigue viajando).
 
@@ -34,6 +36,7 @@ export function createJourney({ stage = null, content, reduced = false, video = 
 
   const desdeDe = (texto) => estados.find((s) => s.texto === texto)?.desde;
 
+  const holds = [];
   sections.forEach((sec, i) => {
     // ---------- fotos y clips ----------
     const figs = [...sec.querySelectorAll('.foto')];
@@ -50,7 +53,11 @@ export function createJourney({ stage = null, content, reduced = false, video = 
       acc += pesos[k];
       const tin = k === 0 ? i - 0.14 : start - 0.1; // entra un poco antes: nunca hay pantalla vacía
       const end = closing ? i + 0.44 : i + 1.14; // la tapa la etapa siguiente (o el globo, en el cierre)
-      fig.dataset.slot = `${start},${len},${tin},${end}`;
+      // clip con foto nítida al comienzo de la etapa: queda en su primer cuadro hasta la estación (se ve
+      // la foto mientras se lee el texto) y avanza en el resto de su tramo
+      const hold = fig.hasAttribute('data-nitida') && k === 0 && content.videos?.fotoEnReposo !== false ? HOLD : 0;
+      if (hold) holds[i] = true;
+      fig.dataset.slot = `${start + hold},${len - hold},${tin},${end}`;
       tl.set(fig, { visibility: 'visible' }, tin);
       if (reduced) {
         tl.fromTo(fig, { opacity: 0 }, { opacity: 1, duration: 0.12 }, tin);
@@ -108,12 +115,23 @@ export function createJourney({ stage = null, content, reduced = false, video = 
   let measuring = false; // seek() (pruebas y capturas) apaga el imán del hero
   let active = -1;
   const clips = createClips({ content, enabled: video });
+  // grano fino sobre fotos y clips (capa fija, debajo de los textos)
+  const grano = new URLSearchParams(location.search).get('grano');
+  if (!reduced && (grano === '1' || (grano !== '0' && content.videos?.grano))) {
+    const g = document.createElement('div');
+    g.className = 'grano';
+    g.setAttribute('aria-hidden', 'true');
+    g.style.backgroundImage = `url(${noiseTile()})`;
+    journey.append(g);
+  }
   clips.items.forEach((it) => {
     const [start, len, tin, end] = it.fig.dataset.slot.split(',').map(Number);
     it.slot = [start, len];
     it.window = [tin, end];
   });
-  const station = (i) => (i === 0 ? 0 : i === N - 1 ? i + 0.7 : i + 0.4);
+  // estación de cada etapa (adonde llevan el menú y el HUD): con foto nítida, cuando el texto ya entró y
+  // el clip todavía está en su primer cuadro
+  const station = (i) => (i === 0 ? 0 : i === N - 1 ? i + 0.7 : holds[i] ? i + HOLD : i + 0.4);
   const goTo = (target, { immediate = false, u = null } = {}) => {
     const i = sections.findIndex((s) => s.id === target);
     let to;
@@ -222,7 +240,8 @@ export function createJourney({ stage = null, content, reduced = false, video = 
       loadStage(idx + 1);
       // de a uno: primero el clip de la etapa actual, después el de la siguiente. Las fotos tienen
       // prioridad: los clips se piden recién cuando las fotos de esas dos etapas ya están
-      if (photosReady(idx) && photosReady(idx + 1)) clips.want([idx, idx + 1]);
+      // En el hero no se pide nada hasta que el visitante empieza a scrollear (carga inicial liviana)
+      if (u > 0.05 && photosReady(idx) && photosReady(idx + 1)) clips.want([idx, idx + 1]);
     }
     clips.setU(u);
     clips.update(performance.now());
@@ -293,4 +312,19 @@ function createRail(N) {
       dots.forEach((d) => d.classList.toggle('is-on', u >= Number(d.dataset.etapa) - 0.001));
     },
   };
+}
+
+// tesela de ruido (gris neutro) para el grano: se genera una vez, 160×160 px
+function noiseTile() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 160;
+  const ctx = c.getContext('2d');
+  const img = ctx.createImageData(160, 160);
+  for (let k = 0; k < img.data.length; k += 4) {
+    const v = 128 + (Math.random() + Math.random() + Math.random() - 1.5) * 90;
+    img.data[k] = img.data[k + 1] = img.data[k + 2] = v;
+    img.data[k + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+  return c.toDataURL('image/png');
 }

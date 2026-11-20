@@ -1018,6 +1018,32 @@ button.btn:disabled {
 .foto.has-video .foto__video {
   opacity: 1;
 }
+/* foto nítida en reposo: el clip en su primer cuadro deja ver la foto original */
+.foto.has-video.en-reposo .foto__video {
+  opacity: 0;
+  transition-duration: 0.35s;
+}
+/* grano fino muy sutil sobre fotos y clips (debajo de los textos) */
+.grano {
+  position: fixed;
+  inset: -80px;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-size: 160px 160px;
+  animation: grano 0.5s steps(1) infinite;
+}
+.is-past .grano {
+  display: none;
+}
+@keyframes grano {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-37px, 23px); }
+  40% { transform: translate(29px, -41px); }
+  60% { transform: translate(-13px, 57px); }
+  80% { transform: translate(51px, 11px); }
+}
 .is-static .foto__video {
   display: none;
 }

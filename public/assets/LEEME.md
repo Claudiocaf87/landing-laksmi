@@ -74,17 +74,27 @@ El punto de fuga de cada foto de la versión B está en `es.json` (`fotos[].fuga
 ## Modo video (rama `fase3-video`)
 
 Clips generados con IA, sin audio: no muestran al equipo, a clientes ni a lugares reales de Laksmi.
+Cada clip: `video/<id>-{desktop,mobile}.av1.mp4` (AV1, primera opción) y `.mp4` (H.264, respaldo); póster en
+`fotos/video-<id>-{desktop,mobile}.{avif,webp}` (la foto original alineada con el primer cuadro, o el primer cuadro).
 
-| Archivo | Etapa | Origen | Peso (MP4 / WebM) |
-|---|---|---|---|
-| `video/feria-{desktop,mobile}.{mp4,webm}` | 02 Ferias (10 s completos) | `assets-fuente/videos/feria_video_horizontal.mp4` | 1,30 / 1,29 MB · 0,75 / 0,74 MB |
-| `video/feria-5s-{desktop,mobile}.{mp4,webm}` | 02 Ferias (variante: 0,5 a 5,5 s) | ídem | 1,19 / 1,12 MB · 0,70 / 0,65 MB |
-| `video/puerto-{desktop,mobile}.{mp4,webm}` | 05 Despacho (Embarcado) | `assets-fuente/videos/v2_puerto_video.mp4` | 1,29 / 1,31 MB · 0,74 / 0,73 MB |
-| `video/transito-{desktop,mobile}.{mp4,webm}` | 06 Tránsito | `assets-fuente/videos/transito_video.mp4` | 1,30 / 1,29 MB · 0,75 / 0,76 MB |
-| `fotos/video-<id>-{desktop,mobile}.{avif,webp}` | Póster de cada clip (su primer cuadro) | lo genera `npm run videos` | |
+| Clip | Desktop | AV1 / H.264 desktop | AV1 / H.264 mobile (540×960) | Tramo |
+|---|---|---|---|---|
+| plan | 1920×1080 | 2,32 / 2,32 MB | 0,72 / 0,74 MB | completo (5 s) |
+| feria | 1920×1080 | 2,30 / 2,36 MB | 0,78 / 0,75 MB | 3,3 a 8,3 s |
+| negociacion | 1920×1080 | 1,40 / 1,69 MB | 0,34 / 0,41 MB | 0 a 2,9 s |
+| calidad | 1920×1080 | 1,07 / 1,48 MB | 0,39 / 0,44 MB | 0 a 2,5 s |
+| carga | 1920×1080 | 2,31 / 2,32 MB | 0,73 / 0,73 MB | completo (5 s) |
+| puerto | 1920×1080 | 2,33 / 2,34 MB | 0,70 / 0,74 MB | completo (5 s) |
+| transito | 1280×720 | 2,42 / 2,33 MB | 0,75 / 0,76 MB | completo (10 s) |
+| aduana | 1920×1080 | 2,18 / 2,31 MB | 0,72 / 0,74 MB | completo (5 s) |
+| entrega | 1920×1080 | 2,20 / 2,32 MB | 0,71 / 0,74 MB | completo (5 s) |
 
-Para sumar un clip: dejarlo en `assets-fuente/videos/`, agregarlo a `videos.clips` en `es.json` (con `focalMobile`
-y, si existe, `vertical`) y en la etapa como `{"clip": "<id>"}`, y correr `npm run videos`. Desktop 1280×720,
-mobile 540×960 recortado de la horizontal sobre el punto focal (o 720×1280 si llega la vertical), 24 fps,
-keyframe cada ½ s; si no entra en el presupuesto (≤ 1,4 MB desktop, ≤ 0,8 MB mobile) se espacian los keyframes
-y, si aun así pierde calidad (SSIM < 0,95), el script lo avisa en lugar de forzarlo.
+Desktop: los clips 720p pasan a 1080p con lanczos y un enfoque leve si entran en 2,5 MB con buena calidad
+(AV1 con CRF ≤ 36); si no (tránsito: el agua necesitaría CRF 46), quedan en 720p con enfoque. `--escalar` usa
+Real-ESRGAN (realesrgan-x4plus) en la GPU; en esta máquina (Radeon integrada) tarda unos 85 s por cuadro y en
+caras da un aspecto plástico, así que no se usa por defecto (`"escalar": false` lo desactiva por clip).
+
+Para sumar un clip: dejarlo en `assets-fuente/videos/`, agregarlo a `videos.clips` en `es.json` (con `focalMobile`,
+`foto` si salió de una foto, y `vertical` cuando exista) y en la etapa como `{"clip": "<id>"}`, y correr `npm run videos`.
+Las versiones verticales (`<archivo>_vertical.mp4`, nombre en es.json) reemplazan al recorte de la horizontal.
+

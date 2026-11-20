@@ -43,8 +43,8 @@ const attachVideo = () => {
   const t = portrait() ? V.mobile : V.desktop;
   const webm = video.canPlayType('video/webm; codecs="vp9"');
   // en fase3-video el clip del puerto es v2 (npm run videos): una sola variante a 24 fps
-  status.fuente = `${t.split('/').pop()}.${webm ? 'webm' : 'mp4'}`;
-  video.src = `${t}.${webm ? 'webm' : 'mp4'}`;
+  status.fuente = `${t.split("/").pop()}.mp4`;
+  video.src = `${t}.mp4`;
   video.preload = 'auto';
   video.load();
   video.addEventListener('loadeddata', () => {

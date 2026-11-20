@@ -21,12 +21,17 @@ export function createClips({ content, enabled }) {
   let slow = false;
   let loading = null;
 
+  // AV1 si el navegador lo decodifica (más calidad por byte); si no, H.264. ?codec=h264 para comparar
   const probe = document.createElement('video');
-  const webm = probe.canPlayType('video/webm; codecs="vp9"') === 'probably';
+  const av1 = params.get('codec') !== 'h264' && probe.canPlayType('video/mp4; codecs="av01.0.08M.08"') === 'probably';
+  status.codec = av1 ? 'av1' : 'h264';
   const src = (it) => {
     const view = window.matchMedia('(orientation: portrait)').matches ? 'mobile' : 'desktop';
-    return `${V.base}${it.id}-${view}.${webm ? 'webm' : 'mp4'}`;
+    return `${V.base}${it.id}-${view}.${av1 ? 'av1.mp4' : 'mp4'}`;
   };
+  // foto nítida en reposo: mientras el clip está en su primer cuadro se ve la foto original
+  const reposo = V.fotoEnReposo !== false && params.get('reposo') !== '0';
+  items.forEach((it) => (it.nitida = reposo && it.fig.hasAttribute('data-nitida')));
 
   const fail = (it, why) => {
     it.state = 'failed';
@@ -65,7 +70,7 @@ export function createClips({ content, enabled }) {
         }
       }
       if (it.state !== 'loading') return;
-      it.blob = URL.createObjectURL(new Blob(chunks, { type: webm ? 'video/webm' : 'video/mp4' }));
+      it.blob = URL.createObjectURL(new Blob(chunks, { type: 'video/mp4' }));
       it.video.src = it.blob;
       it.video.load();
       await new Promise((ok, ko) => {
@@ -117,6 +122,9 @@ export function createClips({ content, enabled }) {
         }
         // no se encolan búsquedas: solo cuando terminó la anterior y el cambio supera medio cuadro
         if (!v.seeking && Math.abs(v.currentTime - t) > 0.5 / 24) v.currentTime = t;
+        // foto nítida: en el primer cuadro (antes de que el clip empiece a avanzar) se ve la foto; en cuanto
+        // avanza, el video. Si el video ya está lejos del primer cuadro no se vuelve a la foto.
+        if (it.nitida) it.fig.classList.toggle('en-reposo', it.p <= 0 && v.currentTime < 1.5 / 24);
         continue;
       }
       if (!enabled || it.state === 'failed') continue;
